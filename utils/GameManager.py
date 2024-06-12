@@ -1,7 +1,7 @@
 from random import choice
 from datetime import datetime
 
-from models import Players_in_Match, GameData
+from models.schemas import Players_in_Match, GameData
 
 
 class MatchApiProps:
@@ -32,10 +32,14 @@ class GameRoom:
         print(f'{self.players_in_match.__len__()} jogadores conectados.')
     
     def gameHandle(self, data: GameData):
-        if data['data_type'] == "connect":
-            self.players_in_match.append(data['player'])
-            print(f"Player {data['player'].id} connected.")
-        # self.onGameStart()
+        match data.data_type:
+            case  "connect":
+                self.players_in_match.append(data.player)
+                print(f"Player {data.player.id} connected.")
+            case "start":
+                self.onGameStart()
+            
+        
 
     def giveCard(self, player: Players_in_Match, number_of_cards: int = 1):
         print(f"Sorteando {number_of_cards} cartas para o jogador {player.id}...")
@@ -66,12 +70,18 @@ if True:
 
     # Player3 cria a sala do jogo
     game = GameRoom(player3)
+    print(game.id)
     
     # Connecting player1
-    game.gameHandle({'data_type':'connect', 'player':player1})
-    
+    con_player1 = GameData(data_type='connect', player=player1)
+    game.gameHandle(con_player1)
+
     # Connecting player2
-    game.gameHandle({'data_type':'connect', 'player':player2})
+    con_player2 = GameData(data_type='connect', player=player2)
+    game.gameHandle(con_player2)
+
+    # Starting the Game
+    start_command = GameData(data_type='start')
+    game.gameHandle(start_command)
     
     
-    # # game.gameHandle()
