@@ -1,18 +1,20 @@
-from pprint import pprint
-from typing import Annotated
-
-from fastapi import FastAPI, Body, status
+from fastapi import FastAPI, status
 from fastapi.requests import Request
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from secrets import token_hex
 
-from utils import WS_Manager, DB_Manager
+from utils import WS_Manager, DB_Manager, GameRoom
 
 # from utils.populates import CardPopulate, UserPopulate
 
 import json
+
+from pydantic import BaseModel
+
+class Data(BaseModel):
+    data: dict
 
 
 ORIGINS = ["*"]
@@ -47,6 +49,13 @@ def handleRoot(req: Request):
     res = HTMLResponse(content='API')
     # res.set_cookie("crfs_token", crfs_token)
     # res.delete_cookie("crfs")
+    return res
+
+@app.post("/api")
+async def handleRoot(req: Request):
+    data = json.loads(await req.body())
+    DB.newRoom(data['data'])
+    res = HTMLResponse(content='API')
     return res
 
 
