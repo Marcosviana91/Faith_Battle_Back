@@ -1,6 +1,6 @@
-from typing import Optional
+from typing import Optional, ClassVar
 from datetime import datetime
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, Relationship
 
 
 class User(SQLModel, table=True):
@@ -117,14 +117,29 @@ class Player_Decks(SQLModel, table=True):
 
 class Match(SQLModel, table=True):
     id: Optional[int] = Field(primary_key=True)
-    start_match: datetime = Field(default=datetime.now())
-    end_match: datetime = Field(default=datetime.now())
+    start_match: datetime|None = Field(default=None)
+    end_match: datetime|None = Field(default=None)
+    created_by: int
+    room_name: str
+    max_players: int
     match_type: int = Field(foreign_key='match_types.id')
+    password: str
 
     # Jogadores na partida (2 - 8)
+    players_in_match: ClassVar[list] = []
     # players_in_match: list['User'] = Relationship()
     # # Movimentos da nesta partida
+    moves_in_match: ClassVar[list] = []
     # moves_in_match: list["Moves"] = Relationship()
+    
+    def joinTheMatch(self, player_id:int):
+        self.players_in_match.append(player_id)
+        
+    def leftTheMatch(self, player_id:int):
+        self.players_in_match.remove(player_id)
+        
+    def newMove(self, move_data):
+        ...
 
 
 class Match_Types(SQLModel, table=True):
@@ -132,16 +147,50 @@ class Match_Types(SQLModel, table=True):
     type_name: str  # Survival, Coop
     type_description: str
 
+# Used in TinyDB and JSON schemas
+class Players_in_Match(SQLModel):
+    id: int
+    card_deck: list
+    deck_try: int
+    card_hand: list
+    card_in_forgotten_sea: list
+    card_prepare_camp: list
+    card_battle_camp: list
+    faith_points: int
+    wisdom_points: int
+    wisdom_used: int
+    
+    def __init__(self, id, card_deck):
+        self.id = id
+        self.card_deck = card_deck
+        self.deck_try = 0
+        self.card_hand = []
+        self.card_in_forgotten_sea = []
+        self.card_prepare_camp = []
+        self.card_battle_camp = []
+        self.faith_points = 0
+        self.wisdom_points = 0
+        self.wisdom_used = 0
+        
+class Move(SQLModel):
+    match_room_id: int
+    match_round: int
+    player_move: int
+    card_id: int
+    move_type: str # start, retry_cards, attack, defense, attach, dettach, active, passive
+    player_target: int
+    card_target: int | None
+    
+class RetryCards(SQLModel):
+    player_id: int
+    cards_id: list[int]
 
-class Players_in_Match(SQLModel, table=True):
-    '''
-    Tablela de Relação Many-to-Many\n
-    Relação de jogadores em uma partida e deck usado
-    '''
-    # id: Optional[int] = Field(primary_key=True)
-    match_id: int = Field(primary_key=True, foreign_key='match.id')
-    player_id: int = Field(foreign_key='player.id')
-    deck_id: int = Field(foreign_key='player_decks.id')
+class GameData(SQLModel):
+    data_type: str # connect, start, move, retry_cards
+    room_id: int
+    player: Players_in_Match | None
+    move: Move | None
+    retry_cards: RetryCards | None
 
 
 class Moves_in_Match(SQLModel, table=True):
