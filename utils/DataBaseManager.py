@@ -1,15 +1,22 @@
 from sqlmodel import Session, SQLModel, create_engine, select
+from tinydb import TinyDB, Query
 
 from utils import hash_pass
 import models
 
 
 class DB_Manager:
+    '''
+    Handle the data persistance
+    '''
     def __init__(self):
         sqlite_file_name = "database.db"
-        sqlite_url = f"sqlite:///{sqlite_file_name}"
+        sqlite_url = f"sqlite:///database/{sqlite_file_name}"
         self.engine = create_engine(sqlite_url, echo=False)
         SQLModel.metadata.create_all(self.engine)
+        tinydb_file_name = "database.json"
+        self.tiny_engine = TinyDB(f'./database/{tinydb_file_name}')
+        
 
     def createNewUser(self, data):
         response = {
@@ -89,4 +96,12 @@ class DB_Manager:
                 response['data'] = {}
 
         return response
+    
+    def newRoom(self, data):
+        newRoom = models.Match(**data)
+        print(newRoom)
+        # with Session(self.engine) as session:
+        #     session.add(newRoom)
+        #     session.commit()
+        #     print(newRoom.id)
     
