@@ -3,17 +3,34 @@ from datetime import datetime
 
 from models.schemas import Players_in_Match, GameData
 
+from pprint import pprint
 
-class MatchApiProps:
-    id: int
-    start_match: str
-    match_type: int
+from collections import defaultdict
+
+MINIMUM_DECK_CARDS = 10
+
+def checkDeckCardsRepeats(deck: list) -> list:
+    result = []
+    keys = defaultdict(list)
+    for key, value in enumerate(deck):
+        keys[value].append(key)
+
+    for value in keys:
+        if len(keys[value]) > 2:
+            result.append(value)
+    return result
 
 
 class GameRoom:
     id: int
     start_match: str
     end_match: str
+
+    # Stages
+    #   0: players has connecteds, check decks
+    #   1: cards in hand ok
+    #   2: game in curse
+    game_stage: int
 
     players_in_match: list[Players_in_Match] = []
     round: int
@@ -24,25 +41,71 @@ class GameRoom:
 
     def __init__(self, player_cerate_match: Players_in_Match):
         print("Creating Match Room...")
-        self.id = 1 # get room id from TinyDB
+        self.id = 1  # get room id from TinyDB
         print(f"Room id: {self.id}")
+        self.game_stage = 0
         self.players_in_match.append(player_cerate_match)
-        self.round = 1
+        self.round = 0
         self.player_turn = 0
-        print(f'{self.players_in_match.__len__()} jogadores conectados.')
-    
+
+    def getPlayerIndexByPlayerId(self, player_id: int) -> int:
+        for player in self.players_in_match:
+            if player.id == player_id:
+                return self.players_in_match.index(player)
+        raise IndexError(f'Player with id {player_id} not found')
+
+    def allPlayersIsReady(self) -> bool:
+        count = 0
+        for player in self.players_in_match:
+            if player.ready == True:
+                count += 1
+        return count == len(self.players_in_match)
+
+    def setPlayersNotReady(self):
+        for player in self.players_in_match:
+            player.ready = False
+
     def gameHandle(self, data: GameData):
         match data.data_type:
             case  "connect":
                 self.players_in_match.append(data.player)
                 print(f"Player {data.player.id} connected.")
+            case  "disconnect":
+                self.players_in_match.remove(data.player)
+                print(f"Player {data.player.id} disconnected.")
+            case "ready":
+                player_index = self.getPlayerIndexByPlayerId(data.player_id)
+                # Checando se o deck está ok
+                checkDeckCards_result = checkDeckCardsRepeats(self.players_in_match[player_index].card_deck)
+                if checkDeckCards_result.__len__() > 0:
+                    print(f"Player {data.player_id} is not ready due cards {checkDeckCards_result} exceed maximum repeats")
+                elif self.players_in_match[player_index].card_deck.__len__() < MINIMUM_DECK_CARDS:
+                    print(f"Player {data.player_id} is not ready due their deck has less than 30 cards")
+                else:
+                    self.players_in_match[player_index].ready = True
+                    print(f"Player {data.player_id} is ready.")
+                if self.allPlayersIsReady():
+                    print(f"All players is ready")
+                    self.game_stage += 1
+                    self.setPlayersNotReady()
+            case "unready":
+                player_index = self.getPlayerIndexByPlayerId(data.player_id)
+                self.players_in_match[player_index].ready = False
+                print(f"Player {data.player_id} is not ready.")
+            case "change_deck":
+                player_index = self.getPlayerIndexByPlayerId(data.player.id)
+                self.players_in_match[player_index].card_deck = data.player.card_deck
+                print(f"Player {data.player.id} has change their deck.")
+
             case "start":
-                self.onGameStart()
-            
-        
+                # self.onGameStart()
+                print(f'{self.players_in_match.__len__()} players connecteds.')
+                # for player in self.players_in_match:
+                #     pprint(player.model_dump(), depth=1)
 
     def giveCard(self, player: Players_in_Match, number_of_cards: int = 1):
-        print(f"Sorteando {number_of_cards} cartas para o jogador {player.id}...")
+        print(f"Sorteando {number_of_cards} cartas para o jogador {
+              player.id}...")
         count = 0
         while count < number_of_cards:
             card_selected = choice(player.card_deck)
@@ -59,29 +122,3 @@ class GameRoom:
 
     def playerTurnHandle(self):
         ...
-
-
-# if __name__ == "__main__":
-if True:
-    # Criando jogadores
-    player1 = Players_in_Match(1, list(range(1, 21)))
-    player2 = Players_in_Match(2, list(range(21, 41)))
-    player3 = Players_in_Match(4, list(range(41, 61)))
-
-    # Player3 cria a sala do jogo
-    game = GameRoom(player3)
-    print(game.id)
-    
-    # Connecting player1
-    con_player1 = GameData(data_type='connect', player=player1)
-    game.gameHandle(con_player1)
-
-    # Connecting player2
-    con_player2 = GameData(data_type='connect', player=player2)
-    game.gameHandle(con_player2)
-
-    # Starting the Game
-    start_command = GameData(data_type='start')
-    game.gameHandle(start_command)
-    
-    
