@@ -1,12 +1,12 @@
-from random import choice
+from random import choice, shuffle
 from datetime import datetime
 
 from models.schemas import Players_in_Match, GameData, GameRoomSchema
 
-from pprint import pprint
+from .stages import stage0, stage1, stage2
 
-from .stages import stage0, stage1
 
+MAXIMUM_FAITH_POINTS = 15
 
 class GameRoom(GameRoomSchema):
 
@@ -18,6 +18,7 @@ class GameRoom(GameRoomSchema):
         self.players_in_match.append(player_cerate_match)
         self.round = 0
         self.player_turn = 0
+        self.can_others_moves = False
 
     def getPlayerByPlayerId(self, player_id: int) -> Players_in_Match:
         for player in self.players_in_match:
@@ -33,7 +34,8 @@ class GameRoom(GameRoomSchema):
         if count == len(self.players_in_match):
             self.game_stage += 1
             self.setPlayersNotReady()
-            print(f"All players is ready.\nNext stage: stage {self.game_stage}")
+            print(f"All players is ready.\nNext stage: stage {
+                  self.game_stage}")
             return True
         return False
 
@@ -45,9 +47,12 @@ class GameRoom(GameRoomSchema):
         match self.game_stage:
             case 0:
                 stage0.dataHandle(self, data)
+
             case 1:
                 stage1.dataHandle(self, data)
-                
+
+            case 2:
+                stage2.dataHandle(self, data)
 
     def giveCard(self, player: Players_in_Match, number_of_cards: int = 1):
         # print(f"Sorteando {number_of_cards} cartas para o jogador {player.id}...")
@@ -59,11 +64,24 @@ class GameRoom(GameRoomSchema):
             player.card_deck.remove(card_selected)
         # print(f"mão: {player.card_hand}\ndeck: {player.card_deck}")
 
-    def onGameStart(self):
-        print("Starting...")
-        self.start_match = datetime.now()
+    def gameStart(self):
+        print('Starting game...')
+        self.start_match = datetime.now().timestamp()
         for player in self.players_in_match:
-            self.giveCard(player, 5)
-
-    def playerTurnHandle(self):
-        ...
+            shuffle(player.card_deck)
+            player.faith_points = MAXIMUM_FAITH_POINTS
+        print(self.players_in_match)
+        self.newRoundHandle()
+    
+    def newRoundHandle(self):
+        self.round += 1
+        print(f"Round {self.round}.")
+        self.player_turn = 0
+        for player in self.players_in_match:
+            player.wisdom_points += 1
+        print(f'Player {self.players_in_match[self.player_turn].id} turn:')
+    
+    
+    def playerTurnHandle(self, player: Players_in_Match):
+        player.wisdom_used = 0
+        self.giveCard(player, 1)

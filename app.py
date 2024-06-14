@@ -86,9 +86,9 @@ if __name__ == "__main__":
     # )
     # game.gameHandle(retry_player7)
 
-    # Player7 is not ready
-    ready_player7 = GameData(data_type='unready', player_id=player7.id)
-    game.gameHandle(ready_player7)
+    # # Player7 is not ready
+    # ready_player7 = GameData(data_type='unready', player_id=player7.id)
+    # game.gameHandle(ready_player7)
 
     # Player2 is ready
     ready_player2 = GameData(data_type='ready', player_id=player2.id)
@@ -97,3 +97,9 @@ if __name__ == "__main__":
     # Player4 is ready
     ready_player4 = GameData(data_type='ready', player_id=player4.id)
     game.gameHandle(ready_player4)
+    
+    # Stage 2: THE GAME
+    
+    # # Player4 move
+    # move_player4 = GameData(data_type='move', player_id=player4.id)
+    # game.gameHandle(move_player4)
