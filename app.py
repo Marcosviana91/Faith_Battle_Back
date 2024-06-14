@@ -4,46 +4,96 @@ from models.schemas import Players_in_Match, GameData
 from pprint import pprint
 
 if __name__ == "__main__":
-    # Criando jogadores
-    player1 = Players_in_Match(7, list(range(1, 21)))
-    player2 = Players_in_Match(2, list(range(21, 41)))
-    player3 = Players_in_Match(4, list(range(41, 61)))
+    # STAGE 0
 
-    # Player3 cria a sala do jogo
-    game = GameRoom(player3)
-    print(game.id)
-    
-    # Connecting player1
-    con_player1 = GameData(data_type='connect', player=player1)
-    game.gameHandle(con_player1)
+    # Criando jogadores
+    player7 = Players_in_Match(7, list(range(1, 21)))
+    player2 = Players_in_Match(2, list(range(21, 41)))
+    player4 = Players_in_Match(4, list(range(41, 61)))
+
+    # Player4 cria a sala do jogo
+    game = GameRoom(player4)
+
+    # Connecting player7
+    con_player7 = GameData(data_type='connect', player=player7)
+    game.gameHandle(con_player7)
 
     # Connecting player2
     con_player2 = GameData(data_type='connect', player=player2)
     game.gameHandle(con_player2)
-    
+
     # Player2 is ready
     ready_player2 = GameData(data_type='ready', player_id=player2.id)
     game.gameHandle(ready_player2)
-    
-    # # Player1 change the deck
-    # player1 = Players_in_Match(7, [1, 2, 3, 4, 6, 5, 8, 2, 3, 1, 1, 1, 3])
-    # change_deck_player1 = GameData(data_type='change_deck', player=player1)
-    # game.gameHandle(change_deck_player1)
-    
-    # Player1 is ready
-    ready_player1 = GameData(data_type='ready', player_id=player1.id)
-    game.gameHandle(ready_player1)
-        
+
+    # # Player7 change the deck
+    # player7 = Players_in_Match(7, [1, 2, 3, 4, 6, 5, 8, 2, 3, 1, 1, 1, 3])
+    # change_deck_player7 = GameData(data_type='change_deck', player=player7)
+    # game.gameHandle(change_deck_player7)
+
+    # Player7 is ready
+    ready_player7 = GameData(data_type='ready', player_id=player7.id)
+    game.gameHandle(ready_player7)
+
     # # Player2 is not ready
     # ready_player2 = GameData(data_type='unready', player_id=player2.id)
     # game.gameHandle(ready_player2)
-    
-    # Player3 is ready
-    ready_player3 = GameData(data_type='ready', player_id=player3.id)
-    game.gameHandle(ready_player3)
-    
-    # Starting the Game
-    start_command = GameData(data_type='start')
-    game.gameHandle(start_command)
-    
-    
+
+    # Player4 is ready
+    ready_player4 = GameData(data_type='ready', player_id=player4.id)
+    game.gameHandle(ready_player4)
+
+    # STAGE 1
+
+    # Player7 1 retry all cards
+    retry_player7 = GameData(
+        data_type='retry',
+        player_id=player7.id,
+        retry_cards=[
+            *player7.card_hand[:]
+        ]
+    )
+    game.gameHandle(retry_player7)
+
+    # Player7 2 retry first and last cards
+    retry_player7 = GameData(
+        data_type='retry',
+        player_id=player7.id,
+        retry_cards=[
+            player7.card_hand[0],
+            player7.card_hand[-1]
+        ]
+    )
+    game.gameHandle(retry_player7)
+
+    # Player7 3 retry the last cards
+    retry_player7 = GameData(
+        data_type='retry',
+        player_id=player7.id,
+        retry_cards=[
+            player7.card_hand[0],
+        ]
+    )
+    game.gameHandle(retry_player7)
+
+    # # Player7 4 retry the last cards / Not allowed: raise BaseException
+    # retry_player7 = GameData(
+    #     data_type='retry',
+    #     player_id=player7.id,
+    #     retry_cards=[
+    #         player7.card_hand[0],
+    #     ]
+    # )
+    # game.gameHandle(retry_player7)
+
+    # Player7 is not ready
+    ready_player7 = GameData(data_type='unready', player_id=player7.id)
+    game.gameHandle(ready_player7)
+
+    # Player2 is ready
+    ready_player2 = GameData(data_type='ready', player_id=player2.id)
+    game.gameHandle(ready_player2)
+
+    # Player4 is ready
+    ready_player4 = GameData(data_type='ready', player_id=player4.id)
+    game.gameHandle(ready_player4)
