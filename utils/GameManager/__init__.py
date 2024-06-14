@@ -5,11 +5,10 @@ from models.schemas import Players_in_Match, GameData, GameRoomSchema
 
 from pprint import pprint
 
-from .stages import stage0
+from .stages import stage0, stage1
 
 
 class GameRoom(GameRoomSchema):
-
 
     def __init__(self, player_cerate_match: Players_in_Match):
         print("Creating Match Room...")
@@ -31,7 +30,12 @@ class GameRoom(GameRoomSchema):
         for player in self.players_in_match:
             if player.ready == True:
                 count += 1
-        return count == len(self.players_in_match)
+        if count == len(self.players_in_match):
+            self.game_stage += 1
+            self.setPlayersNotReady()
+            print(f"All players is ready.\nNext stage: stage {self.game_stage}")
+            return True
+        return False
 
     def setPlayersNotReady(self):
         for player in self.players_in_match:
@@ -42,34 +46,18 @@ class GameRoom(GameRoomSchema):
             case 0:
                 stage0.dataHandle(self, data)
             case 1:
-                print('Stage to sort cards and retry the sort')
-                match data.data_type:
-                    case  "retry":
-                        print('Retry')
-                        player = self.getPlayerByPlayerId(data.player_id)
-                        self.retryCard(player, data.retry_cards)
+                stage1.dataHandle(self, data)
+                
 
     def giveCard(self, player: Players_in_Match, number_of_cards: int = 1):
-        '''
-        Give to player a number of cards
-        @ Params:
-            player : Players_in_Match
-            number_of_cards : int = 1
-        @ Return None
-        '''
-        print(f"Sorteando {number_of_cards} cartas para o jogador {player.id}...")
+        # print(f"Sorteando {number_of_cards} cartas para o jogador {player.id}...")
         count = 0
         while count < number_of_cards:
             card_selected = choice(player.card_deck)
             player.card_hand.append(card_selected)
             count += 1
             player.card_deck.remove(card_selected)
-        print(f"mão: {player.card_hand}\ndeck: {player.card_deck}")
-    
-    def retryCard(self, player: Players_in_Match, cards: list):
-        print(f'Retring {cards.__len__()} cards to player {player.id}')
-        count = 0
-        self.giveCard(player, cards.__len__())
+        # print(f"mão: {player.card_hand}\ndeck: {player.card_deck}")
 
     def onGameStart(self):
         print("Starting...")

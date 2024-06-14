@@ -76,7 +76,7 @@ class GameRoomSchema:
     
     #### Stages
         0: players has connecteds, check decks
-        1: cards in hand ok
+        1: sort cards to all players, retry sort
         2: game in curse
     game_stage: int
     
@@ -94,7 +94,7 @@ class GameRoomSchema:
     
     # Stages
     #   0: players has connecteds, check decks
-    #   1: cards in hand ok
+    #   1: sort cards to all players, retry sort
     #   2: game in curse
     game_stage: int
     
@@ -110,4 +110,13 @@ class GameRoomSchema:
     def allPlayersIsReady(self) -> bool:
         ...
     def setPlayersNotReady(self):
+        ...
+    def giveCard(self, player: Players_in_Match, number_of_cards: int = 1):
+        '''
+        Give to player a number of cards
+        @ Params:
+            player : Players_in_Match
+            number_of_cards : int = 1
+        @ Return None
+        '''
         ...

@@ -1,7 +1,7 @@
 # Stage 0: players has connecteds, check decks
 from collections import defaultdict
 
-from models.schemas import Players_in_Match, GameData, GameRoomSchema
+from models.schemas import GameData, GameRoomSchema
 
 
 MINIMUM_DECK_CARDS = 10
@@ -38,9 +38,6 @@ def dataHandle(self: GameRoomSchema, data: GameData):
                 player.ready = True
                 print(f"Player {data.player_id} is ready.")
             if self.allPlayersIsReady():
-                print(f"All players is ready")
-                self.game_stage += 1
-                self.setPlayersNotReady()
                 for player in self.players_in_match:
                     self.giveCard(player,5)
         case "unready":
