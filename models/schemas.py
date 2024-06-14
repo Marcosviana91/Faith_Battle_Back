@@ -66,3 +66,48 @@ class GameData(SQLModel):
         self.player_id = player_id
         self.move = move
         self.retry_cards = retry_cards
+        
+class GameRoomSchema:
+    '''
+    @ Property
+    id: int
+    start_match: str
+    end_match: str
+    
+    #### Stages
+        0: players has connecteds, check decks
+        1: cards in hand ok
+        2: game in curse
+    game_stage: int
+    
+    players_in_match: list[Players_in_Match] = []
+    round: int
+    moves = []
+
+    player_turn: int  # index of player in player list
+    player_focus: int | None
+
+    '''
+    id: int
+    start_match: str
+    end_match: str
+    
+    # Stages
+    #   0: players has connecteds, check decks
+    #   1: cards in hand ok
+    #   2: game in curse
+    game_stage: int
+    
+    players_in_match: list[Players_in_Match] = []
+    round: int
+    moves = []
+
+    player_turn: int  # index of player in player list
+    player_focus: int | None
+    
+    def getPlayerByPlayerId(self, player_id: int) -> Players_in_Match:
+        ...
+    def allPlayersIsReady(self) -> bool:
+        ...
+    def setPlayersNotReady(self):
+        ...
