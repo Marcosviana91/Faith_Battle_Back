@@ -35,9 +35,24 @@ class Move(SQLModel):
     match_round: int
     player_move: int
     card_id: int
-    move_type: str  # start, retry_cards, attack, defense, attach, dettach, active, passive
-    player_target: int
+    move_type: str  # move_to_prepare, move_to_battle, attack, defense, attach, dettach, active, passive
+    player_target: int | None
     card_target: int | None
+    
+    def __init__(
+        self,
+        player_move: int,
+        card_id: int,
+        move_type: str,
+        player_target: int | None = None,
+        card_target: int | None = None
+    ):
+        self.player_move = player_move
+        self.card_id = card_id
+        self.move_type = move_type
+        self.player_target = player_target
+        self.card_target = card_target
+        
 
 
 class RetryCards(SQLModel):

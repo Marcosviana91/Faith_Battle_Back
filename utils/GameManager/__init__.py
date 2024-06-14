@@ -70,18 +70,22 @@ class GameRoom(GameRoomSchema):
         for player in self.players_in_match:
             shuffle(player.card_deck)
             player.faith_points = MAXIMUM_FAITH_POINTS
-        print(self.players_in_match)
+        # shuffle(self.players_in_match)
         self.newRoundHandle()
     
     def newRoundHandle(self):
         self.round += 1
-        print(f"Round {self.round}.")
-        self.player_turn = 0
+        print(f"ROUND {self.round}. . . . . ")
+        # Mais 1 de sabedoria para cada jogador
         for player in self.players_in_match:
             player.wisdom_points += 1
+        self.player_turn = 0
+        print(self.players_in_match)
+        self.playerTurnHandle()
+    
+    
+    def playerTurnHandle(self):
         print(f'Player {self.players_in_match[self.player_turn].id} turn:')
-    
-    
-    def playerTurnHandle(self, player: Players_in_Match):
+        player = self.players_in_match[self.player_turn]
         player.wisdom_used = 0
         self.giveCard(player, 1)

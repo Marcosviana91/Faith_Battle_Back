@@ -1,5 +1,5 @@
 from utils import GameRoom
-from models.schemas import Players_in_Match, GameData
+from models.schemas import Players_in_Match, GameData, Move
 
 from pprint import pprint
 
@@ -100,6 +100,34 @@ if __name__ == "__main__":
     
     # Stage 2: THE GAME
     
-    # # Player4 move
-    # move_player4 = GameData(data_type='move', player_id=player4.id)
-    # game.gameHandle(move_player4)
+    ## ROUND 1
+    
+    # Player4 moves first card to prepare zone
+    move_4 = Move(player_move=player4.id, card_id=player4.card_hand[0], move_type='move_to_prepare')
+    move_player4 = GameData(data_type='move', player_id=player4.id, move=move_4)
+    game.gameHandle(move_player4)
+    
+    # Player4 finishes their tunr
+    finish_player4 = GameData(data_type='ready', player_id=player4.id)
+    game.gameHandle(finish_player4)
+    
+    # Player7 moves last card to prepare zone
+    move_7 = Move(player_move=player7.id, card_id=player7.card_hand[-1], move_type='move_to_prepare')
+    move_player7 = GameData(data_type='move', player_id=player7.id, move=move_7)
+    game.gameHandle(move_player7)
+    
+    # Player7 finishes their tunr
+    finish_player7 = GameData(data_type='ready', player_id=player7.id)
+    game.gameHandle(finish_player7)
+    
+    # Player2 moves last card to prepare zone
+    move_2 = Move(player_move=player2.id, card_id=player2.card_hand[-1], move_type='move_to_prepare')
+    move_player2 = GameData(data_type='move', player_id=player2.id, move=move_2)
+    game.gameHandle(move_player2)
+    
+    # Player2 finishes their tunr
+    finish_player2 = GameData(data_type='ready', player_id=player2.id)
+    game.gameHandle(finish_player2)
+    
+    ## ROUND 2
+    
