@@ -22,10 +22,10 @@ def dataHandle(self: GameRoomSchema, data: GameData):
     match data.data_type:
         case  "connect":
             self.players_in_match.append(data.player)
-            print(f"Player {data.player.id} connected.")
+            # print(f"Player {data.player.id} connected.")
         case  "disconnect":
                     self.players_in_match.remove(data.player)
-                    print(f"Player {data.player.id} disconnected.")
+                    # print(f"Player {data.player.id} disconnected.")
         case "ready":
             player = self.getPlayerByPlayerId(data.player_id)
             # Checando se o deck está ok
@@ -36,15 +36,15 @@ def dataHandle(self: GameRoomSchema, data: GameData):
                 print(f"Player {data.player_id} is not ready due their deck has less than 30 cards")
             else:
                 player.ready = True
-                print(f"Player {data.player_id} is ready.")
+                # print(f"Player {data.player_id} is ready.")
             if self.allPlayersIsReady():
                 for player in self.players_in_match:
                     self.giveCard(player,5)
         case "unready":
             player = self.getPlayerByPlayerId(data.player_id)
             player.ready = False
-            print(f"Player {data.player_id} is not ready.")
+            # print(f"Player {data.player_id} is not ready.")
         case "change_deck":
             player = self.getPlayerByPlayerId(data.player.id)
             player.card_deck = data.player.card_deck
-            print(f"Player {data.player.id} has change their deck.")
+            # print(f"Player {data.player.id} has change their deck.")

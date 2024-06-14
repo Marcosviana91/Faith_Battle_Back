@@ -1,4 +1,6 @@
 # Stage 1: Sort cards to all players, retry sort
+
+
 from models.schemas import GameData, GameRoomSchema, Players_in_Match
 
 
@@ -23,20 +25,20 @@ def retryCard(self: GameRoomSchema, player: Players_in_Match, cards: list):
 def dataHandle(self: GameRoomSchema, data: GameData):
     match data.data_type:
         case  "retry":
-            print('Retry')
             player = self.getPlayerByPlayerId(data.player_id)
             retryCard(self, player, data.retry_cards)
 
         case "ready":
             player = self.getPlayerByPlayerId(data.player_id)
             player.ready = True
-            print(f"Player {data.player_id} is ready.")
-            self.allPlayersIsReady()
+            # print(f"Player {data.player_id} is ready.")
+            if self.allPlayersIsReady():
+                self.gameStart()
 
         case "unready":
             player = self.getPlayerByPlayerId(data.player_id)
             if player.deck_try < MAXIMUM_DECK_TRIES:
                 player.ready = False
-                print(f"Player {data.player_id} is not ready.")
+                # print(f"Player {data.player_id} is not ready.")
             else:
                 print(f"Player {data.player_id} cannot be not ready.")
