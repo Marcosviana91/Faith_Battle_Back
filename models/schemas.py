@@ -103,6 +103,7 @@ class GameRoomSchema:
     moves = []
 
     player_turn: int  # index of player in player list
+    can_others_moves: bool
     player_focus: int | None
     
     def getPlayerByPlayerId(self, player_id: int) -> Players_in_Match:
@@ -119,4 +120,6 @@ class GameRoomSchema:
             number_of_cards : int = 1
         @ Return None
         '''
+        ...
+    def gameStart() -> None:
         ...
