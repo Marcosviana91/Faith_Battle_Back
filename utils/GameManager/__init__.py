@@ -3,6 +3,8 @@ from datetime import datetime
 
 from models.schemas import Players_in_Match, GameData, GameRoomSchema
 
+from models import Card
+
 from .stages import stage0, stage1, stage2
 
 
@@ -24,6 +26,12 @@ class GameRoom(GameRoomSchema):
         for player in self.players_in_match:
             if player.id == player_id:
                 return player
+        raise IndexError(f'Player with id {player_id} not found')
+
+    def getCardByCardId(self, card_id: int) -> Card:
+        for card in self.card_in_match:
+            if card.id == card_id:
+                return card
         raise IndexError(f'Player with id {player_id} not found')
 
     def allPlayersIsReady(self) -> bool:

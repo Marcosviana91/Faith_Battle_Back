@@ -2,7 +2,6 @@ from sqlmodel import SQLModel
 
 # Used in TinyDB and JSON schemas
 
-
 class Players_in_Match(SQLModel):
     id: int
     ready: bool
@@ -38,7 +37,7 @@ class Move(SQLModel):
     move_type: str  # move_to_prepare, move_to_battle, attack, defense, attach, dettach, active, passive
     player_target: int | None
     card_target: int | None
-    
+
     def __init__(
         self,
         player_move: int,
@@ -52,7 +51,6 @@ class Move(SQLModel):
         self.move_type = move_type
         self.player_target = player_target
         self.card_target = card_target
-        
 
 
 class RetryCards(SQLModel):
@@ -81,20 +79,21 @@ class GameData(SQLModel):
         self.player_id = player_id
         self.move = move
         self.retry_cards = retry_cards
-        
+
+
 class GameRoomSchema:
     '''
     @ Property
     id: int
     start_match: str
     end_match: str
-    
+
     #### Stages
         0: players has connecteds, check decks
         1: sort cards to all players, retry sort
         2: game in curse
     game_stage: int
-    
+
     players_in_match: list[Players_in_Match] = []
     round: int
     moves = []
@@ -106,13 +105,13 @@ class GameRoomSchema:
     id: int
     start_match: str
     end_match: str
-    
+
     # Stages
     #   0: players has connecteds, check decks
     #   1: sort cards to all players, retry sort
     #   2: game in curse
     game_stage: int
-    
+
     players_in_match: list[Players_in_Match] = []
     round: int
     moves = []
@@ -120,13 +119,16 @@ class GameRoomSchema:
     player_turn: int  # index of player in player list
     can_others_moves: bool
     player_focus: int | None
-    
+
     def getPlayerByPlayerId(self, player_id: int) -> Players_in_Match:
         ...
+
     def allPlayersIsReady(self) -> bool:
         ...
+
     def setPlayersNotReady(self):
         ...
+
     def giveCard(self, player: Players_in_Match, number_of_cards: int = 1):
         '''
         Give to player a number of cards
@@ -136,5 +138,19 @@ class GameRoomSchema:
         @ Return None
         '''
         ...
+
     def gameStart() -> None:
+        ...
+
+    def newRoundHandle():
+        '''
+        Gives 1 wisdom for all player
+        '''
+        ...
+
+    def playerTurnHandle():
+        '''
+        Sets used wisdom to 0 for current player
+        and gives 1 card from deck
+        '''
         ...

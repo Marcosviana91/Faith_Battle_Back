@@ -60,6 +60,7 @@ class Card(SQLModel, table=True):
     card_has_passive_skill: bool = Field(default=False)
     card_has_active_skill: bool = Field(default=False)
     card_attachable: bool = Field(default=False)
+    ready: bool
 
     def __str__(self):
         return f'{self.card_name}, {self.card_wisdom_cost}, {self.card_attack_points}, {self.card_defense_points}'

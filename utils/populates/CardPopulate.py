@@ -1,6 +1,7 @@
-from utils.DataBaseManager import DB_Manager, Session
+# from utils.DataBaseManager import DB_Manager, Session
 
-from models import Card, Cards_Type
+# from models import Card, Cards_Type
+from models import Card
 
 card_type = [
     {
@@ -89,13 +90,50 @@ card_type = [
 fake_cards = [
     (1, 'Davi', '_', '_', '_', 1, 1, 1, False, False, False),
     (1, 'Ester', '_', '_', '_', 1, 0, 1, False, False, False),
+    (1, 'Abraão', '_', '_', '_', 1, 1, 1, False, False, False),
+    (1, 'Adão', '_', '_', '_', 1, 0, 1, False, False, False),
+    (1, 'Eva', '_', '_', '_', 1, 1, 1, False, False, False),
+    (1, 'Jaco', '_', '_', '_', 1, 0, 1, False, False, False),
+    (1, 'Moises', '_', '_', '_', 1, 1, 1, False, False, False),
+    (1, 'Daniel', '_', '_', '_', 1, 0, 1, False, False, False),
+    (1, 'Elias', '_', '_', '_', 1, 1, 1, False, False, False),
+    (1, 'MAria', '_', '_', '_', 1, 0, 1, False, False, False),
+    
     (2, 'Arca de Noé', '_', '_', '_', 3, 0, 0, True, False, True),
-    (3, 'Sarça Ardente', '_', '_', '_', 2, 0, 0, False, True, False),
+    (2, 'Cajado de Moisés', '_', '_', '_', 3, 0, 0, True, False, True),
+    (2, 'Espada da Justiça', '_', '_', '_', 2, 1, 0, False, True, True),
+    (2, 'Os 10 Mandamentos', '_', '_', '_', 2, 1, 0, False, True, True),
+    
+    (4, 'Traição', '_', '_', '_', 2, 0, 0, False, True, False),
     (4, 'Idolatria', '_', '_', '_', 2, 0, 0, False, True, False),
-    (2, 'Espada da Justiça', '_', '_', '_', 2, 1, 0, False, True, True)
+    (4, 'Fruto Proibido', '_', '_', '_', 2, 0, 0, False, True, False),
+    
+    (3, 'Sarça Ardente', '_', '_', '_', 2, 0, 0, False, True, False),
+    (3, 'Cordeiro de Deus', '_', '_', '_', 2, 0, 0, False, True, False),
+    (3, 'Ressurreição', '_', '_', '_', 2, 0, 0, False, True, False),
 ]
 
-DB = DB_Manager()
+
+def cardPopulates():
+    card_list = []
+    for card in fake_cards:
+        newCard = Card(
+            id=fake_cards.index(card),
+            card_type=card[0],
+            card_name=card[1],
+            card_description=card[2],
+            card_holy_reference=card[3],
+            card_image=card[4],
+            card_wisdom_cost=card[5],
+            card_attack_points=card[6],
+            card_defense_points=card[7],
+            ready=False,
+        )
+        card_list.append(newCard)
+    return card_list
+
+
+# DB = DB_Manager()
 
 # with Session(DB.engine) as session:
     # for types in card_type:
@@ -114,5 +152,5 @@ DB = DB_Manager()
     #         card_defense_points=card[7]
     #     )
     #     session.add(newCard)
-        # session.commit()
-        # print(newCard)
+    # session.commit()
+    # print(newCard)

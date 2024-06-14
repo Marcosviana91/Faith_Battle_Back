@@ -3,13 +3,15 @@ from models.schemas import Players_in_Match, GameData, Move
 
 from pprint import pprint
 
+from utils.populates.CardPopulate import cardPopulates
+
 if __name__ == "__main__":
     # STAGE 0
 
     # Criando jogadores
-    player7 = Players_in_Match(7, list(range(1, 21)))
-    player2 = Players_in_Match(2, list(range(21, 41)))
-    player4 = Players_in_Match(4, list(range(41, 61)))
+    player7 = Players_in_Match(7, list(range(0, 20)))
+    player2 = Players_in_Match(2, list(range(0, 20)))
+    player4 = Players_in_Match(4, list(range(0, 20)))
 
     # Player4 cria a sala do jogo
     game = GameRoom(player4)
@@ -131,3 +133,22 @@ if __name__ == "__main__":
     
     ## ROUND 2
     
+    ### Stage 0: Move to prepare
+    
+    # Player4 moves first card to prepare zone
+    move_4 = Move(player_move=player4.id, card_id=player4.card_hand[0], move_type='move_to_prepare')
+    move_player4 = GameData(data_type='move', player_id=player4.id, move=move_4)
+    game.gameHandle(move_player4)
+    
+    # Player4 moves last card to prepare zone
+    move_4 = Move(player_move=player4.id, card_id=player4.card_hand[-1], move_type='move_to_prepare')
+    move_player4 = GameData(data_type='move', player_id=player4.id, move=move_4)
+    game.gameHandle(move_player4)
+    
+    
+    ### Stage 1: Move to battle
+    
+    # Player4 moves first card from prepare zone to battle zone
+    move_4 = Move(player_move=player4.id, card_id=player4.card_prepare_camp[0], move_type='move_to_battle')
+    move_player4 = GameData(data_type='move', player_id=player4.id, move=move_4)
+    game.gameHandle(move_player4)
