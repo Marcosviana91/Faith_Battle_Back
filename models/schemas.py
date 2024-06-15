@@ -99,7 +99,7 @@ class GameRoomSchema:
     moves = []
 
     player_turn: int  # index of player in player list
-    player_focus: int | None
+    player_focus_id: int | None
 
     '''
     id: int
@@ -118,7 +118,7 @@ class GameRoomSchema:
 
     player_turn: int  # index of player in player list
     can_others_moves: bool
-    player_focus: int | None
+    player_focus_id: int | None
 
     def getPlayerByPlayerId(self, player_id: int) -> Players_in_Match:
         ...

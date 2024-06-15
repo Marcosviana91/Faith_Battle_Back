@@ -10,6 +10,7 @@ from .stages import stage0, stage1, stage2
 
 MAXIMUM_FAITH_POINTS = 15
 
+
 class GameRoom(GameRoomSchema):
 
     def __init__(self, player_cerate_match: Players_in_Match):
@@ -80,7 +81,7 @@ class GameRoom(GameRoomSchema):
             player.faith_points = MAXIMUM_FAITH_POINTS
         # shuffle(self.players_in_match)
         self.newRoundHandle()
-    
+
     def newRoundHandle(self):
         self.round += 1
         print(f"ROUND {self.round}. . . . . ")
@@ -90,8 +91,7 @@ class GameRoom(GameRoomSchema):
         self.player_turn = 0
         print(self.players_in_match)
         self.playerTurnHandle()
-    
-    
+
     def playerTurnHandle(self):
         print(f'Player {self.players_in_match[self.player_turn].id} turn:')
         player = self.players_in_match[self.player_turn]
