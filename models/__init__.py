@@ -15,7 +15,7 @@ class User(SQLModel, table=True):
     password: str
     real_name: str
     email: str
-    
+
     def __init__(self, username, password, real_name, email):
         self.username = username
         self.password = password
@@ -48,7 +48,10 @@ class Player(SQLModel, table=True):
 
 class Card(SQLModel, table=True):
     id: Optional[int] = Field(primary_key=True)
+    # nome único: jose-do-egito
+    card_slug: str
     # hero, artifacts, miracles, sins, legendary, wisdom
+    in_game_id: str
     card_type: int = Field(foreign_key='cards_type.id')
     card_name: str
     card_description: str
@@ -118,8 +121,8 @@ class Player_Decks(SQLModel, table=True):
 
 class Match(SQLModel, table=True):
     id: Optional[int] = Field(primary_key=True)
-    start_match: datetime|None = Field(default=None)
-    end_match: datetime|None = Field(default=None)
+    start_match: datetime | None = Field(default=None)
+    end_match: datetime | None = Field(default=None)
     created_by: int
     room_name: str
     max_players: int
@@ -132,13 +135,13 @@ class Match(SQLModel, table=True):
     # # Movimentos da nesta partida
     moves_in_match: ClassVar[list] = []
     # moves_in_match: list["Moves"] = Relationship()
-    
-    def joinTheMatch(self, player_id:int):
+
+    def joinTheMatch(self, player_id: int):
         self.players_in_match.append(player_id)
-        
-    def leftTheMatch(self, player_id:int):
+
+    def leftTheMatch(self, player_id: int):
         self.players_in_match.remove(player_id)
-        
+
     def newMove(self, move_data):
         ...
 
@@ -147,8 +150,6 @@ class Match_Types(SQLModel, table=True):
     id: Optional[int] = Field(primary_key=True)
     type_name: str  # Survival, Coop
     type_description: str
-
-
 
 
 class Moves_in_Match(SQLModel, table=True):
