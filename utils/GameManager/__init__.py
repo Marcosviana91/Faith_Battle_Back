@@ -2,7 +2,7 @@ from random import choice, shuffle
 from datetime import datetime
 
 from models import Card
-from models.schemas import Players_in_Match, GameData, GameRoomSchema
+from models.schemas import GameData, GameRoomSchema
 from .stages import stage0, stage1, stage2
 
 
@@ -18,50 +18,6 @@ def printCard(list_name: str, card_list: list[Card]):
 
 class GameRoom(GameRoomSchema):
 
-    def __init__(self, player_create_match: Players_in_Match, room_name: str, max_players: int, match_type:str, password: str):
-        self.id = id(self)
-        print(f"Player {player_create_match.id} has create a room (ID: {self.id})")
-        # self.players_in_match.append(player_create_match)
-        self.created_by = player_create_match.id
-        self.room_name = room_name
-        self.max_players = max_players
-        self.match_type = match_type
-        self.password = password
-
-        self.game_stage = 0
-        self.round = 0
-        self.player_turn = 0
-        self.can_others_moves = False
-
-    def getPlayersIdList(self):
-        __players_info = []
-        for player in self.players_in_match:
-            __players_info.append(player.id)
-        return __players_info
-
-    def getPlayerByPlayerId(self, player_id: int) -> Players_in_Match:
-        for player in self.players_in_match:
-            if player.id == player_id:
-                return player
-        raise IndexError(f'Player with id {player_id} not found')
-
-    def allPlayersIsReady(self) -> bool:
-        count = 0
-        for player in self.players_in_match:
-            if player.ready == True:
-                count += 1
-        if count == len(self.players_in_match):
-            self.game_stage += 1
-            self.setPlayersNotReady()
-            print(f"All players is ready.\nNext stage: stage {
-                  self.game_stage}")
-            return True
-        return False
-
-    def setPlayersNotReady(self):
-        for player in self.players_in_match:
-            player.ready = False
-
     def gameHandle(self, data: GameData):
         match self.game_stage:
             case 0:
@@ -74,17 +30,6 @@ class GameRoom(GameRoomSchema):
                 stage2.dataHandle(self, data)
                 return True
         return False
-
-    def giveCard(self, player: Players_in_Match, number_of_cards: int = 1):
-        # print(f"Sorteando {number_of_cards} cartas para o jogador {player.id}...")
-        count = 0
-        while count < number_of_cards:
-            card_selected = player.card_deck[0]
-            # card_selected = choice(player.card_deck)
-            player.card_hand.append(card_selected)
-            count += 1
-            player.card_deck.remove(card_selected)
-        # print(f"mão: {player.card_hand}\ndeck: {player.card_deck}")
 
     def gameStart(self):
         print('Starting game...')

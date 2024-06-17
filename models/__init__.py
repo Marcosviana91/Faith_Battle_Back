@@ -23,7 +23,7 @@ class User(SQLModel, table=True):
         self.email = email
 
     def onLogin(self):
-        ...
+        self.last_login = datetime.now()
 
     def onLogout(self):
         ...

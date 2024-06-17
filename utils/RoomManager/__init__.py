@@ -45,22 +45,21 @@ class RoomManager:
 
     def getRoomInfoById(self, room_id):
         room_id = int(room_id)
+        room = self.getRoomById(room_id)
+        if room:
+            room_info = {
+                "room_name": room.room_name,
+                "created_by": room.created_by,
+                "players_in_match": room.getPlayersIdList(),
+                "max_players": room.max_players,
+                "match_type": room.match_type,
+                "password": room.password,
+                "game_stage": room.game_stage,
+                "round": room.round,
+                "player_turn": room.player_turn,
 
-        for room in self.ROOMS:
-            if room.id == room_id:
-                room_info = {
-                    "room_name": room.room_name,
-                    "created_by": room.created_by,
-                    "players_in_match": room.getPlayersIdList(),
-                    "max_players": room.max_players,
-                    "match_type": room.match_type,
-                    "password": room.password,
-                    "game_stage": room.game_stage,
-                    "round": room.round,
-                    "player_turn": room.player_turn,
-
-                }
-                return room_info
+            }
+            return room_info
         return {"messsage": "Room not found"}
 
     def getPlayerInRoomInfoById(self, room_id, player_id):
@@ -68,21 +67,22 @@ class RoomManager:
         player_id = int(player_id)
         
         room = self.getRoomById(room_id)
-        for player in room.players_in_match:
-            if player.id == player_id:
-                player_info = {
-                    "ready": player.ready,
-                    "faith_points": player.faith_points,
-                    "wisdom_points": player.wisdom_points,
-                    "wisdom_used": player.wisdom_used,
-                    "card_deck": player.card_deck,
-                    "card_hand": player.card_hand,
-                    "card_in_forgotten_sea": player.card_in_forgotten_sea,
-                    "card_prepare_camp": player.card_prepare_camp,
-                    "card_battle_camp": player.card_battle_camp,
+        if room:
+            for player in room.players_in_match:
+                if player.id == player_id:
+                    player_info = {
+                        "ready": player.ready,
+                        "faith_points": player.faith_points,
+                        "wisdom_points": player.wisdom_points,
+                        "wisdom_used": player.wisdom_used,
+                        "card_deck": player.card_deck,
+                        "card_hand": player.card_hand,
+                        "card_in_forgotten_sea": player.card_in_forgotten_sea,
+                        "card_prepare_camp": player.card_prepare_camp,
+                        "card_battle_camp": player.card_battle_camp,
 
-                }
-                return player_info
+                    }
+                    return player_info
         return {"messsage": "Room or Player not found"}
 
     def getAllRoomsInfo(self):
@@ -94,7 +94,8 @@ class RoomManager:
                 "room_name": room.room_name,
                 "room_game_type": 'survival',
                 "room_current_players": room.players_in_match.__len__(),
-                "room_max_players": room.max_players
+                "room_max_players": room.max_players,
+                "has_password": (room.password != ""),
             }
             __temp_array.append(room_info)
         return __temp_array

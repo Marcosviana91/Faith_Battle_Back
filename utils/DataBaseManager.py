@@ -99,7 +99,7 @@ class DB_Manager:
                 response["data"] = results
                 print("authentication successful")
 
-            except:
+            except AssertionError:
                 response['type'] = 'error'
                 response['message'] = 'Nothing matches'
                 response['data'] = {}
