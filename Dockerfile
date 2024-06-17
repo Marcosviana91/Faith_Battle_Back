@@ -10,9 +10,9 @@ RUN python -m pip install -r req.txt
 
 # VOLUME /api/database
 
-CMD [ "fastapi", "run", "main.py", "--port", "3188" ]
-EXPOSE 3188
+CMD [ "fastapi", "run", "main.py", "--port", "3110" ]
+EXPOSE 3110
 
 # docker build -t faith-battle-back:latest .
 
-# docker run -d -p 8002:8002 --name [apelido] websocket-test
+# docker run -d -p 3110:3110 --name faith-battle-back faith-battle-back
