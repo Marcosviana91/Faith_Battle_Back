@@ -1,5 +1,3 @@
-from sqlmodel import SQLModel
-
 # Used in TinyDB and JSON schemas
 
 
@@ -36,7 +34,7 @@ class Players_in_Match:
         ]
 
 
-class Move(SQLModel):
+class Move():
     match_room_id: int
     match_round: int
     player_move: int
@@ -60,7 +58,7 @@ class Move(SQLModel):
         self.card_target = card_target
 
 
-class RetryCards(SQLModel):
+class RetryCards():
     player_id: int
     cards_id: list[int]
 

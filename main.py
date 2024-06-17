@@ -7,7 +7,7 @@ from secrets import token_hex
 
 from utils import WS_Manager, DB_Manager, RoomManager
 
-# from utils.populates import CardPopulate, UserPopulate
+from utils.populates import UserPopulate
 
 import json
 

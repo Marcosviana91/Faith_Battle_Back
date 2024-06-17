@@ -64,7 +64,6 @@ class Card():
     # player id - card slug - secret
     in_game_id: str
     # hero, artifacts, miracles, sins, legendary, wisdom
-    card_type: int = Field(foreign_key='cards_type.id')
     card_name: str
     card_description: str
     card_holy_reference: str
@@ -109,33 +108,13 @@ class Card():
         ...
 
 
-class Cards_Type(SQLModel, table=True):
+class Cards_Type():
     id: Optional[int] = Field(primary_key=True)
     type_name: str  # hero, artifacts, miracles, sins, legendary, wisdom
     type_description: str
 
 
-class Player_Cards(SQLModel, table=True):
-    '''
-    Tablela de Relação Many-to-Many\n
-    Relação de Todas as cartas que um jogador possui
-    '''
-    owner_id: int = Field(primary_key=True, foreign_key='player.id')
-    card_id: int = Field(foreign_key='card.id')
-
-
-class Player_Decks(SQLModel, table=True):
-    '''
-    Tablela de Relação Many-to-Many\n
-    Relação de Todas as cartas que um jogador quer usar em uma partida
-    '''
-    id: Optional[int] = Field(primary_key=True)
-    owner_id: int = Field(foreign_key='player.id')
-    card_id: int = Field(foreign_key='card.id')
-    deck_name: str
-
-
-class Match(SQLModel, table=True):
+class Match():
     id: Optional[int] = Field(primary_key=True)
     start_match: datetime | None = Field(default=None)
     end_match: datetime | None = Field(default=None)
@@ -160,30 +139,6 @@ class Match(SQLModel, table=True):
 
     def newMove(self, move_data):
         ...
-
-
-class Match_Types(SQLModel, table=True):
-    id: Optional[int] = Field(primary_key=True)
-    type_name: str  # Survival, Coop
-    type_description: str
-
-
-class Moves_in_Match(SQLModel, table=True):
-    '''
-    Tablela de Relação Many-to-Many\n
-    Relação de movimentos em uma partida
-    '''
-    # id: Optional[int] = Field(primary_key=True)
-    moved_at: datetime = Field(default=datetime.now())
-
-    match_id: int = Field(primary_key=True, foreign_key='match.id')
-    # match: Match = Relationship(back_populates='moves_in_this_match')
-
-    player_id_move: int = Field(foreign_key='player.id')
-    card_id_move: int = Field(foreign_key='card.id')
-    player_id_target: int = Field(foreign_key='player.id')
-    # Carta alvo, opcional / Uma carta pode ser lançada diretamente contra um jogador sem mirar qualquer carta.
-    card_id_target: Optional[int] = Field(foreign_key='card.id')
 
 
 # Pydantic BaseModel
