@@ -29,15 +29,25 @@ class User(SQLModel, table=True):
         ...
 
 
-class Player(SQLModel, table=True):
+# Salvo em Tiny DB
+class Player(SQLModel):
     '''
     Dados do usuário, relativos ao jogo (como jogador)
     '''
-    id: int = Field(primary_key=True, foreign_key='user.id')
-    xp_points: int = Field(default=0)
-    available_cards: int = Field(foreign_key='player_cards.owner_id')
-    decks: int = Field(foreign_key='player_decks.id')
-    # matches: int = Field(foreign_key='players_in_match.player_id')
+    id: int
+    xp_points: int
+    available_cards: list[str]
+
+    def __init__(self, id: int):
+        self.id = id
+        self.xp_points = 0
+        self.available_cards = [
+            'abraao', 'adao', 'daniel',
+            'davi', 'elias', 'ester',
+            'eva', 'jaco', "jose-do-egito",
+            "josue", "maria", "moises",
+            "noe", "salomao", "sansao"
+        ]
 
     def onJoinMatch(self):
         ...
@@ -46,12 +56,14 @@ class Player(SQLModel, table=True):
         ...
 
 
-class Card(SQLModel, table=True):
+# Schema Não vai pro DB
+class Card():
     id: Optional[int] = Field(primary_key=True)
     # nome único: jose-do-egito
     card_slug: str
-    # hero, artifacts, miracles, sins, legendary, wisdom
+    # player id - card slug - secret
     in_game_id: str
+    # hero, artifacts, miracles, sins, legendary, wisdom
     card_type: int = Field(foreign_key='cards_type.id')
     card_name: str
     card_description: str
@@ -63,10 +75,14 @@ class Card(SQLModel, table=True):
     card_has_passive_skill: bool = Field(default=False)
     card_has_active_skill: bool = Field(default=False)
     card_attachable: bool = Field(default=False)
+
     ready: bool
 
+    def __init__(self, in_game_id: str):
+        self.in_game_id = in_game_id
+
     def __str__(self):
-        return f'{self.card_name}, {self.card_wisdom_cost}, {self.card_attack_points}, {self.card_defense_points}'
+        return f'\n########\n{self.card_slug}: {self.in_game_id}\n{self.card_wisdom_cost}, {self.card_attack_points}, {self.card_defense_points}\n########\n'
 
     def passiveSkill(self):
         ...

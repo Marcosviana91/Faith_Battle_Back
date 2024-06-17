@@ -1,38 +1,48 @@
 from random import choice, shuffle
 from datetime import datetime
 
-from models.schemas import Players_in_Match, GameData, GameRoomSchema
-
 from models import Card
-
+from models.schemas import Players_in_Match, GameData, GameRoomSchema
 from .stages import stage0, stage1, stage2
 
 
 MAXIMUM_FAITH_POINTS = 15
 
 
+def printCard(list_name: str, card_list: list[Card]):
+    _list = []
+    for card in card_list:
+        _list.append(card.card_slug)
+    print(f'{list_name}: {_list}')
+
+
 class GameRoom(GameRoomSchema):
 
-    def __init__(self, player_cerate_match: Players_in_Match):
-        print("Creating Match Room...")
-        self.id = 1  # get room id from TinyDB
-        print(f"Room id: {self.id}")
+    def __init__(self, player_create_match: Players_in_Match, room_name: str, max_players: int, match_type:str, password: str):
+        self.id = id(self)
+        print(f"Player {player_create_match.id} has create a room (ID: {self.id})")
+        # self.players_in_match.append(player_create_match)
+        self.created_by = player_create_match.id
+        self.room_name = room_name
+        self.max_players = max_players
+        self.match_type = match_type
+        self.password = password
+
         self.game_stage = 0
-        self.players_in_match.append(player_cerate_match)
         self.round = 0
         self.player_turn = 0
         self.can_others_moves = False
+
+    def getPlayersIdList(self):
+        __players_info = []
+        for player in self.players_in_match:
+            __players_info.append(player.id)
+        return __players_info
 
     def getPlayerByPlayerId(self, player_id: int) -> Players_in_Match:
         for player in self.players_in_match:
             if player.id == player_id:
                 return player
-        raise IndexError(f'Player with id {player_id} not found')
-
-    def getCardByCardId(self, card_id: int) -> Card:
-        for card in self.card_in_match:
-            if card.id == card_id:
-                return card
         raise IndexError(f'Player with id {player_id} not found')
 
     def allPlayersIsReady(self) -> bool:
@@ -56,18 +66,21 @@ class GameRoom(GameRoomSchema):
         match self.game_stage:
             case 0:
                 stage0.dataHandle(self, data)
-
+                return True
             case 1:
                 stage1.dataHandle(self, data)
-
+                return True
             case 2:
                 stage2.dataHandle(self, data)
+                return True
+        return False
 
     def giveCard(self, player: Players_in_Match, number_of_cards: int = 1):
         # print(f"Sorteando {number_of_cards} cartas para o jogador {player.id}...")
         count = 0
         while count < number_of_cards:
-            card_selected = choice(player.card_deck)
+            card_selected = player.card_deck[0]
+            # card_selected = choice(player.card_deck)
             player.card_hand.append(card_selected)
             count += 1
             player.card_deck.remove(card_selected)
@@ -77,19 +90,24 @@ class GameRoom(GameRoomSchema):
         print('Starting game...')
         self.start_match = datetime.now().timestamp()
         for player in self.players_in_match:
-            shuffle(player.card_deck)
+            # shuffle(player.card_deck)
             player.faith_points = MAXIMUM_FAITH_POINTS
         # shuffle(self.players_in_match)
         self.newRoundHandle()
 
     def newRoundHandle(self):
         self.round += 1
-        print(f"ROUND {self.round}. . . . . ")
+        print(f"\n\nROUND {self.round}. . . . . \n")
         # Mais 1 de sabedoria para cada jogador
         for player in self.players_in_match:
             player.wisdom_points += 1
+            print(f'Player {player.id}')
+            printCard('Deck', player.card_deck)
+            printCard('Mão', player.card_hand)
+            printCard('Preparação', player.card_prepare_camp)
+            printCard('Batalha', player.card_battle_camp)
+            printCard('Esquecimento', player.card_in_forgotten_sea)
         self.player_turn = 0
-        print(self.players_in_match)
         self.playerTurnHandle()
 
     def playerTurnHandle(self):

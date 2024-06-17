@@ -1,6 +1,8 @@
+from typing import ClassVar
 from sqlmodel import SQLModel
 
 # Used in TinyDB and JSON schemas
+
 
 class Players_in_Match(SQLModel):
     id: int
@@ -28,15 +30,20 @@ class Players_in_Match(SQLModel):
         self.wisdom_points = 0
         self.wisdom_used = 0
 
+    def __str__(self):
+        return f'''
+    Player ID:\t{self.id}
+    '''
+
 
 class Move(SQLModel):
     match_room_id: int
     match_round: int
     player_move: int
-    card_id: int
+    card_id: str
     move_type: str  # move_to_prepare, move_to_battle, attack, defense, attach, dettach, active, passive
     player_target: int | None
-    card_target: int | None
+    card_target: str | None
 
     def __init__(
         self,
@@ -81,7 +88,7 @@ class GameData(SQLModel):
         self.retry_cards = retry_cards
 
 
-class GameRoomSchema:
+class GameRoomSchema():
     '''
     @ Property
     id: int
@@ -103,6 +110,12 @@ class GameRoomSchema:
 
     '''
     id: int
+    room_name: str
+    created_by: int
+    max_players: int
+    match_type: str
+    password: str
+
     start_match: str
     end_match: str
 
@@ -114,13 +127,19 @@ class GameRoomSchema:
 
     players_in_match: list[Players_in_Match] = []
     round: int
-    moves = []
+    moves: ClassVar[list] = []
 
     player_turn: int  # index of player in player list
     can_others_moves: bool
     player_focus_id: int | None
 
     def getPlayerByPlayerId(self, player_id: int) -> Players_in_Match:
+        ...
+
+    def getPlayersIdList(self):
+        ...
+
+    def getPlayersInfo(self):
         ...
 
     def allPlayersIsReady(self) -> bool:
@@ -138,7 +157,9 @@ class GameRoomSchema:
         @ Return None
         '''
         ...
-
+    def gameHandle(self, data: GameData):
+        ...
+        
     def gameStart() -> None:
         ...
 

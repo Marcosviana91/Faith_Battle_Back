@@ -1,31 +1,30 @@
 # Stage 2: The game is in curse
 import asyncio
 
+from models import Card
 from models.schemas import GameData, GameRoomSchema, Players_in_Match
 
 
-def moveToPrepare(player: Players_in_Match, card_id: int, directlyToBattle: bool = False):
-    if player.wisdom_points > player.wisdom_used:
-        print(f'Move card {card_id} to prepare zone')
+def moveToPrepare(player: Players_in_Match, card: Card, directlyToBattle: bool = False):
+    if player.wisdom_points >= ( player.wisdom_used + card.card_wisdom_cost ):
+        print(f'Move card {card} to prepare zone')
         if not directlyToBattle:
-            player.card_hand.remove(card_id)
-            player.card_prepare_camp.append(card_id)
+            player.card_hand.remove(card)
+            player.card_prepare_camp.append(card)
         else:
-            player.card_hand.remove(card_id)
-            player.card_battle_camp.append(card_id)
+            player.card_hand.remove(card)
+            player.card_battle_camp.append(card)
         # SOMAR O CUSTO DA CARTA
-        player.wisdom_used += 1
-        print(f'Mão: {player.card_hand}')
-        print(f'Pre: {player.card_prepare_camp}')
-        print(f'Bat: {player.card_battle_camp}')
+        player.wisdom_used += card.card_wisdom_cost
+
     else:
         print('Sem sabedoria')
 
-def moveToBattle(player: Players_in_Match, card_id: int):
-    player.card_prepare_camp.remove(card_id)
-    player.card_battle_camp.append(card_id)
-    print(player.card_prepare_camp)
-    print(player.card_battle_camp)
+
+def moveToBattle(player: Players_in_Match, card: Card):
+    player.card_prepare_camp.remove(card)
+    player.card_battle_camp.append(card)
+
 
 def dataHandle(self: GameRoomSchema, data: GameData):
     player = self.getPlayerByPlayerId(data.player_id)

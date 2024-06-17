@@ -2,10 +2,13 @@
 from collections import defaultdict
 
 from models.schemas import GameData, GameRoomSchema
+from utils.GameManager.cards import createCardListObjectsByPlayer
 
 
 MINIMUM_DECK_CARDS = 10
 MAXIMUM_CARDS_REPEATS = 2
+INITIAL_CARDS = 5
+
 
 def checkDeckCardsRepeats(deck: list) -> list:
     result = []
@@ -18,28 +21,33 @@ def checkDeckCardsRepeats(deck: list) -> list:
             result.append(value)
     return result
 
+
 def dataHandle(self: GameRoomSchema, data: GameData):
     match data.data_type:
         case  "connect":
             self.players_in_match.append(data.player)
-            # print(f"Player {data.player.id} connected.")
+            print(f"Player {data.player.id} connected in room {self.id}.")
+
         case  "disconnect":
-                    self.players_in_match.remove(data.player)
-                    # print(f"Player {data.player.id} disconnected.")
+            self.players_in_match.remove(data.player)
+            print(f"Player {data.player.id} disconnected.")
         case "ready":
             player = self.getPlayerByPlayerId(data.player_id)
             # Checando se o deck está ok
             checkDeckCards_result = checkDeckCardsRepeats(player.card_deck)
             if checkDeckCards_result.__len__() > 0:
-                print(f"Player {data.player_id} is not ready due cards {checkDeckCards_result} exceed maximum repeats")
+                print(f"Player {data.player_id} is not ready due cards {
+                      checkDeckCards_result} exceed maximum repeats")
             elif player.card_deck.__len__() < MINIMUM_DECK_CARDS:
-                print(f"Player {data.player_id} is not ready due their deck has less than 30 cards")
+                print(
+                    f"Player {data.player_id} is not ready due their deck has less than 30 cards")
             else:
                 player.ready = True
                 # print(f"Player {data.player_id} is ready.")
             if self.allPlayersIsReady():
                 for player in self.players_in_match:
-                    self.giveCard(player,5)
+                    player.card_deck = createCardListObjectsByPlayer(player)
+                    self.giveCard(player, INITIAL_CARDS)
         case "unready":
             player = self.getPlayerByPlayerId(data.player_id)
             player.ready = False
