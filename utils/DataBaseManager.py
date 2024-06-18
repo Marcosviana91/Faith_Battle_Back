@@ -86,8 +86,8 @@ class DB_Manager:
                 .where(models.User.username == username)
             )
             try:
-                results = session.exec(query).one()
-                results = results.model_dump()
+                user = session.exec(query).one()
+                results = user.model_dump()
                 assert (hash_pass.verify(password, results['password']))
                 results['created_at'] = str(results['created_at'])
                 results['last_login'] = str(results['last_login'])
@@ -98,6 +98,9 @@ class DB_Manager:
                 response['message'] = 'authentication successful'
                 response["data"] = results
                 print("authentication successful")
+                user.onLogin()
+                session.add(user)
+                session.commit()
 
             except AssertionError:
                 response['type'] = 'error'
