@@ -1,3 +1,4 @@
-from .ConnectionManager import WS_Manager
-from .DataBaseManager import DB_Manager
+from .ConnectionManager import WS
+from .DataBaseManager import DB
 from .GameManager import GameRoom
+from .RoomManager import ROOMS

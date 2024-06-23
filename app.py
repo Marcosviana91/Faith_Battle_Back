@@ -1,7 +1,7 @@
 from utils import GameRoom
-from models.schemas import Players_in_Match, GameData, Move
+from schemas import Players_in_Match, GameData, Move
 
-from utils.populates.CardPopulate import cardPopulates
+# from utils.populates.CardPopulate import cardPopulates
 
 # STAGE 0
 if __name__ == "__main__":

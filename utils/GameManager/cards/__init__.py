@@ -1,7 +1,6 @@
 from secrets import token_hex
 
-from models import Card
-from models.schemas import Players_in_Match
+from schemas import Players_in_Match, Card
 
 from .standard import heros
 

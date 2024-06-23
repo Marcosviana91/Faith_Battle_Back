@@ -1,8 +1,7 @@
-from random import choice, shuffle
+from random import shuffle
 from datetime import datetime
 
-from models import Card
-from models.schemas import GameData, GameRoomSchema
+from schemas import GameData, GameRoomSchema, Card
 from .stages import stage0, stage1, stage2
 
 
@@ -19,17 +18,18 @@ def printCard(list_name: str, card_list: list[Card]):
 class GameRoom(GameRoomSchema):
 
     def gameHandle(self, data: GameData):
+        # print(__file__,"\n", data)
         match self.game_stage:
             case 0:
-                stage0.dataHandle(self, data)
-                return True
+                return stage0.dataHandle(self, data)
             case 1:
-                stage1.dataHandle(self, data)
-                return True
+                return stage1.dataHandle(self, data)
             case 2:
-                stage2.dataHandle(self, data)
-                return True
-        return False
+                return stage2.dataHandle(self, data)
+        return {
+            "type": 'error',
+            "message": f'Something has going wrong in {__file__} GameRoom.gameHandle'
+        }
 
     def gameStart(self):
         print('Starting game...')
@@ -47,11 +47,11 @@ class GameRoom(GameRoomSchema):
         for player in self.players_in_match:
             player.wisdom_points += 1
             print(f'Player {player.id}')
-            printCard('Deck', player.card_deck)
-            printCard('Mão', player.card_hand)
-            printCard('Preparação', player.card_prepare_camp)
-            printCard('Batalha', player.card_battle_camp)
-            printCard('Esquecimento', player.card_in_forgotten_sea)
+            # printCard('Deck', player.card_deck)
+            # printCard('Mão', player.card_hand)
+            # printCard('Preparação', player.card_prepare_camp)
+            # printCard('Batalha', player.card_battle_camp)
+            # printCard('Esquecimento', player.card_in_forgotten_sea)
         self.player_turn = 0
         self.playerTurnHandle()
 
@@ -60,3 +60,4 @@ class GameRoom(GameRoomSchema):
         player = self.players_in_match[self.player_turn]
         player.wisdom_used = 0
         self.giveCard(player, 1)
+        

@@ -1,47 +1,131 @@
-from utils import DB_Manager, GameRoom
+from utils import DB, WS, GameRoom
 
-from models.schemas import Players_in_Match, GameRoomSchema, GameData
-
-DB = DB_Manager()
+from schemas import Players_in_Match, GameRoomSchema, GameData, APIResponseProps, ClientRequestProps
 
 
 class RoomManager:
     ROOMS: list[GameRoomSchema]
-    
+
     def __init__(self) -> None:
         self.ROOMS = []
 
-    def newRoom(self, room_data):
-        player_db = DB.getPlayerById(room_data["created_by"])
-        player = Players_in_Match(
-            id=player_db["id"], card_deck=player_db['available_cards'])
-        new_room = GameRoom(
-            player,
-            room_data['room_name'],
-            room_data['max_players'],
-            room_data['match_type'],
-            room_data['password']
-        )
-        self.ROOMS.append(new_room)
-        print(__file__,'\n',self.ROOMS[-1].players_in_match)
-        return new_room.id
-    
-    def handleGamesRoom(self, room_id, user_id, data):
-        # print(data, room_id, user_id)
-        room = self.getRoomById(room_id)
-        player_db = DB.getPlayerById(user_id)
-        player = Players_in_Match(id=player_db["id"], card_deck=player_db['available_cards'])
-        match data['data_type']:
+    async def handleGamesRoom(self, data_raw):
+        print(__file__, "\nRoomManager.handleGamesRoom")
+        data = ClientRequestProps(**data_raw)
+        print('>>>>> RECV: ', data.__dict__)
+        response = APIResponseProps(message="")
+        match data.data_type:
+            case 'player_logged_in':
+                response.message = f'Player {data.user_data.get('id')} has logged in the game.'
+                response.data_type = 'player_logged_in'
+                response.user_data = {"id": data.user_data.get('id')}
+                await WS.sendToPlayer(user_id=data.user_data.get('id'), player_state=response.__dict__ )
+
+            case 'create':
+                player_db = DB.getPlayerById(data.room_data["created_by"])
+                player = Players_in_Match(
+                    id=player_db["id"], card_deck=player_db['available_cards'])
+                new_room = GameRoom(
+                    player,
+                    data.room_data['room_name'],
+                    data.room_data['room_max_players'],
+                    data.room_data['room_game_type'],
+                    data.room_data['password']
+                )
+                self.ROOMS.append(new_room)
+                response.data_type = 'created'
+                response.message = f'Player {
+                    player.id} has created a room {new_room.id}'
+                response.room_data = new_room.__dict__
+                await WS.sendToPlayer(user_id=data.user_data.get('id'), player_state=response.__dict__ )
+
             case 'connect':
-                con_player = GameData(data_type=data['data_type'], player=player)
-                room.gameHandle(con_player)
-        print(__file__,'\n',self.ROOMS[-1].players_in_match)
+                room = self.getRoomById(data.room_data.get('id'))
+                player_db = DB.getPlayerById(data.user_data.get("id"))
+                player = Players_in_Match(
+                    id=player_db["id"], card_deck=player_db['available_cards'])
+                data_handle = GameData(data_type=data.data_type, player=player)
+                room.gameHandle(data_handle)
+
+                response.message=f'Player {player.id} has conected to room {room.id}'
+                response.room_data = room.__dict__
+                WS.enterRoom(player.id, room.id)
+                await WS.sendToRoom(room_state=response.__dict__, room_id=room.id)
+
+            case 'disconnect':
+                room = self.getRoomById(data.room_data.get('id'))
+                player_id = data.user_data.get('id')
+                data_handle = GameData(
+                    data_type=data.data_type, room_id=room.id, player_id=player_id)
+                room.gameHandle(data_handle)
+                if (room.players_in_match.__len__() < 1):
+                    self.ROOMS.remove(room)
+                response.message=f'Player {player_id} has disconected from room {room.id}'
+                response.data_type = 'disconnected'
+                response.room_data = room.__dict__
+                WS.leaveRoom(player_id, room.id)
+                await WS.sendToRoom(room_state=response.__dict__, room_id=room.id)
+                await WS.sendToPlayer(player_state=response.__dict__, user_id=player_id)
+            
+            case 'ready':
+                room = self.getRoomById(data.room_data.get('id'))
+                player_id = data.user_data.get('id')
+                data_handle = GameData(data_type='ready', player_id=player_id)
+
+                game_response = room.gameHandle(data_handle)
+                if (game_response == 'ready'):
+                    player_state = {
+                            "data_type": "player_update",
+                            "player_data": {
+                                "id": player_id,
+                                "ready": True,
+                                "cards_in_hand": self.getPlayerInRoomById(room=room, player_id=player_id).card_hand
+                            }
+                        }
+                    await WS.sendToPlayer(player_state=player_state, user_id=player_id)
+
+                elif (game_response == 'starting_stage_1'):
+                    print('Enviar as cartas da mão para cada jogador da sala:')
+                    for player in room.players_in_match:
+                        player_state = {
+                            "data_type": "player_update",
+                            "player_data": {
+                                "id": player.id,
+                                "ready": player.ready,
+                                "cards_in_hand": player.card_hand
+                            }
+                        }
+                        await WS.sendToPlayer(
+                            player_state=player_state, user_id=player.id)
+                        player.id
+                elif (game_response == 'starting_stage_2'):
+                    print('Enviar as cartas da mão para cada jogador da sala:')
+                    # for player in room.players_in_match:
+                    #     player_state = {
+                    #         "data_type": "player_update",
+                    #         "player_data": {
+                    #             "id": player.id,
+                    #             "cards_in_hand": player.card_hand
+                    #         }
+                    #     }
+                    #     await WS.sendToPlayer(
+                    #         player_state=player_state, user_id=player.id)
+                    #     player.id
+
+                response.message=f'Player {player_id} is ready.'
+                response.data_type = 'room_update'
+                response.room_data = room.__dict__
+                await WS.sendToRoom(room_state=response.__dict__, room_id=room.id)
 
     def getRoomById(self, room_id):
-        pass
         for room in self.ROOMS:
             if room.id == room_id:
                 return room
+
+    def getPlayerInRoomById(self, room:GameRoomSchema, player_id):
+        for player in room.players_in_match:
+            if player.id == player_id:
+                return player
 
     def getRoomInfoById(self, room_id):
         room_id = int(room_id)
@@ -65,7 +149,7 @@ class RoomManager:
     def getPlayerInRoomInfoById(self, room_id, player_id):
         room_id = int(room_id)
         player_id = int(player_id)
-        
+
         room = self.getRoomById(room_id)
         if room:
             for player in room.players_in_match:
@@ -86,20 +170,17 @@ class RoomManager:
         return {"messsage": "Room or Player not found"}
 
     def getAllRoomsInfo(self):
-        __temp_array = []
+        response = APIResponseProps(message="0 room founded")
         for room in self.ROOMS:
-            room_info = {
-                "id": room.id,
-                "created_by": room.created_by,
-                "room_name": room.room_name,
-                "room_game_type": 'survival',
-                "room_current_players": room.players_in_match.__len__(),
-                "room_max_players": room.max_players,
-                "has_password": (room.password != ""),
-            }
-            __temp_array.append(room_info)
-        return __temp_array
+            response.room_list.append(room.__dict__)
+        if response.room_list.__len__() > 0:
+            response.data_type = "room_list"
+            response.message = f"{response.room_list.__len__()} room founded"
+        return response
 
     def endRoom(self, room):
         self.ROOMS.remove(room)
         del room
+
+
+ROOMS = RoomManager()

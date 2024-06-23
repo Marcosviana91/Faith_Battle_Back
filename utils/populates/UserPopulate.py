@@ -1,4 +1,4 @@
-from utils.DataBaseManager import DB_Manager
+from utils.DataBaseManager import DB
 
 from models import User
 
@@ -16,7 +16,6 @@ fake_users = [
 
 ]
 
-DB = DB_Manager()
 
 for user in fake_users:
     newUser = User(*user

@@ -3,6 +3,7 @@ from tinydb import TinyDB, Query
 
 from utils import hash_pass
 import models
+from schemas import APIResponseProps
 
 
 class DB_Manager:
@@ -75,37 +76,31 @@ class DB_Manager:
         return res
     
     def authUser(self, username, password):
-        response = {
-            "type": str,
-            "message": str,
-            "data": dict,
-        }
+        response = APIResponseProps(message='username or password invalid')
         with Session(self.engine) as session:
             query = (
                 select(models.User)
                 .where(models.User.username == username)
             )
             try:
-                user = session.exec(query).one()
+                user = session.exec(query).one() # Possível erro de usuário não encontrado
                 results = user.model_dump()
-                assert (hash_pass.verify(password, results['password']))
+                assert (hash_pass.verify(password, results['password'])) # Possível erro de senha inválida
                 results['created_at'] = str(results['created_at'])
                 results['last_login'] = str(results['last_login'])
                 # remove password data
                 results.pop('password')
 
-                response['type'] = 'data'
-                response['message'] = 'authentication successful'
-                response["data"] = results
+                response.data_type = 'user_data'
+                response.message = 'authentication successful'
+                response.user_data = results
                 print("authentication successful")
                 user.onLogin()
                 session.add(user)
                 session.commit()
 
-            except AssertionError:
-                response['type'] = 'error'
-                response['message'] = 'Nothing matches'
-                response['data'] = {}
+            except:
+                ...
 
         return response
 
@@ -117,3 +112,5 @@ class DB_Manager:
         #     session.add(newRoom)
         #     session.commit()
         #     print(newRoom.id)
+
+DB = DB_Manager()

@@ -1,5 +1,4 @@
-from models import Card
-from models.schemas import Players_in_Match, GameRoomSchema
+from schemas import Players_in_Match, GameRoomSchema, Card
 
 from utils.GameManager.cards.utils import getCardInListBySlug
 

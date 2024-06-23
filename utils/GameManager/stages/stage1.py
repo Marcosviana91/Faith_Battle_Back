@@ -1,7 +1,7 @@
 # Stage 1: Sort cards to all players, retry sort
 
 
-from models.schemas import GameData, GameRoomSchema, Players_in_Match
+from schemas import GameData, GameRoomSchema, Players_in_Match
 
 
 MAXIMUM_DECK_TRIES = 3
@@ -34,6 +34,8 @@ def dataHandle(self: GameRoomSchema, data: GameData):
             # print(f"Player {data.player_id} is ready.")
             if self.allPlayersIsReady():
                 self.gameStart()
+                return "starting_stage_2"
+            return "ready"
 
         case "unready":
             player = self.getPlayerByPlayerId(data.player_id)

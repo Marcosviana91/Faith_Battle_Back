@@ -1,8 +1,7 @@
 # Stage 2: The game is in curse
 import asyncio
 
-from models import Card
-from models.schemas import GameData, GameRoomSchema, Players_in_Match
+from schemas import GameData, GameRoomSchema, Players_in_Match, Card
 
 
 def moveToPrepare(player: Players_in_Match, card: Card, directlyToBattle: bool = False):
