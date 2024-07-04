@@ -18,6 +18,5 @@ fake_users = [
 
 
 for user in fake_users:
-    newUser = User(*user
-    )
-    print(DB.createNewUser(newUser.model_dump())['message'])
+    newUser = User(*user)
+    print(DB.createNewUser(newUser.model_dump()).message)

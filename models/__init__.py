@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlmodel import SQLModel, Field
 
 
-class User(SQLModel, table=True):
+class UserModel(SQLModel, table=True):
     '''
     Dados de identificação do usuário para login
     '''
@@ -28,7 +28,3 @@ class User(SQLModel, table=True):
     def onLogout(self):
         ...
 
-
-# Pydantic BaseModel
-class Statistics(SQLModel):
-    id: Optional[int] = Field(primary_key=True)

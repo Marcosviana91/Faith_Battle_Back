@@ -36,21 +36,18 @@ class WS_Manager:
     def connect(self, websocket: WebSocket, user_id: int = None):
         new_user_ws_conn = UserWS(id=user_id, ws=websocket)
         self.all_users.append(new_user_ws_conn)
-        print(__file__, f"\nWS: User {user_id} has connected.")
-        print(__file__, f"\nWS: Users connected in game: {self.all_users.__len__()}.")
+        print(f"WS: User {user_id} has connected.")
 
     def disconnect(self, user_id: int = None):
         user = self.__getUser(user_id)
         self.all_users.remove(user)
-        print(__file__, f"\nWS: User {user_id} has disconnected.")
-        print(__file__, f"\nWS: Users connected in game: {self.all_users.__len__()}.")
+        print(f"WS: User {user_id} has disconnected.")
                 
     def enterRoom(self, user_id:int, room_id:int):
         room = self.__getRoom(room_id)
         user = self.__getUser(user_id)
         room.players.append(user)
-        print(__file__, f"\nWS: User {user_id} enter in room {room_id}.")
-        print(__file__, f"\nWS: Users connected {room.players.__len__()}.")
+        print(f"WS: User {user_id} enter in room {room_id}.")
 
     def leaveRoom(self, user_id:int, room_id:int):
         room = self.__getRoom(room_id)
@@ -58,8 +55,7 @@ class WS_Manager:
         room.players.remove(user)
         if room.players.__len__() < 1:
             self.all_rooms.remove(room)
-        print(__file__, f"\nWS: User {user_id} has leave the room {room_id}.")
-        print(__file__, f"\nWS: Users connected {room.players.__len__()}.")
+        print(f"WS: User {user_id} has leave the room {room_id}.")
 
     async def sendToPlayer(self, player_state: dict, user_id:int):
         user = self.__getUser(user_id)
@@ -74,11 +70,9 @@ class WS_Manager:
         __room_state.pop("room_list", "")
         __room_state.pop("player_data", "")
         __room_state['data_type'] = 'room_update'
-        print("sendToRoom: ", __room_state)
         
-        print(f"WS: Broadcast to room {room_id}.")
         room = self.__getRoom(room_id)
-        print(f"WS:\tPlayers in room: {room.players.__len__()}.")
+        print(f"WS: Broadcast to {room.players.__len__()} players in room {room_id}\n\t{__room_state}.")
         for user in room.players:
             await user.ws.send_json(__room_state)
             

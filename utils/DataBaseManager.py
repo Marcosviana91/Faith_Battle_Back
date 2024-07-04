@@ -3,7 +3,7 @@ from tinydb import TinyDB, Query
 
 from utils import hash_pass
 import models
-from schemas import APIResponseProps
+from schemas import APIResponseProps, Player
 
 
 class DB_Manager:
@@ -19,14 +19,10 @@ class DB_Manager:
         tinydb_file_name = "database.json"
         self.tiny_engine = TinyDB(f'./database/{tinydb_file_name}')
 
-    def createNewUser(self, data):
-        response = {
-            "type": '',
-            "message": '',
-            "data": {},
-        }
+    def createNewUser(self, data) -> APIResponseProps:
+        response = APIResponseProps('')
+
         newUser = models.User(**data)
-        newUser.password = hash_pass.encrypt(data['password'])
 
         with Session(self.engine) as session:
             query = (
@@ -34,42 +30,43 @@ class DB_Manager:
                 .where(models.User.username == newUser.username)
             )
             check_username = session.exec(query)
+            if (len(check_username.all()) > 0):
+                # print("username already exists")
+                response.data_type= 'error'
+                response.message = 'username already exists'
+                return response
 
             query = (
                 select(models.User)
                 .where(models.User.email == newUser.email)
             )
             check_email = session.exec(query)
-
-            if (len(check_username.all()) > 0):
-                # print("username already exists")
-                response['type'] = 'error'
-                response['message'] = 'username already exists'
-
             if (len(check_email.all()) > 0):
                 # print("email already in use")
-                response['type'] = 'error'
-                if (response['message'] == 'username already exists'):
-                    response['message'] = 'username already exists\nemail already in use'
+                response.data_type = 'error'
+                if (response.message == 'username already exists'):
+                    response.message = 'username already exists\nemail already in use'
                 else:
-                    response['message'] = 'email already in use'
+                    response.message = 'email already in use'
+                return response
 
             else:
                 # print("user successful created")
+                newUser.password = hash_pass.encrypt(data['password'])
                 session.add(newUser)
                 session.commit()
 
                 self.createDefaultPlayerStats(player_id=newUser.id)
-
-                response['type'] = 'data'
-                response['message'] = 'user successful created'
-                response['data'] = {}
+                newUser.password = '******'
+                response.data_type = 'data'
+                response.message = 'user successful created'
+                response.user_data = newUser.__dict__
 
         return response
 
     def createDefaultPlayerStats(self, player_id):
-        newPlayer = models.Player(id=player_id)
-        self.tiny_engine.table("player").insert(newPlayer.model_dump())
+        newPlayer = Player(id=player_id)
+        self.tiny_engine.table("player").insert(newPlayer.__dict__)
 
     def getPlayerById(self, player_id):
         res = self.tiny_engine.table("player").get(doc_id=player_id)
@@ -103,14 +100,5 @@ class DB_Manager:
                 ...
 
         return response
-
-    # Save room  
-    def newRoom(self, data):
-        newRoom = models.Match(**data)
-        print(newRoom)
-        # with Session(self.engine) as session:
-        #     session.add(newRoom)
-        #     session.commit()
-        #     print(newRoom.id)
 
 DB = DB_Manager()

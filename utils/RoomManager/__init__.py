@@ -10,7 +10,6 @@ class RoomManager:
         self.ROOMS = []
 
     async def handleGamesRoom(self, data_raw):
-        print(__file__, "\nRoomManager.handleGamesRoom")
         data = ClientRequestProps(**data_raw)
         print('>>>>> RECV: ', data.__dict__)
         response = APIResponseProps(message="")

@@ -3,3 +3,4 @@ python-dotenv==1.0.1
 sqlmodel==0.0.18
 passlib[argon2]==1.7.4
 tinydb==4.8.0
+itsdangerous==2.2.0
