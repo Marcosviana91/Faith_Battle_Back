@@ -60,7 +60,8 @@ class DB_Manager:
                 newUser.password = "******"
                 response.data_type = "data"
                 response.message = "user successful created"
-                # response.user_data = newUser.model_dump() # erro ao retornar os dados do usuário
+                # response.user_data = newUser.model_dump()
+                # erro ao retornar os dados do usuário
 
         return response
 
@@ -100,7 +101,7 @@ class DB_Manager:
                 session.commit()
 
             except:
-                ...
+                print(__file__, "\nDeu erro")
 
         return response
 

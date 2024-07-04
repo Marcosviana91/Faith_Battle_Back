@@ -10,6 +10,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from starlette.middleware.sessions import SessionMiddleware
 
 from utils import DB
+from utils.security import create_access_token
 
 ORIGINS = ["*"]
 METHODS = ["*"]
@@ -49,9 +50,13 @@ async def handleAuth(form_data: OAuth2PasswordRequestForm = Depends()):
             status_code=status.HTTP_401_UNAUTHORIZED, detail=user_data.message
         )
     else:
-        res = JSONResponse(
-            content=user_data.__dict__, status_code=status.HTTP_202_ACCEPTED
-        )
+        access_token = create_access_token({
+            "sub": user_data.user_data.get("email")
+        })
+        # res = JSONResponse(
+        #     content=user_data.__dict__, status_code=status.HTTP_202_ACCEPTED
+        # )
+        res = {"access_token": access_token, "token_type": "Bearer"}
     return res
 
 

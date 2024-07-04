@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 from jwt import encode
 from passlib.hash import argon2
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, available_timezones
 
 SECRET_KEY = "SECRET_KEY"
 ALGORITHM = "HS256"
@@ -19,7 +19,7 @@ def verify(password: str, encrypted_password: str):
 
 def create_access_token(data: dict):
     to_encode = data.copy()
-    expire = datetime.now(tz=ZoneInfo("UTC")) + timedelta(
+    expire = datetime.now(tz=ZoneInfo("America/Sao_Paulo")) + timedelta(
         minutes=ACCESS_TOKEN_EXPIRE_MINUTES
     )
     to_encode.update({"exp": expire})
