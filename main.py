@@ -1,15 +1,15 @@
-from fastapi import FastAPI, status
-from fastapi.requests import Request
-from starlette.middleware.sessions import SessionMiddleware
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+import json
 from secrets import token_hex
 
+from fastapi import Depends, FastAPI, status
+from fastapi.exceptions import HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.requests import Request
+from fastapi.responses import JSONResponse
+from fastapi.security import OAuth2PasswordRequestForm
+from starlette.middleware.sessions import SessionMiddleware
+
 from utils import DB
-from utils.populates import UserPopulate
-
-import json
-
 
 ORIGINS = ["*"]
 METHODS = ["*"]
@@ -30,33 +30,36 @@ app.add_middleware(
 )
 
 
-@app.get('/')
+@app.get("/")
 async def handleRoot(req: Request):
-    res = JSONResponse(content={"message": "Root router ok"},
-                           status_code=status.HTTP_200_OK)
-    return res
-
-@app.post('/auth')
-async def handleAuth(req: Request):
-    data: dict = json.loads(await req.body())
-    user_data = DB.authUser(
-        username=data.get("username"),
-        password=data.get("password"),
+    res = JSONResponse(
+        content={"message": "Root router ok"}, status_code=status.HTTP_200_OK
     )
-    if user_data.data_type == 'error':
-        res = JSONResponse(content=user_data.__dict__,
-                           status_code=status.HTTP_401_UNAUTHORIZED)
-    else:
-        req.session['user_info'] = user_data.user_data
-        print("session: ", req.session)
-        res = JSONResponse(content=user_data.__dict__,
-                           status_code=status.HTTP_202_ACCEPTED)
     return res
 
 
-@app.post('/newuser')
+@app.post("/auth")
+async def handleAuth(form_data: OAuth2PasswordRequestForm = Depends()):
+    user_data = DB.authUser(
+        username=form_data.username,
+        password=form_data.password,
+    )
+    if user_data.data_type == "error":
+        res = HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail=user_data.message
+        )
+    else:
+        res = JSONResponse(
+            content=user_data.__dict__, status_code=status.HTTP_202_ACCEPTED
+        )
+    return res
+
+
+@app.post("/newuser")
 async def handleNewUser(req: Request):
     data = json.loads(await req.body())
     user_data = DB.createNewUser(data)
-    res = JSONResponse(content=user_data.__dict__, status_code=status.HTTP_201_CREATED)
+    res = JSONResponse(
+        content=user_data.__dict__, status_code=status.HTTP_201_CREATED
+    )
     return res

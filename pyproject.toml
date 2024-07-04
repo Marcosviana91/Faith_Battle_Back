@@ -1,0 +1,9 @@
+[tool.taskipy.tasks]
+run = "fastapi dev main.py --host 0.0.0.0"
+
+pre_test = "task lint"
+test = "pytest --cov=./"
+post_test = "coverage html"
+
+lint = "ruff check . && ruff check . --diff"
+format = "ruff check . --fixx && ruff format ."

@@ -7,9 +7,9 @@ from utils import security
 
 
 class DB_Manager:
-    '''
+    """
     Handle the data persistance
-    '''
+    """
 
     def __init__(self):
         sqlite_file_name = "database.db"
@@ -17,49 +17,49 @@ class DB_Manager:
         self.engine = create_engine(sqlite_url, echo=False)
         SQLModel.metadata.create_all(self.engine)
         tinydb_file_name = "database.json"
-        self.tiny_engine = TinyDB(f'./database/{tinydb_file_name}')
+        self.tiny_engine = TinyDB(f"./database/{tinydb_file_name}")
 
     def createNewUser(self, data) -> APIResponseProps:
-        response = APIResponseProps('')
+        response = APIResponseProps("")
 
         newUser = models.UserModel(**data)
 
         with Session(self.engine) as session:
-            query = (
-                select(models.UserModel)
-                .where(models.UserModel.username == newUser.username)
+            query = select(models.UserModel).where(
+                models.UserModel.username == newUser.username
             )
             check_username = session.exec(query)
-            if (len(check_username.all()) > 0):
+            if len(check_username.all()) > 0:
                 # print("username already exists")
-                response.data_type= 'error'
-                response.message = 'username already exists'
+                response.data_type = "error"
+                response.message = "username already exists"
                 return response
 
-            query = (
-                select(models.UserModel)
-                .where(models.UserModel.email == newUser.email)
+            query = select(models.UserModel).where(
+                models.UserModel.email == newUser.email
             )
             check_email = session.exec(query)
-            if (len(check_email.all()) > 0):
+            if len(check_email.all()) > 0:
                 # print("email already in use")
-                response.data_type = 'error'
-                if (response.message == 'username already exists'):
-                    response.message = 'username already exists\nemail already in use'
+                response.data_type = "error"
+                if response.message == "username already exists":
+                    response.message = (
+                        "username already exists\nemail already in use"
+                    )
                 else:
-                    response.message = 'email already in use'
+                    response.message = "email already in use"
                 return response
 
             else:
                 # print("user successful created")
-                newUser.password = security.encrypt(data['password'])
+                newUser.password = security.encrypt(data["password"])
                 session.add(newUser)
                 session.commit()
 
                 self.createDefaultPlayerStats(player_id=newUser.id)
-                newUser.password = '******'
-                response.data_type = 'data'
-                response.message = 'user successful created'
+                newUser.password = "******"
+                response.data_type = "data"
+                response.message = "user successful created"
                 # response.user_data = newUser.model_dump() # erro ao retornar os dados do usuário
 
         return response
@@ -73,23 +73,26 @@ class DB_Manager:
         return res
 
     def authUser(self, username, password):
-        response = APIResponseProps(message='username or password invalid')
+        response = APIResponseProps(message="username or password invalid")
         with Session(self.engine) as session:
-            query = (
-                select(models.UserModel)
-                .where(models.UserModel.username == username)
+            query = select(models.UserModel).where(
+                models.UserModel.username == username
             )
             try:
-                user = session.exec(query).one() # Possível erro de usuário não encontrado
+                user = session.exec(
+                    query
+                ).one()  # Possível erro de usuário não encontrado
                 results = user.model_dump()
-                assert (security.verify(password, results['password'])) # Possível erro de senha inválida
-                results['created_at'] = str(results['created_at'])
-                results['last_login'] = str(results['last_login'])
+                assert security.verify(
+                    password, results["password"]
+                )  # Possível erro de senha inválida
+                results["created_at"] = str(results["created_at"])
+                results["last_login"] = str(results["last_login"])
                 # remove password data
-                results.pop('password')
+                results.pop("password")
 
-                response.data_type = 'user_data'
-                response.message = 'authentication successful'
+                response.data_type = "user_data"
+                response.message = "authentication successful"
                 response.user_data = results
                 print("authentication successful")
                 user.onLogin()
@@ -100,5 +103,6 @@ class DB_Manager:
                 ...
 
         return response
+
 
 DB = DB_Manager()
