@@ -4,3 +4,4 @@ venv
 **/*.db
 **/.env
 /database
+.vercel
