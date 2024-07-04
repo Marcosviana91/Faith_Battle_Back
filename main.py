@@ -30,9 +30,9 @@ app.add_middleware(
 )
 
 
-@app.post('/')
+@app.get('/')
 async def handleRoot(req: Request):
-    res = JSONResponse(content={"message": "Root router ok"}
+    res = JSONResponse(content={"message": "Root router ok"},
                            status_code=status.HTTP_200_OK)
     return res
 
