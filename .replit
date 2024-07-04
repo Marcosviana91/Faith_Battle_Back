@@ -1,0 +1,9 @@
+run = "fastapi run main.py"
+modules = ["python-3.12"]
+
+[deployment]
+run = ["sh", "-c", "fastapi run main.py"]
+
+[[ports]]
+localPort = 8000
+externalPort = 80
