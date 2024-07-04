@@ -1,7 +1,7 @@
 from sqlmodel import Session, SQLModel, create_engine, select
 from tinydb import TinyDB, Query
 
-from utils import hash_pass
+from utils import security
 import models
 from schemas import APIResponseProps, Player
 
@@ -52,7 +52,7 @@ class DB_Manager:
 
             else:
                 # print("user successful created")
-                newUser.password = hash_pass.encrypt(data['password'])
+                newUser.password = security.encrypt(data['password'])
                 session.add(newUser)
                 session.commit()
 
@@ -82,7 +82,7 @@ class DB_Manager:
             try:
                 user = session.exec(query).one() # Possível erro de usuário não encontrado
                 results = user.model_dump()
-                assert (hash_pass.verify(password, results['password'])) # Possível erro de senha inválida
+                assert (security.verify(password, results['password'])) # Possível erro de senha inválida
                 results['created_at'] = str(results['created_at'])
                 results['last_login'] = str(results['last_login'])
                 # remove password data
