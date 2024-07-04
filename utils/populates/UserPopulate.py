@@ -1,6 +1,6 @@
 from utils.DataBaseManager import DB
 
-from models import User
+from models import UserModel
 
 fake_users = [
     ('p0', 'p0', 'p0', '00@email.com'),
@@ -18,5 +18,5 @@ fake_users = [
 
 
 for user in fake_users:
-    newUser = User(*user)
+    newUser = UserModel(*user)
     print(DB.createNewUser(newUser.model_dump()).message)

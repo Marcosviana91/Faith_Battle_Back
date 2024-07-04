@@ -7,6 +7,7 @@ class UserModel(SQLModel, table=True):
     '''
     Dados de identificação do usuário para login
     '''
+    __tablename__ = "user"
     id: Optional[int] = Field(primary_key=True)
     created_at: datetime = Field(default=datetime.now())
     last_login: datetime = Field(default=datetime.now())

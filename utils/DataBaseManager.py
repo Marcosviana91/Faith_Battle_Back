@@ -22,12 +22,12 @@ class DB_Manager:
     def createNewUser(self, data) -> APIResponseProps:
         response = APIResponseProps('')
 
-        newUser = models.User(**data)
+        newUser = models.UserModel(**data)
 
         with Session(self.engine) as session:
             query = (
-                select(models.User)
-                .where(models.User.username == newUser.username)
+                select(models.UserModel)
+                .where(models.UserModel.username == newUser.username)
             )
             check_username = session.exec(query)
             if (len(check_username.all()) > 0):
@@ -37,8 +37,8 @@ class DB_Manager:
                 return response
 
             query = (
-                select(models.User)
-                .where(models.User.email == newUser.email)
+                select(models.UserModel)
+                .where(models.UserModel.email == newUser.email)
             )
             check_email = session.exec(query)
             if (len(check_email.all()) > 0):
@@ -76,8 +76,8 @@ class DB_Manager:
         response = APIResponseProps(message='username or password invalid')
         with Session(self.engine) as session:
             query = (
-                select(models.User)
-                .where(models.User.username == username)
+                select(models.UserModel)
+                .where(models.UserModel.username == username)
             )
             try:
                 user = session.exec(query).one() # Possível erro de usuário não encontrado
