@@ -20,25 +20,23 @@ class DB_Manager:
         self.tiny_engine = TinyDB(f"./database/{tinydb_file_name}")
 
     def createNewUser(self, data) -> APIResponseProps:
-        response = APIResponseProps("")
-
+        response = APIResponseProps("user not created")
         newUser = models.UserModel(**data)
-
         with Session(self.engine) as session:
-            query = select(models.UserModel).where(
+            query_username = select(models.UserModel).where(
                 models.UserModel.username == newUser.username
             )
-            check_username = session.exec(query)
+            check_username = session.exec(query_username)
+            query_email = select(models.UserModel).where(
+                models.UserModel.email == newUser.email
+            )
+            check_email = session.exec(query_email)
+
             if len(check_username.all()) > 0:
                 # print("username already exists")
                 response.data_type = "error"
                 response.message = "username already exists"
-                return response
 
-            query = select(models.UserModel).where(
-                models.UserModel.email == newUser.email
-            )
-            check_email = session.exec(query)
             if len(check_email.all()) > 0:
                 # print("email already in use")
                 response.data_type = "error"
@@ -48,7 +46,6 @@ class DB_Manager:
                     )
                 else:
                     response.message = "email already in use"
-                return response
 
             else:
                 # print("user successful created")
@@ -57,11 +54,53 @@ class DB_Manager:
                 session.commit()
 
                 self.createDefaultPlayerStats(player_id=newUser.id)
-                newUser.password = "******"
-                response.data_type = "data"
+                response.data_type = "user_created"
                 response.message = "user successful created"
-                # response.user_data = newUser.model_dump()
-                # erro ao retornar os dados do usuário
+
+        return response
+
+    def updateUser(self, user_name, data) -> APIResponseProps:
+        response = APIResponseProps("user not updated")
+        userUpdated = models.UserModel(**data)
+        with Session(self.engine) as session:
+            query_username = select(models.UserModel).where(
+                models.UserModel.username == user_name
+            )
+            try:
+                user = session.exec(
+                    query_username
+                ).one()  # Possível erro de usuário não encontrado
+
+                user.email = userUpdated.email
+                user.real_name = userUpdated.real_name
+                user.username = userUpdated.username
+                user.password = security.encrypt(userUpdated.password)
+
+                session.add(user)
+                session.commit()
+                response.data_type = "user_updated"
+                response.message = "user has been updated"
+            except Exception as e:
+                response.message = e
+                print(e)
+        return response
+
+    def deleteUser(self, user_name) -> APIResponseProps:
+        response = APIResponseProps(message="username not found")
+        with Session(self.engine) as session:
+            query = select(models.UserModel).where(
+                models.UserModel.username == user_name
+            )
+            try:
+                user = session.exec(
+                    query
+                ).one()  # Possível erro de usuário não encontrado
+                session.delete(user)
+                session.commit()
+                response.data_type = "user_deleted"
+                response.message = f"user {user.username} has been deleted"
+            except:
+                print(__file__, "\nusername not found")
 
         return response
 
@@ -102,6 +141,31 @@ class DB_Manager:
 
             except:
                 print(__file__, "\nusername or password invalid")
+
+        return response
+
+    def getUserData(self, username: str):
+        response = APIResponseProps(message="username not found")
+        with Session(self.engine) as session:
+            query = select(models.UserModel).where(
+                models.UserModel.username == username
+            )
+            try:
+                user = session.exec(
+                    query
+                ).one()  # Possível erro de usuário não encontrado
+                results = user.model_dump()
+                results["created_at"] = str(results["created_at"])
+                results["last_login"] = str(results["last_login"])
+                # remove password data
+                results.pop("password")
+
+                response.data_type = "user_data"
+                response.message = "User data"
+                response.user_data = results
+
+            except:
+                print(__file__, "\nusername not found")
 
         return response
 
