@@ -1,6 +1,5 @@
-from utils.DataBaseManager import DB
-
 from models import UserModel
+from utils.DataBaseManager import DB
 
 fake_users = [
     ('p0', 'p0', 'p0', '00@email.com'),

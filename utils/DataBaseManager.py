@@ -1,9 +1,9 @@
 from sqlmodel import Session, SQLModel, create_engine, select
-from tinydb import TinyDB, Query
+from tinydb import TinyDB
 
-from utils import security
 import models
 from schemas import APIResponseProps, Player
+from utils import security
 
 
 class DB_Manager:
@@ -71,7 +71,7 @@ class DB_Manager:
     def getPlayerById(self, player_id):
         res = self.tiny_engine.table("player").get(doc_id=player_id)
         return res
-    
+
     def authUser(self, username, password):
         response = APIResponseProps(message='username or password invalid')
         with Session(self.engine) as session:
