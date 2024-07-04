@@ -46,7 +46,7 @@ async def handleAuth(form_data: OAuth2PasswordRequestForm = Depends()):
         password=form_data.password,
     )
     if user_data.data_type == "error":
-        res = HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail=user_data.message
         )
     else:
@@ -57,7 +57,7 @@ async def handleAuth(form_data: OAuth2PasswordRequestForm = Depends()):
         #     content=user_data.__dict__, status_code=status.HTTP_202_ACCEPTED
         # )
         res = {"access_token": access_token, "token_type": "Bearer"}
-    return res
+        return res
 
 
 @app.post("/newuser")

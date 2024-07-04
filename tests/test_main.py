@@ -12,6 +12,15 @@ def test_handleRoot_deve_retornar_message_Root_router_ok():
     assert response.json() == {"message": "Root router ok"}
 
 
+def test_auth_error():
+    response = client.post(
+        "/auth",
+        data={"username": "p0", "password": "p1"},
+    )
+    token:dict = response.json()
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert token.get("detail") == "username or password invalid"
+
 def test_get_token():
     response = client.post(
         "/auth",

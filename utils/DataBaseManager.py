@@ -101,7 +101,7 @@ class DB_Manager:
                 session.commit()
 
             except:
-                print(__file__, "\nDeu erro")
+                print(__file__, "\nusername or password invalid")
 
         return response
 
