@@ -2,13 +2,15 @@ from fastapi import Depends, status
 from fastapi.testclient import TestClient
 
 from main import app
+from utils import DB
 
 client = TestClient(app)
 
 
 def getToken():
     response = client.post(
-        "/auth/token", data={"username": "usuario_de_test", "password": "123asd"}
+        "/auth/token",
+        data={"username": "usuario_de_test", "password": "123asd"},
     )
     return response.json()["access_token"]
 

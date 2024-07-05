@@ -1,17 +1,18 @@
-# from jwt import decode
+from jwt import decode
 
-# from utils.security import (
-#     ALGORITHM,
-#     SECRET_KEY,
-#     createAccessToken,
-# )
+from utils.security import (
+    createAccessToken,
+    env_settings,
+)
 
 
-# def test_jwt():
-#     data = {"sub": "test@test.com"}
-#     token = createAccessToken(data)
+def test_jwt():
+    data = {"sub": "test@test.com"}
+    token = createAccessToken(data)
 
-#     result = decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    result = decode(
+        token, env_settings.SECRET_KEY, algorithms=[env_settings.ALGORITHM]
+    )
 
-#     assert result["sub"] == data["sub"]
-#     assert result["exp"]
+    assert result["sub"] == data["sub"]
+    assert result["exp"]
