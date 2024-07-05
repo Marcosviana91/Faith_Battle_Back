@@ -1,13 +1,17 @@
-from fastapi import status, Depends
+from fastapi import Depends, status
 from fastapi.testclient import TestClient
 
 from main import app
 
 client = TestClient(app)
 
+
 def getToken():
-    response = client.post("/auth", data={"username": "usuario_de_test", "password": "123asd"})
+    response = client.post(
+        "/auth", data={"username": "usuario_de_test", "password": "123asd"}
+    )
     return response.json()["access_token"]
+
 
 def test_handleRoot_deve_retornar_message_Root_router_ok():
     response = client.get("/")
@@ -26,6 +30,7 @@ def test_create_new_user_ok():
         },
     )
     assert response.status_code == status.HTTP_201_CREATED
+
 
 def test_create_new_user_error():
     response = client.post(
@@ -51,7 +56,6 @@ def test_get_user_data_ok():
 def test_get_user_data_error():
     user_id = 21
     response = client.get(f"/user/{user_id}")
-    data = response.json()
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
@@ -91,6 +95,7 @@ def test_user_update_ok():
     )
     print(response.json())
     assert response.status_code == status.HTTP_202_ACCEPTED
+
 
 def test_user_update_error():
     token = getToken()
