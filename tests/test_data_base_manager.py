@@ -38,7 +38,7 @@ def test_createNewUser_error_email_already_exist():
 
 
 def test_updateUser_ok():
-    user_id = 11
+    user_id = 1
     user_data = UserSchema(**{
         "username": "usuario_de_test_atualizado",
         "password": "123asd",
@@ -61,20 +61,20 @@ def test_updateUser_error():
 
 
 def test_get_player_by_id():
-    user_id = 11
+    user_id = 1
     db_response = DB.getPlayerById(user_id)
     assert db_response.get("id") == user_id
 
 
 def test_get_user_data_by_id_ok():
-    user_id = 11
+    user_id = 1
     db_response = DB.getUserDataById(user_id)
     assert db_response.data_type == "user_data"
     assert db_response.user_data.get("username") == "usuario_de_test_atualizado"
 
 
 def test_get_user_data_by_id_error():
-    user_id = 22
+    user_id = 2
     db_response = DB.getUserDataById(user_id)
     assert db_response.data_type == "error"
 
@@ -94,13 +94,13 @@ def test_auth_user_error():
 
 
 def test_deleteUser_ok():
-    user_id = 11
+    user_id = 1
     db_response = DB.deleteUser(user_id)
     assert db_response.data_type == "user_deleted"
     assert db_response.message == f"user {user_id} has been deleted"
 
 
 def test_deleteUser_error():
-    user_id = 22
+    user_id = 2
     db_response = DB.deleteUser(user_id)
     assert db_response.data_type == "error"

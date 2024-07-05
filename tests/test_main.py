@@ -8,7 +8,7 @@ client = TestClient(app)
 
 def getToken():
     response = client.post(
-        "/auth", data={"username": "usuario_de_test", "password": "123asd"}
+        "/auth/token", data={"username": "usuario_de_test", "password": "123asd"}
     )
     return response.json()["access_token"]
 
@@ -46,7 +46,7 @@ def test_create_new_user_error():
 
 
 def test_get_user_data_ok():
-    user_id = 11
+    user_id = 1
     response = client.get(f"/user/{user_id}")
     data = response.json()
     assert response.status_code == status.HTTP_200_OK
@@ -54,15 +54,15 @@ def test_get_user_data_ok():
 
 
 def test_get_user_data_error():
-    user_id = 21
+    user_id = 2
     response = client.get(f"/user/{user_id}")
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 def test_auth_ok():
     response = client.post(
-        "/auth",
-        data={"username": "p0", "password": "p0"},
+        "/auth/token",
+        data={"username": "usuario_de_test", "password": "123asd"},
     )
     token = response.json()
     assert response.status_code == status.HTTP_200_OK
@@ -72,7 +72,7 @@ def test_auth_ok():
 
 def test_auth_error():
     response = client.post(
-        "/auth",
+        "/auth/token",
         data={"username": "p0", "password": "p1"},
     )
     token: dict = response.json()
@@ -82,7 +82,7 @@ def test_auth_error():
 
 def test_user_update_ok():
     token = getToken()
-    user_id = 11
+    user_id = 1
     response = client.put(
         f"/user/{user_id}",
         headers={"Authorization": f"Bearer {token}"},
@@ -99,7 +99,7 @@ def test_user_update_ok():
 
 def test_user_update_error():
     token = getToken()
-    user_id = 21
+    user_id = 2
     response = client.put(
         f"/user/{user_id}",
         headers={"Authorization": f"Bearer {token}"},
