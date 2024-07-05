@@ -23,7 +23,8 @@ def handleAuth(form_data: T_OAuth2Form):
         )
     else:
         access_token = createAccessToken({
-            "sub": user_data.user_data.get("username")
+            "sub": user_data.user_data.get("username"),
+            "inf": user_data.user_data
         })
         res = {"access_token": access_token, "token_type": "Bearer"}
         return res

@@ -113,4 +113,4 @@ def test_user_update_error():
         },
     )
     print(response.json())
-    assert response.status_code == status.HTTP_406_NOT_ACCEPTABLE
+    assert response.status_code == status.HTTP_403_FORBIDDEN

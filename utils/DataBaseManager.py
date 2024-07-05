@@ -28,6 +28,7 @@ class DB_Manager:
         self.sqlite_url = "sqlite:///database/database.db"
         if env_settings.ENVIROMENT_TYPE == "DEV":
             self.tiny_engine = TinyDB(storage=MemoryStorage)
+            self.sqlite_url = "sqlite:///database/database_DEV.db"
             # self.sqlite_url = "sqlite:///:memory:"
 
         self.engine = create_engine(self.sqlite_url)
@@ -107,8 +108,11 @@ class DB_Manager:
 
                 session.add(user)
                 session.commit()
+                session.refresh(user)
                 response.data_type = "user_updated"
                 response.message = "User data has been updated. Need logout."
+                del user.password
+                response.user_data = UserPublic(**(user.model_dump()))
             except Exception as e:
                 response.message = e
                 print(e)
