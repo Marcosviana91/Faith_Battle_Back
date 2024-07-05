@@ -6,9 +6,10 @@ from schemas import APIResponseSchema, UserSchema
 from utils.DataBaseManager import DB
 from utils.security import getCurrentUserAuthenticated
 
-router = APIRouter(prefix="/user", tags=['user'])
+router = APIRouter(prefix="/user", tags=["user"])
 
 T_CurrentUser = Annotated[str, Depends(getCurrentUserAuthenticated)]
+
 
 # Create new user
 @router.post(
@@ -53,7 +54,7 @@ def updateUserData(
     __user = DB.getUserDataById(user_id)
     if current_user_authenticated != __user.user_data.get("username"):
         raise HTTPException(
-            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            status_code=status.HTTP_403_FORBIDDEN,
             detail=(
                 "You must have admin previlegies to change other user's data"
             ),

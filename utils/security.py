@@ -5,11 +5,9 @@ from fastapi.security import OAuth2PasswordBearer
 from jwt import decode, encode
 from jwt.exceptions import ExpiredSignatureError
 from passlib.hash import argon2
-from zoneinfo import ZoneInfo, available_timezones
+from zoneinfo import ZoneInfo
 
-SECRET_KEY = "SECRET_KEY"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+from settings import env_settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
@@ -25,10 +23,12 @@ def verify(password: str, encrypted_password: str):
 def createAccessToken(data: dict):
     to_encode = data.copy()
     expire = datetime.now(tz=ZoneInfo("America/Sao_Paulo")) + timedelta(
-        minutes=ACCESS_TOKEN_EXPIRE_MINUTES
+        minutes=env_settings.ACCESS_TOKEN_EXPIRE_MINUTES
     )
     to_encode.update({"exp": expire})
-    encode_jwt = encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encode_jwt = encode(
+        to_encode, env_settings.SECRET_KEY, algorithm=env_settings.ALGORITHM
+    )
 
     return encode_jwt
 
@@ -36,7 +36,9 @@ def createAccessToken(data: dict):
 def getCurrentUserAuthenticated(token: str = Depends(oauth2_scheme)):
     # possível erro de token expirado: jwt.exceptions.ExpiredSignatureError
     try:
-        payload: dict = decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload: dict = decode(
+            token, env_settings.SECRET_KEY, algorithms=[env_settings.ALGORITHM]
+        )
     except ExpiredSignatureError as e:
         print(__file__, e, "\nToken expirado")
     username: str = payload.get("sub")

@@ -1,11 +1,12 @@
 from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from utils.DataBaseManager import DB
-from utils.security import createAccessToken, getCurrentUserAuthenticated
+from utils.security import createAccessToken
 
-router = APIRouter(prefix="/auth", tags=['auth'])
+router = APIRouter(prefix="/auth", tags=["auth"])
 
 T_OAuth2Form = Annotated[OAuth2PasswordRequestForm, Depends()]
 

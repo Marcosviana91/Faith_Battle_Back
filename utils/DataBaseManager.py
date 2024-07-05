@@ -1,6 +1,8 @@
 from sqlmodel import Session, SQLModel, create_engine, select
 from tinydb import TinyDB
+from tinydb.storages import MemoryStorage
 
+# from settings import Settings
 import models
 from schemas import (
     APIResponseProps,
@@ -9,6 +11,7 @@ from schemas import (
     UserPublic,
     UserSchema,
 )
+from settings import env_settings
 from utils import security
 
 
@@ -18,12 +21,28 @@ class DB_Manager:
     """
 
     def __init__(self):
-        sqlite_file_name = "database.db"
-        sqlite_url = f"sqlite:///database/{sqlite_file_name}"
-        self.engine = create_engine(sqlite_url, echo=False)
+        self.tiny_engine = TinyDB(
+            "./database/database.json",
+            sort_keys=True,
+        )
+        self.sqlite_url = "sqlite:///database/database.db"
+        if env_settings.ENVIROMENT_TYPE == "DEV":
+            self.tiny_engine = TinyDB(storage=MemoryStorage)
+            # self.sqlite_url = "sqlite:///:memory:"
+
+        self.engine = create_engine(self.sqlite_url)
         SQLModel.metadata.create_all(self.engine)
-        tinydb_file_name = "database.json"
-        self.tiny_engine = TinyDB(f"./database/{tinydb_file_name}")
+        if env_settings.ENVIROMENT_TYPE == "DEV":
+            self.cleanUser()
+
+    def cleanUser(self):
+        with Session(self.engine) as session:
+            query = select(models.UserModel)
+            users = session.exec(query).all()
+            for user in users:
+                print(user)
+                session.delete(user)
+                session.commit()
 
     def createNewUser(self, data: UserSchema) -> APIResponseSchema:
         response = APIResponseSchema(message="User not created")

@@ -32,10 +32,10 @@ def handleRoot():
     res = {"message": "Root router ok"}
     return res
 
+
 @app.get("/populate")
-def handleRoot():
+def handlePopulate():
     from utils.populates import UserPopulate
+
     res = {"message": "Populated"}
     return res
-
-
