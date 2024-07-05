@@ -1,20 +1,72 @@
-from models import UserModel
+from schemas import UserSchema
 from utils.DataBaseManager import DB
 
+# username, password, real_name, e-mail
 fake_users = [
-    ("p0", "p0", "p0", "00@email.com"),
-    ("p1", "p1", "p1", "01@email.com"),
-    ("p2", "p2", "p2", "02@email.com"),
-    ("p3", "p3", "p3", "03@email.com"),
-    ("p4", "p4", "p4", "04@email.com"),
-    ("p5", "p5", "p5", "05@email.com"),
-    ("p6", "p6", "p6", "06@email.com"),
-    ("p7", "p7", "p7", "07@email.com"),
-    ("p8", "p8", "p8", "08@email.com"),
-    ("p9", "p9", "p9", "09@email.com"),
+    {
+        "username": "P0",
+        "password": "p0",
+        "real_name": "p0",
+        "email": "p0@email.co",
+    },
+    {
+        "username": "p1",
+        "password": "p1",
+        "real_name": "p1",
+        "email": "p1@email.co",
+    },
+    {
+        "username": "p2",
+        "password": "p2",
+        "real_name": "p2",
+        "email": "p2@email.co",
+    },
+    {
+        "username": "p3",
+        "password": "p3",
+        "real_name": "p3",
+        "email": "p3@email.co",
+    },
+    {
+        "username": "p4",
+        "password": "p4",
+        "real_name": "p4",
+        "email": "p4@email.co",
+    },
+    {
+        "username": "p5",
+        "password": "p5",
+        "real_name": "p5",
+        "email": "p5@email.co",
+    },
+    {
+        "username": "p6",
+        "password": "p6",
+        "real_name": "p6",
+        "email": "p6@email.co",
+    },
+    {
+        "username": "p7",
+        "password": "p7",
+        "real_name": "p7",
+        "email": "p7@email.co",
+    },
+    {
+        "username": "p8",
+        "password": "p8",
+        "real_name": "p8",
+        "email": "p8@email.co",
+    },
+    {
+        "username": "p9",
+        "password": "p9",
+        "real_name": "p9",
+        "email": "p9@email.co",
+    },
 ]
 
 
 for user in fake_users:
-    newUser = UserModel(*user)
-    print(DB.createNewUser(newUser.model_dump()).message)
+    newUser = UserSchema(**user)
+    # print(newUser)
+    print(DB.createNewUser(newUser).message)

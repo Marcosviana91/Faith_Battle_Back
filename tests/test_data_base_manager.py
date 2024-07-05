@@ -1,69 +1,106 @@
+from schemas import UserSchema
 from utils import DB
 
 
 def test_createNewUser_ok():
-    user_data = {
-        "username": "marcosviana91",
+    user_data = UserSchema(**{
+        "username": "usuario_de_test",
         "password": "123asd",
-        "real_name": "Marcos Antônio Gonzaga Viana",
-        "email": "marcos.viana.91@gmail.com",
-    }
-
+        "real_name": "Eu Sou Um Test",
+        "email": "usuario_test@email.co",
+    })
     db_response = DB.createNewUser(user_data)
     assert db_response.data_type == "user_created"
 
 
 def test_createNewUser_error_username_already_exist():
-    user_data = {
-        "username": "marcosviana91",
+    user_data = UserSchema(**{
+        "username": "usuario_de_test",
         "password": "123asd",
-        "real_name": "Marcos Antônio Gonzaga Viana",
-        "email": "marcos.viana.91@gmail.com",
-    }
+        "real_name": "Eu Sou Um Test",
+        "email": "usuario_test@email.co",
+    })
 
     db_response = DB.createNewUser(user_data)
     assert db_response.data_type == "error"
 
 
 def test_createNewUser_error_email_already_exist():
-    user_data = {
-        "username": "marcosviana912",
+    user_data = UserSchema(**{
+        "username": "usuario_de_test2",
         "password": "123asd",
-        "real_name": "Marcos Antônio Gonzaga Viana",
-        "email": "marcos.viana.91@gmail.com",
-    }
+        "real_name": "Eu Sou Um Test",
+        "email": "usuario_test@email.co",
+    })
 
     db_response = DB.createNewUser(user_data)
     assert db_response.data_type == "error"
 
 
 def test_updateUser_ok():
-    user_data = {
-        "username": "marcosviana912",
+    user_id = 11
+    user_data = UserSchema(**{
+        "username": "usuario_de_test_atualizado",
         "password": "123asd",
-        "real_name": "Marcos Antônio Gonzaga Viana",
-        "email": "marcos.viana.91@gmail.com",
-    }
-    db_response = DB.updateUser("marcosviana91", user_data)
+        "real_name": "Eu Sou Um Test Atualizado",
+        "email": "usuario_test_atualizado@email.co",
+    })
+    db_response = DB.updateUser(user_id, user_data)
     assert db_response.data_type == "user_updated"
 
 
 def test_updateUser_error():
     user_data = {
-        "username": "marcosviana912",
+        "username": "usuario_de_test2",
         "password": "123asd",
-        "real_name": "Marcos Antônio Gonzaga Viana",
-        "email": "marcos.viana.91@gmail.com",
+        "real_name": "Eu Sou Um Test",
+        "email": "usuario_test@email.co",
     }
-    db_response = DB.updateUser("marcosviana913", user_data)
+    db_response = DB.updateUser(22, user_data)
+    assert db_response.data_type == "error"
+
+
+def test_get_player_by_id():
+    user_id = 11
+    db_response = DB.getPlayerById(user_id)
+    assert db_response.get("id") == user_id
+
+
+def test_get_user_data_by_id_ok():
+    user_id = 11
+    db_response = DB.getUserDataById(user_id)
+    assert db_response.data_type == "user_data"
+    assert db_response.user_data.get("username") == "usuario_de_test_atualizado"
+
+
+def test_get_user_data_by_id_error():
+    user_id = 22
+    db_response = DB.getUserDataById(user_id)
+    assert db_response.data_type == "error"
+
+
+def test_auth_user_ok():
+    username = "usuario_de_test_atualizado"
+    password = "123asd"
+    db_response = DB.authUser(username, password)
+    assert db_response.data_type == "user_data"
+
+
+def test_auth_user_error():
+    username = "usuario_de_test_atualizado"
+    password = "123asd__"
+    db_response = DB.authUser(username, password)
     assert db_response.data_type == "error"
 
 
 def test_deleteUser_ok():
-    db_response = DB.deleteUser("marcosviana912")
+    user_id = 11
+    db_response = DB.deleteUser(user_id)
     assert db_response.data_type == "user_deleted"
+    assert db_response.message == f"user {user_id} has been deleted"
 
 
 def test_deleteUser_error():
-    db_response = DB.deleteUser("marcosviana913")
+    user_id = 22
+    db_response = DB.deleteUser(user_id)
     assert db_response.data_type == "error"

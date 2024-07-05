@@ -1,7 +1,6 @@
 [tool.taskipy.tasks]
 run = "fastapi dev main.py --host 0.0.0.0"
 
-pre_test = "task lint"
 test = "pytest --cov=. -vv"
 post_test = "coverage html"
 

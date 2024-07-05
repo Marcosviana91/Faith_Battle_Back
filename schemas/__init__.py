@@ -1,4 +1,26 @@
+from pydantic import BaseModel, EmailStr
+
 # Used in TinyDB and JSON schemas
+
+
+class UserSchema(BaseModel):
+    username: str
+    password: str
+    real_name: str
+    email: EmailStr
+
+
+class UserPublic(BaseModel):
+    id: int
+    username: str
+    email: EmailStr
+    real_name: str
+
+
+class APIResponseSchema(BaseModel):
+    message: str
+    data_type: str | None = "error"
+    user_data: UserPublic | None = None
 
 
 class User:

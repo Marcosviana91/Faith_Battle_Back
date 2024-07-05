@@ -2,7 +2,13 @@ from sqlmodel import Session, SQLModel, create_engine, select
 from tinydb import TinyDB
 
 import models
-from schemas import APIResponseProps, Player
+from schemas import (
+    APIResponseProps,
+    APIResponseSchema,
+    Player,
+    UserPublic,
+    UserSchema,
+)
 from utils import security
 
 
@@ -19,9 +25,10 @@ class DB_Manager:
         tinydb_file_name = "database.json"
         self.tiny_engine = TinyDB(f"./database/{tinydb_file_name}")
 
-    def createNewUser(self, data) -> APIResponseProps:
-        response = APIResponseProps("user not created")
-        newUser = models.UserModel(**data)
+    def createNewUser(self, data: UserSchema) -> APIResponseSchema:
+        response = APIResponseSchema(message="User not created")
+        newUser = models.UserModel(**(data.model_dump()))
+        newUser.username = newUser.username.lower()
         with Session(self.engine) as session:
             query_username = select(models.UserModel).where(
                 models.UserModel.username == newUser.username
@@ -49,47 +56,53 @@ class DB_Manager:
 
             else:
                 # print("user successful created")
-                newUser.password = security.encrypt(data["password"])
+                newUser.password = security.encrypt(data.password)
                 session.add(newUser)
                 session.commit()
 
                 self.createDefaultPlayerStats(player_id=newUser.id)
                 response.data_type = "user_created"
                 response.message = "user successful created"
+                response.user_data = UserPublic(**newUser.model_dump())
 
         return response
 
-    def updateUser(self, user_name, data) -> APIResponseProps:
-        response = APIResponseProps("user not updated")
-        userUpdated = models.UserModel(**data)
+    def updateUser(
+        self, user_id: int, user_new_data: UserSchema
+    ) -> APIResponseSchema:
+        response = APIResponseSchema(message="user not updated")
         with Session(self.engine) as session:
-            query_username = select(models.UserModel).where(
-                models.UserModel.username == user_name
+            query_user_data = select(models.UserModel).where(
+                models.UserModel.id == user_id
             )
             try:
                 user = session.exec(
-                    query_username
+                    query_user_data
                 ).one()  # Possível erro de usuário não encontrado
 
-                user.email = userUpdated.email
-                user.real_name = userUpdated.real_name
-                user.username = userUpdated.username
-                user.password = security.encrypt(userUpdated.password)
+                user.email = user_new_data.email
+                user.real_name = user_new_data.real_name
+                user.username = user_new_data.username
+                if user_new_data.password != "__not-change__":
+                    user.password = security.encrypt(user_new_data.password)
 
                 session.add(user)
                 session.commit()
                 response.data_type = "user_updated"
-                response.message = "user has been updated"
+                response.message = "User data has been updated. Need logout."
             except Exception as e:
                 response.message = e
                 print(e)
         return response
 
-    def deleteUser(self, user_name) -> APIResponseProps:
+    # Não acessado pela API
+    # será criado outro script para verificar um usuário
+    # que não loga há mais de X dias e o exclui do DB
+    def deleteUser(self, user_id: int) -> APIResponseProps:
         response = APIResponseProps(message="username not found")
         with Session(self.engine) as session:
             query = select(models.UserModel).where(
-                models.UserModel.username == user_name
+                models.UserModel.id == user_id
             )
             try:
                 user = session.exec(
@@ -98,9 +111,10 @@ class DB_Manager:
                 session.delete(user)
                 session.commit()
                 response.data_type = "user_deleted"
-                response.message = f"user {user.username} has been deleted"
-            except:
-                print(__file__, "\nusername not found")
+                self.tiny_engine.table("player").remove(doc_ids=[user_id])
+                response.message = f"user {user_id} has been deleted"
+            except Exception as e:
+                print(__file__, e, "\nusername not found")
 
         return response
 
@@ -112,11 +126,11 @@ class DB_Manager:
         res = self.tiny_engine.table("player").get(doc_id=player_id)
         return res
 
-    def authUser(self, username, password):
+    def authUser(self, username: str, password: str):
         response = APIResponseProps(message="username or password invalid")
         with Session(self.engine) as session:
             query = select(models.UserModel).where(
-                models.UserModel.username == username
+                models.UserModel.username == username.lower()
             )
             try:
                 user = session.exec(
@@ -132,23 +146,23 @@ class DB_Manager:
                 results.pop("password")
 
                 response.data_type = "user_data"
-                response.message = "authentication successful"
+                response.message = f"{username} has authentication successful"
                 response.user_data = results
-                print("authentication successful")
+                print(response.message)
                 user.onLogin()
                 session.add(user)
                 session.commit()
 
-            except:
-                print(__file__, "\nusername or password invalid")
+            except Exception as e:
+                print(__file__, e, "\nusername or password invalid")
 
         return response
 
-    def getUserData(self, username: str):
-        response = APIResponseProps(message="username not found")
+    def getUserDataById(self, user_id: int):
+        response = APIResponseProps(message=f"user with id {user_id} not found")
         with Session(self.engine) as session:
             query = select(models.UserModel).where(
-                models.UserModel.username == username
+                models.UserModel.id == user_id
             )
             try:
                 user = session.exec(
