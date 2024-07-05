@@ -5,3 +5,7 @@ venv
 **/.env
 /database
 .vercel
+.ruff_cache
+.pytest_cache
+.coverage
+htmlcov

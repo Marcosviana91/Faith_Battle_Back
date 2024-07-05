@@ -1,21 +1,25 @@
-from fastapi import FastAPI, status
-from fastapi.requests import Request
-from starlette.middleware.sessions import SessionMiddleware
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from secrets import token_hex
 
+<<<<<<< HEAD
 # from utils import DB
 # from utils.populates import UserPopulate
 
 import json
+=======
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
+>>>>>>> only_auth
 
+from routers import auth, users
 
 ORIGINS = ["*"]
 METHODS = ["*"]
 HEADERS = ["*"]
 
 app = FastAPI()
+app.include_router(auth.router)
+app.include_router(users.router)
 
 secret_key = token_hex()
 
@@ -30,6 +34,7 @@ app.add_middleware(
 )
 
 
+<<<<<<< HEAD
 @app.get('/')
 async def handleRoot(req: Request):
     res = JSONResponse(content={"message": "Root router ok"},
@@ -60,3 +65,17 @@ async def handleRoot(req: Request):
 #     user_data = DB.createNewUser(data)
 #     res = JSONResponse(content=user_data.__dict__, status_code=status.HTTP_201_CREATED)
 #     return res
+=======
+@app.get("/")
+def handleRoot():
+    res = {"message": "Root router ok"}
+    return res
+
+
+@app.get("/populate")
+def handlePopulate():
+    from utils.populates import UserPopulate
+
+    res = {"message": "Populated"}
+    return res
+>>>>>>> only_auth

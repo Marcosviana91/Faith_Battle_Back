@@ -1,0 +1,12 @@
+[tool.taskipy.tasks]
+run = "fastapi dev main.py --host 0.0.0.0"
+
+test = "pytest --cov=. -vv"
+post_test = "coverage html"
+
+lint = "ruff check . && ruff check . --diff"
+format = "ruff check . --fix && ruff format ."
+
+[tool.pytest.ini_options]
+pythonpath = "."
+addopts = "-p no:warnings"
