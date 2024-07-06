@@ -7,7 +7,7 @@ import models
 from schemas import (
     APIResponseProps,
     APIResponseSchema,
-    Player,
+    PlayersSchema,
     UserPublic,
     UserSchema,
 )
@@ -142,7 +142,7 @@ class DB_Manager:
         return response
 
     def createDefaultPlayerStats(self, player_id):
-        newPlayer = Player(id=player_id)
+        newPlayer = PlayersSchema(id=player_id)
         self.tiny_engine.table("player").insert(newPlayer.__dict__)
 
     def getPlayerById(self, player_id):

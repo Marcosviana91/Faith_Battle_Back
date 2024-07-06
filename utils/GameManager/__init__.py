@@ -1,14 +1,14 @@
 from random import shuffle
 from datetime import datetime
 
-from schemas import GameData, GameRoomSchema, Card
+from schemas import GameSchema, GameRoomSchema, CardSchema
 from .stages import stage0, stage1, stage2
 
 
 MAXIMUM_FAITH_POINTS = 15
 
 
-def printCard(list_name: str, card_list: list[Card]):
+def printCard(list_name: str, card_list: list[CardSchema]):
     _list = []
     for card in card_list:
         _list.append(card.card_slug)
@@ -17,7 +17,7 @@ def printCard(list_name: str, card_list: list[Card]):
 
 class GameRoom(GameRoomSchema):
 
-    def gameHandle(self, data: GameData):
+    def gameHandle(self, data: GameSchema):
         # print(__file__,"\n", data)
         match self.game_stage:
             case 0:

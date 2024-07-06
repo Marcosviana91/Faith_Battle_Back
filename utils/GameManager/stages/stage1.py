@@ -1,12 +1,12 @@
 # Stage 1: Sort cards to all players, retry sort
 
 
-from schemas import GameData, GameRoomSchema, Players_in_Match
+from schemas import GameSchema, GameRoomSchema, PlayersInMatchSchema
 
 
 MAXIMUM_DECK_TRIES = 3
 
-def retryCard(self: GameRoomSchema, player: Players_in_Match, cards: list):
+def retryCard(self: GameRoomSchema, player: PlayersInMatchSchema, cards: list):
     # print(f'Retring {cards.__len__()} cards to player {player.id}')
     # print(player.deck_try)
     if player.deck_try < MAXIMUM_DECK_TRIES:
@@ -16,13 +16,13 @@ def retryCard(self: GameRoomSchema, player: Players_in_Match, cards: list):
         self.giveCard(player, cards.__len__())
         player.deck_try += 1
         if player.deck_try >= MAXIMUM_DECK_TRIES:
-            ready_player = GameData(data_type='ready', player_id=player.id)
+            ready_player = GameSchema(data_type='ready', player_id=player.id)
             dataHandle(self, ready_player)
     else:
         raise BaseException(f'Player {player.id} reaches maximum retries')
 
 
-def dataHandle(self: GameRoomSchema, data: GameData):
+def dataHandle(self: GameRoomSchema, data: GameSchema):
     match data.data_type:
         case  "retry":
             player = self.getPlayerByPlayerId(data.player_id)

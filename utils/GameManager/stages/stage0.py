@@ -1,7 +1,7 @@
 # Stage 0: players has connecteds, check decks
 from collections import defaultdict
 
-from schemas import GameData, GameRoomSchema
+from schemas import GameSchema, GameRoomSchema
 from utils.GameManager.cards import createCardListObjectsByPlayer
 
 
@@ -22,7 +22,7 @@ def checkDeckCardsRepeats(deck: list) -> list:
     return result
 
 
-def dataHandle(self: GameRoomSchema, data: GameData):
+def dataHandle(self: GameRoomSchema, data: GameSchema):
     print(__file__, '\ndataHandle')
     match data.data_type:
         case  "connect":

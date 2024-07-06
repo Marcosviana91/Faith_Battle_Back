@@ -1,6 +1,6 @@
 from utils import DB, WS, GameRoom
 
-from schemas import Players_in_Match, GameRoomSchema, GameData, APIResponseProps, ClientRequestProps
+from schemas import PlayersInMatchSchema, GameRoomSchema, GameData, APIResponseProps, ClientRequestProps
 
 
 class RoomManager:
@@ -24,7 +24,7 @@ class RoomManager:
 
             case 'create':
                 player_db = DB.getPlayerById(data.room_data["created_by"])
-                player = Players_in_Match(
+                player = PlayersInMatchSchema(
                     id=player_db["id"], card_deck=player_db['available_cards'])
                 new_room = GameRoom(
                     player,
@@ -43,7 +43,7 @@ class RoomManager:
             case 'connect':
                 room = self.getRoomById(data.room_data.get('id'))
                 player_db = DB.getPlayerById(data.user_data.get("id"))
-                player = Players_in_Match(
+                player = PlayersInMatchSchema(
                     id=player_db["id"], card_deck=player_db['available_cards'])
                 data_handle = GameData(data_type=data.data_type, player=player)
                 room.gameHandle(data_handle)

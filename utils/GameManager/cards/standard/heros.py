@@ -1,9 +1,9 @@
-from schemas import Players_in_Match, GameRoomSchema, Card
+from schemas import PlayersInMatchSchema, GameRoomSchema, CardSchema
 
 from utils.GameManager.cards.utils import getCardInListBySlug
 
 
-class Abraao(Card):
+class Abraao(CardSchema):
     card_type = 1
     card_slug = "abraao"
     card_name = "Abraão"
@@ -15,13 +15,13 @@ class Abraao(Card):
     card_attachable = False
     ready = False
 
-    def passiveSkill(self, player: Players_in_Match, game: GameRoomSchema):
+    def passiveSkill(self, player: PlayersInMatchSchema, game: GameRoomSchema):
         if self in player.card_battle_camp:
             # Precisa de evento ao entrar herói no jogo
             player.faith_points += 1
 
 
-class Adao(Card):
+class Adao(CardSchema):
     card_type = 1
     card_slug = "adao"
     card_name = "Adão"
@@ -34,14 +34,14 @@ class Adao(Card):
 
     ready = False
 
-    def passiveSkill(self, player: Players_in_Match, game: GameRoomSchema):
+    def passiveSkill(self, player: PlayersInMatchSchema, game: GameRoomSchema):
         if (getCardInListBySlug(card_slug='eva', card_list=player.card_battle_camp)) or (getCardInListBySlug(card_slug='eva', card_list=player.card_prepare_camp)):
             # Verificar por EVA
             self.card_attack_points += 2
             self.card_defense_points += 2
 
 
-class Daniel(Card):
+class Daniel(CardSchema):
     card_slug = "daniel"
     card_type = 1
     card_name = "Daniel"
@@ -54,13 +54,13 @@ class Daniel(Card):
 
     ready = False
 
-    def activeSkill(self, player: Players_in_Match, game: GameRoomSchema):
+    def activeSkill(self, player: PlayersInMatchSchema, game: GameRoomSchema):
         oponents_in_target_battle_zone = player.card_battle_camp.__len__()
         # Precisa manter até o fim do turno
         self.card_attack_points += oponents_in_target_battle_zone
 
 
-class Davi(Card):
+class Davi(CardSchema):
     card_slug = "davi"
     card_type = 1
     card_name = 'Davi'
@@ -73,11 +73,11 @@ class Davi(Card):
 
     ready = False
 
-    def activeSkill(self, player: Players_in_Match, game: GameRoomSchema):
+    def activeSkill(self, player: PlayersInMatchSchema, game: GameRoomSchema):
         player.faith_points -= 1
 
 
-class Elias(Card):
+class Elias(CardSchema):
     card_slug = "elias"
     card_type = 1
     card_name = 'Elias'
@@ -90,14 +90,14 @@ class Elias(Card):
 
     ready = False
 
-    def activeSkill(self, player: Players_in_Match, game: GameRoomSchema):
+    def activeSkill(self, player: PlayersInMatchSchema, game: GameRoomSchema):
         oponent_target = player
         # Precisa definir a carta a ser destuída
         card_id = 0
         oponent_target.card_battle_camp.remove(card_id)
 
 
-class Ester(Card):
+class Ester(CardSchema):
     card_slug = "ester"
     card_type = 1
     card_name = 'Ester'
@@ -110,12 +110,12 @@ class Ester(Card):
 
     ready = False
 
-    def activeSkill(self, player: Players_in_Match, game: GameRoomSchema):
+    def activeSkill(self, player: PlayersInMatchSchema, game: GameRoomSchema):
         # Precisa reorganizar
         return player.card_deck[:3]
 
 
-class Eva(Card):
+class Eva(CardSchema):
     card_slug = "eva"
     card_type = 1
     card_name = 'Eva'
@@ -128,12 +128,12 @@ class Eva(Card):
 
     ready = False
 
-    def activeSkill(self, player: Players_in_Match, game: GameRoomSchema):
+    def activeSkill(self, player: PlayersInMatchSchema, game: GameRoomSchema):
         # Precisa verificar se está entrando no jogo
         game.giveCard(player, 1)
 
 
-class Jaco(Card):
+class Jaco(CardSchema):
     card_slug = "jaco"
     card_type = 1
     card_name = 'Jacó'
@@ -146,11 +146,11 @@ class Jaco(Card):
 
     ready = False
 
-    def activeSkill(self, player: Players_in_Match, game: GameRoomSchema):
+    def activeSkill(self, player: PlayersInMatchSchema, game: GameRoomSchema):
         ...
 
 
-class JoseDoEgito(Card):
+class JoseDoEgito(CardSchema):
     card_slug = "jose-do-egito"
     card_type = 1
     card_name = 'José do Egito'
@@ -163,11 +163,11 @@ class JoseDoEgito(Card):
 
     ready = False
 
-    def activeSkill(self, player: Players_in_Match, game: GameRoomSchema):
+    def activeSkill(self, player: PlayersInMatchSchema, game: GameRoomSchema):
         ...
 
 
-class Josue(Card):
+class Josue(CardSchema):
     card_slug = "josue"
     card_type = 1
     card_name = 'Josué'
@@ -180,11 +180,11 @@ class Josue(Card):
 
     ready = False
 
-    def activeSkill(self, player: Players_in_Match, game: GameRoomSchema):
+    def activeSkill(self, player: PlayersInMatchSchema, game: GameRoomSchema):
         ...
 
 
-class Maria(Card):
+class Maria(CardSchema):
     card_slug = "maria"
     card_type = 1
     card_name = 'Maria'
@@ -197,11 +197,11 @@ class Maria(Card):
 
     ready = False
 
-    def activeSkill(self, player: Players_in_Match, game: GameRoomSchema):
+    def activeSkill(self, player: PlayersInMatchSchema, game: GameRoomSchema):
         ...
 
 
-class Moises(Card):
+class Moises(CardSchema):
     card_slug = "moises"
     card_type = 1
     card_name = 'Moisés'
@@ -214,11 +214,11 @@ class Moises(Card):
 
     ready = False
 
-    def activeSkill(self, player: Players_in_Match, game: GameRoomSchema):
+    def activeSkill(self, player: PlayersInMatchSchema, game: GameRoomSchema):
         ...
 
 
-class Noe(Card):
+class Noe(CardSchema):
     card_slug = "noe"
     card_type = 1
     card_name = 'Noé'
@@ -231,11 +231,11 @@ class Noe(Card):
 
     ready = False
 
-    def passiveSkill(self, player: Players_in_Match, game: GameRoomSchema):
+    def passiveSkill(self, player: PlayersInMatchSchema, game: GameRoomSchema):
         ...
 
 
-class Salomao(Card):
+class Salomao(CardSchema):
     card_slug = "salomao"
     card_type = 1
     card_name = 'Salomão'
@@ -248,11 +248,11 @@ class Salomao(Card):
 
     ready = False
 
-    def activeSkill(self, player: Players_in_Match, game: GameRoomSchema):
+    def activeSkill(self, player: PlayersInMatchSchema, game: GameRoomSchema):
         self.ready = True
 
 
-class Sansao(Card):
+class Sansao(CardSchema):
     card_slug = "sansao"
     card_type = 1
     card_name = 'Sansão'
@@ -266,5 +266,5 @@ class Sansao(Card):
     # Sansão entra em jogo pronto para atacar
     ready = True
 
-    def activeSkill(self, player: Players_in_Match, game: GameRoomSchema):
+    def activeSkill(self, player: PlayersInMatchSchema, game: GameRoomSchema):
         self.ready = True
