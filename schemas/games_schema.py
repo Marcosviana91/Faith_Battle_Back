@@ -14,7 +14,7 @@ MAXIMUM_FAITH_POINTS = 15
 MAXIMUM_DECK_TRIES = 3
 
 
-def checkDeckCardsRepeats(deck: list) -> list:
+def _checkDeckCardsRepeats(deck: list) -> list:
     result = []
     keys = defaultdict(list)
     for key, value in enumerate(deck):
@@ -56,7 +56,6 @@ class MoveSchema:
 
 
 class RoomSchema(BaseModel):
-    __pydantic_post_init__ = 'model_post_init'
     id: str = None
     name: str
     created_by: PlayersSchema
@@ -66,11 +65,12 @@ class RoomSchema(BaseModel):
     room_stage: int = 0
     match_type: str = 'survival'
 
+    __pydantic_post_init__ = 'model_post_init'
     def model_post_init(self, *args, **kwargs):
         self.connect(self.created_by, self.password)
         self.id = uuid1().hex
 
-    def getPlayerById(self, player_id: int):
+    def _getPlayerById(self, player_id: int):
         for player in self.connected_players:
             if player_id == player.id:
                 return player
@@ -130,12 +130,12 @@ class RoomSchema(BaseModel):
         return True
 
     def disconnect(self, player_id: int):
-        player = self.getPlayerById(player_id)
+        player = self._getPlayerById(player_id)
         self.connected_players.remove(player)
 
     def setReady(self, player_id: int):
-        player = self.getPlayerById(player_id)
-        checkDeckCards_result = checkDeckCardsRepeats(player.card_deck)
+        player = self._getPlayerById(player_id)
+        checkDeckCards_result = _checkDeckCardsRepeats(player.card_deck)
         if checkDeckCards_result.__len__() > 0:
             raise Exception(
                 f"Cards {checkDeckCards_result} exceed maximum repeats."
@@ -152,7 +152,7 @@ class RoomSchema(BaseModel):
                     self.giveCard(player, INITIAL_CARDS)
 
     def setNotReady(self, player_id: int):
-        player = self.getPlayerById(player_id)
+        player = self._getPlayerById(player_id)
         if player.deck_try >= MAXIMUM_DECK_TRIES:
             raise Exception("Can't be not ready")
         player.ready = False
@@ -160,7 +160,7 @@ class RoomSchema(BaseModel):
     def setDeck(self, player_id: int, deck: list[str]):
         if (self.room_stage != 0):
             raise Exception("deck can change only in stage 0")
-        player = self.getPlayerById(player_id)
+        player = self._getPlayerById(player_id)
         player.card_deck = deck
 
     def giveCard(self, player: PlayersSchema, number_of_cards: int = 1):
@@ -175,7 +175,7 @@ class RoomSchema(BaseModel):
         # print(f"mão: {player.card_hand}\ndeck: {player.card_deck}")
 
     def retryCard(self, player_id: int, cards: list[str]):
-        player = self.getPlayerById(player_id)
+        player = self._getPlayerById(player_id)
         if player.deck_try >= MAXIMUM_DECK_TRIES:
             raise Exception(
                 f"Player {player.id} reaches maximum retries"
@@ -245,7 +245,8 @@ class MatchSchema(BaseModel):
     def newRoundHandle(self):
         self.round_match += 1
         for player in self.players_in_match:
-            player.wisdom_points += 1
+            if player.wisdom_points < 10:
+                player.wisdom_points += 1
         self.player_turn = 0
         self.playerTurnHandle()
 
@@ -254,6 +255,7 @@ class MatchSchema(BaseModel):
         player = self.players_in_match[self.player_turn]
         player.wisdom_used = 0
         self.giveCard(player)
+        # O jogador prepara suas jogadas
 
     def giveCard(self, player: PlayersInMatchSchema, number_of_cards: int = 1):
         count = 0
@@ -264,7 +266,7 @@ class MatchSchema(BaseModel):
             count += 1
             player.card_deck.remove(card_selected)
 
-# Precisa gerar as cartas independentes
+    # Precisa gerar as cartas independentes
     def moveCard(self, player_id: int, card_id: str, move_from: str, move_to: str):
         print(f"Player {player_id} is moving the card {card_id}: {move_from} => {move_to}")
 
@@ -272,120 +274,23 @@ class MatchSchema(BaseModel):
         ...
 
 
-class GameSchema(BaseModel):
-    __pydantic_post_init__ = 'model_post_init'
-    data_type: str
+# class GameSchema(BaseModel):
+#     __pydantic_post_init__ = 'model_post_init'
+#     data_type: str
 
-    def __init__(
-        self,
-        data_type: str,
-        player_data: PlayersInMatchSchema | None = None,
-        player_id: int | None = None,
-        room_id: int | None = None,
-        move: MoveSchema | None = None,
-        retry_cards: RetryCardsSchema | None = None
-    ):
-        self.room_id = room_id
-        self.data_type = data_type  # connect, change_deck, retry_cards, move
-        self.player = player_data
-        self.player_id = player_id
-        self.move = move
-        self.retry_cards = retry_cards
+#     def __init__(
+#         self,
+#         data_type: str,
+#         player_data: PlayersInMatchSchema | None = None,
+#         player_id: int | None = None,
+#         room_id: int | None = None,
+#         move: MoveSchema | None = None,
+#         retry_cards: RetryCardsSchema | None = None
+#     ):
+#         self.room_id = room_id
+#         self.data_type = data_type  # connect, change_deck, retry_cards, move
+#         self.player = player_data
+#         self.player_id = player_id
+#         self.move = move
+#         self.retry_cards = retry_cards
 
-
-class GameRoomSchema(BaseModel):
-    '''
-    #### Stages
-        0: players has connecteds, check decks
-        1: sort cards to all players, retry sort
-        2: game in curse
-    game_stage: int
-    '''
-    __pydantic_post_init__ = 'model_post_init'
-
-    player_create_match: PlayersInMatchSchema
-    players_in_match: list[PlayersInMatchSchema] = []
-
-    # def model_post_init(self, room_name: str, max_players: int, match_type: str, password: str):
-
-    def model_post_init(self, *args):
-        # print("__pydantic_post_init__ ARGS: ", *args, self)
-        self.players_in_match.append(self.player_create_match)
-    #     self.id = id(self)
-    #     # print(__file__,f"\nGameRoomSchema.model_post_init\nPlayer {player_create_match.id} has create a room (ID: {self.id})")
-    #     self.players_in_match: list[PlayersInMatchSchema] = []
-    #     self.room_name = room_name
-    #     self.created_by = player_create_match.id
-    #     self.max_players = max_players
-    #     self.match_type = match_type
-    #     self.password = password
-
-    #     self.start_match = ''
-    #     self.game_stage = 0
-    #     self.round = 0
-    #     self.player_turn = 0
-    #     self.player_focus_id = None
-    #     self.can_others_moves = False
-    #     self.end_match = ''
-
-    def getPlayerByPlayerId(self, player_id: int) -> PlayersInMatchSchema:
-        for player in self.players_in_match:
-            if player.id == player_id:
-                return player
-            raise IndexError(f'Player with id {player_id} not found')
-
-    def getPlayersIdList(self):
-        __players_info = []
-        for player in self.players_in_match:
-            __players_info.append(player.id)
-        return __players_info
-
-    def getPlayersInfo(self):
-        ...
-
-    def allPlayersIsReady(self) -> bool:
-        count = 0
-        for player in self.players_in_match:
-            if player.ready == True:
-                count += 1
-        if count == len(self.players_in_match):
-            self.game_stage += 1
-            self.setPlayersNotReady()
-            print(f"All players is ready.\nNext stage: stage {
-                  self.game_stage}")
-            return True
-        return False
-
-    def setPlayersNotReady(self):
-        for player in self.players_in_match:
-            player.ready = False
-
-    def giveCard(self, player: PlayersInMatchSchema, number_of_cards: int = 1):
-        # print(f"Sorteando {number_of_cards} cartas para o jogador {player.id}...")
-        count = 0
-        while count < number_of_cards:
-            card_selected = player.card_deck[0]
-            card_selected = choice(player.card_deck)
-            player.card_hand.append(card_selected)
-            count += 1
-            player.card_deck.remove(card_selected)
-        # print(f"mão: {player.card_hand}\ndeck: {player.card_deck}")
-
-    def gameHandle(self, data: GameSchema):
-        ...
-
-    def gameStart() -> None:
-        ...
-
-    def newRoundHandle():
-        '''
-        Gives 1 wisdom for all player
-        '''
-        ...
-
-    def playerTurnHandle():
-        '''
-        Sets used wisdom to 0 for current player
-        and gives 1 card from deck
-        '''
-        ...

@@ -126,8 +126,8 @@ if __name__ == "__main__":
 #     finish_player2 = GameSchema(data_type='ready', player_id=player2.id)
 #     game.gameHandle(finish_player2)
 
-# # ROUND 2
-# if __name__ == "0__main__":
+# ROUND 2
+if __name__ == "0__main__":
 
 #     # Stage 0: Move to prepare
 

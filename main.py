@@ -1,10 +1,9 @@
-from secrets import token_hex
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
-from routers import auth, users, match
+from routers import auth, room, users
+from settings import env_settings
 
 ORIGINS = ["*"]
 METHODS = ["*"]
@@ -13,11 +12,9 @@ HEADERS = ["*"]
 app = FastAPI()
 app.include_router(auth.router)
 app.include_router(users.router)
-app.include_router(match.router)
+app.include_router(room.router)
 
-secret_key = token_hex()
-
-app.add_middleware(SessionMiddleware, secret_key=secret_key)
+app.add_middleware(SessionMiddleware, secret_key=env_settings.SECRET_KEY)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ORIGINS,

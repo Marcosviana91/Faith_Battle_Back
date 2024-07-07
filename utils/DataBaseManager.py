@@ -5,7 +5,6 @@ from tinydb.storages import MemoryStorage
 # from settings import Settings
 import models
 from schemas import (
-    APIResponseProps,
     APIResponseSchema,
     PlayersSchema,
     UserPublic,
@@ -121,8 +120,8 @@ class DB_Manager:
     # Não acessado pela API
     # será criado outro script para verificar um usuário
     # que não loga há mais de X dias e o exclui do DB
-    def deleteUser(self, user_id: int) -> APIResponseProps:
-        response = APIResponseProps(message="username not found")
+    def deleteUser(self, user_id: int) -> APIResponseSchema:
+        response = APIResponseSchema(message="username not found")
         with Session(self.engine) as session:
             query = select(models.UserModel).where(
                 models.UserModel.id == user_id
@@ -150,7 +149,7 @@ class DB_Manager:
         return res
 
     def authUser(self, username: str, password: str):
-        response = APIResponseProps(message="username or password invalid")
+        response = APIResponseSchema(message="username or password invalid")
         with Session(self.engine) as session:
             query = select(models.UserModel).where(
                 models.UserModel.username == username.lower()
@@ -182,7 +181,7 @@ class DB_Manager:
         return response
 
     def getUserDataById(self, user_id: int):
-        response = APIResponseProps(message=f"user with id {user_id} not found")
+        response = APIResponseSchema(message=f"user with id {user_id} not found")
         with Session(self.engine) as session:
             query = select(models.UserModel).where(
                 models.UserModel.id == user_id
