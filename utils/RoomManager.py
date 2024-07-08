@@ -27,9 +27,14 @@ class RoomManager:
         room = self._getRoomById(room_id)
         return room.getRoomStats
 
-    def addRoom(self, room: RoomSchema):
+    def createRoom(self, room: RoomSchema):
         self.ROOMS.append(room)
         return room
+    
+    def enterRoom(self, room_id: str, player, password: str):
+        room = self._getRoomById(room_id)
+        room_response = room.connect(player, password)
+        return room_response
 
     def endRoom(self, room):
         self.ROOMS.remove(room)

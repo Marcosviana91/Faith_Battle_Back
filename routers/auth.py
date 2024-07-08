@@ -14,7 +14,6 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/token")
 def handleAuth(form_data: AuthSchema):
-    print(form_data)
     user_data = DB.authUser(
         username=form_data.username,
         password=form_data.password,

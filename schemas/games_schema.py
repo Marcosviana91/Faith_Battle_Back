@@ -59,11 +59,12 @@ class RoomSchema(BaseModel):
     id: str = None
     name: str
     created_by: PlayersSchema
-    max_players: int = 2
-    connected_players: list[PlayersSchema] = []
-    password: str = None
     room_stage: int = 0
+    
+    connected_players: list[PlayersSchema] = []
+    max_players: int = 2
     match_type: str = 'survival'
+    password: str = None
 
     __pydantic_post_init__ = 'model_post_init'
     def model_post_init(self, *args, **kwargs):
@@ -98,7 +99,7 @@ class RoomSchema(BaseModel):
             "name": self.name,
             "created_by": self.created_by.id,
             "max_players": self.max_players,
-            "connected_players": len(self.connected_players),
+            "connected_players": self.getPlayersStats,
             "has_password": bool(self.password),
             "room_stage": self.room_stage,
             "match_type": self.match_type,
@@ -111,11 +112,8 @@ class RoomSchema(BaseModel):
         for player in self.connected_players:
             __response.append({
                 "id": player.id,
-                # "available_cards": player.available_cards,
                 "ready": player.ready,
-                # "card_deck": player.card_deck,
-                "deck_try": player.deck_try,
-                "card_hand": player.card_hand
+                "xp_points": player.xp_points
             })
         return __response
 
@@ -124,14 +122,16 @@ class RoomSchema(BaseModel):
             raise Exception("players can connect only in stage 0")
         if len(self.connected_players) >= self.max_players:
             raise Exception("the room is full")
-        if (self.password != password):
-            raise Exception("password not match")
+        if (bool(self.password)):
+            if (self.password != password):
+                raise Exception("password not match")
         self.connected_players.append(player)
-        return True
+        return self.getRoomStats
 
     def disconnect(self, player_id: int):
         player = self._getPlayerById(player_id)
         self.connected_players.remove(player)
+        return self.getRoomStats
 
     def setReady(self, player_id: int):
         player = self._getPlayerById(player_id)
@@ -193,18 +193,19 @@ class RoomSchema(BaseModel):
 
 
 class MatchSchema(BaseModel):
-    __pydantic_post_init__ = 'model_post_init'
     room: RoomSchema
-    players_in_match: list[PlayersInMatchSchema] = []
+    
     id: str = None
     start_match: str = None
     match_type: str = None
+    players_in_match: list[PlayersInMatchSchema] = []
     round_match: int = 0
     player_turn: int = 0
     player_focus_id: int = 0
     can_others_move: bool = False
     end_match: str = None
 
+    __pydantic_post_init__ = 'model_post_init'
     def model_post_init(self, *args, **kwargs):
         self.start_match = str(datetime.now())
         self.id = self.room.id
@@ -222,7 +223,7 @@ class MatchSchema(BaseModel):
         for player in self.players_in_match:
             __players_in_match.append({
                 "id": player.id,
-                "card_hand": player.card_hand,
+                "card_hand": player.card_hand, # REMOVER
                 "card_prepare_camp": player.card_prepare_camp,
                 "card_battle_camp": player.card_battle_camp,
                 "card_in_forgotten_sea": player.card_in_forgotten_sea,

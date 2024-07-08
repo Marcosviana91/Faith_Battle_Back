@@ -7,7 +7,7 @@ class APIResponseSchema(BaseModel):
     message: str
     data_type: str | None = "error"
     user_data: UserPublic | None = None
-    rooms_list: list | None = None
+    room_list: list | None = None
     room_data: RoomSchema | None = None
     
 class ClientRequestSchema(BaseModel):
