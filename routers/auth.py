@@ -1,18 +1,20 @@
-from typing import Annotated
+# from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import APIRouter, Depends, HTTPException, status, Body
+# from fastapi.security import OAuth2PasswordRequestForm
 
+from schemas import AuthSchema
 from utils.DataBaseManager import DB
 from utils.security import createAccessToken
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-T_OAuth2Form = Annotated[OAuth2PasswordRequestForm, Depends()]
+# T_OAuth2Form = Annotated[AuthSchema, Depends()]
 
 
 @router.post("/token")
-def handleAuth(form_data: T_OAuth2Form):
+def handleAuth(form_data: AuthSchema):
+    print(form_data)
     user_data = DB.authUser(
         username=form_data.username,
         password=form_data.password,
