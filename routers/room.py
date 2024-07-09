@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 
 from schemas import APIResponseSchema, RoomSchema, PlayersSchema
-from utils import ROOMS
+from utils.RoomManager import ROOMS
 
 router = APIRouter(prefix="/room", tags=["room"])
 
@@ -29,10 +29,10 @@ def createRoom(new_room: RoomSchema):
 
 
 @router.post('/{room_id}/')
-def enterRoom(room_id: str, player:PlayersSchema, password:str = ""):
+async def enterRoom(room_id: str, player:PlayersSchema, password:str = ""):
     response = APIResponseSchema(message='Something goes wrong')
     try:
-        room = ROOMS.enterRoom(room_id, player, password)
+        room = await ROOMS.enterRoom(room_id, player, password)
         response.message = "room_connected"
         response.data_type = "room_data"
         response.room_data = room

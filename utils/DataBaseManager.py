@@ -8,7 +8,7 @@ from schemas import (
     APIResponseSchema,
     PlayersSchema,
     UserPublic,
-    UserSchema,
+    NewUserSchema,
 )
 from settings import env_settings
 from utils import security
@@ -44,7 +44,7 @@ class DB_Manager:
                 session.delete(user)
                 session.commit()
 
-    def createNewUser(self, data: UserSchema) -> APIResponseSchema:
+    def createNewUser(self, data: NewUserSchema) -> APIResponseSchema:
         response = APIResponseSchema(message="User not created")
         newUser = models.UserModel(**(data.model_dump()))
         newUser.username = newUser.username.lower()
@@ -87,7 +87,7 @@ class DB_Manager:
         return response
 
     def updateUser(
-        self, user_id: int, user_new_data: UserSchema
+        self, user_id: int, user_new_data: NewUserSchema
     ) -> APIResponseSchema:
         response = APIResponseSchema(message="user not updated")
         with Session(self.engine) as session:

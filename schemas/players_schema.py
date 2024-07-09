@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 
 
+
 class PlayersSchema(BaseModel):
     __pydantic_post_init__ = "model_post_init"
     '''
@@ -38,3 +39,4 @@ class PlayersInMatchSchema(BaseModel):
     faith_points: int
     wisdom_points: int = 0
     wisdom_used: int = 0
+    # websocket: WebSocket = None

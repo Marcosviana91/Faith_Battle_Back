@@ -1,9 +1,9 @@
-from schemas import UserSchema
-from utils import DB
+from schemas import NewUserSchema
+from utils.DataBaseManager import DB
 
 
 def test_createNewUser_ok():
-    user_data = UserSchema(**{
+    user_data = NewUserSchema(**{
         "username": "usuario_de_test",
         "password": "123asd",
         "real_name": "Eu Sou Um Test",
@@ -14,7 +14,7 @@ def test_createNewUser_ok():
 
 
 def test_createNewUser_error_username_already_exist():
-    user_data = UserSchema(**{
+    user_data = NewUserSchema(**{
         "username": "usuario_de_test",
         "password": "123asd",
         "real_name": "Eu Sou Um Test",
@@ -26,7 +26,7 @@ def test_createNewUser_error_username_already_exist():
 
 
 def test_createNewUser_error_email_already_exist():
-    user_data = UserSchema(**{
+    user_data = NewUserSchema(**{
         "username": "usuario_de_test2",
         "password": "123asd",
         "real_name": "Eu Sou Um Test",
@@ -39,7 +39,7 @@ def test_createNewUser_error_email_already_exist():
 
 def test_updateUser_ok():
     user_id = 1
-    user_data = UserSchema(**{
+    user_data = NewUserSchema(**{
         "username": "usuario_de_test_atualizado",
         "password": "123asd",
         "real_name": "Eu Sou Um Test Atualizado",

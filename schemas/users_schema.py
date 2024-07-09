@@ -1,11 +1,13 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
+from fastapi import WebSocket
 
 
 class AuthSchema(BaseModel):
     username: str
     password: str
 
-class UserSchema(BaseModel):
+
+class NewUserSchema(BaseModel):
     username: str
     password: str
     real_name: str
@@ -17,3 +19,10 @@ class UserPublic(BaseModel):
     username: str
     email: EmailStr
     real_name: str
+
+
+class UserWs(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    id: int
+    token: str
+    websocket: WebSocket = None

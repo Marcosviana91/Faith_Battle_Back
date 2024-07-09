@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
-from routers import auth, room, users
+from routers import auth, room, users, websocket
 from settings import env_settings
 
 ORIGINS = ["*"]
@@ -13,6 +13,7 @@ app = FastAPI()
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(room.router)
+app.include_router(websocket.router)
 
 app.add_middleware(SessionMiddleware, secret_key=env_settings.SECRET_KEY)
 app.add_middleware(
