@@ -2,7 +2,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from schemas import APIResponseSchema, NewUserSchema
+from schemas.API_schemas import APIResponseSchema
+from schemas.users_schema import NewUserSchema
 from utils.DataBaseManager import DB
 from utils.security import getCurrentUserAuthenticated
 

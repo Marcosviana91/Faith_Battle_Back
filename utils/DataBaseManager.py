@@ -4,12 +4,10 @@ from tinydb.storages import MemoryStorage
 
 # from settings import Settings
 import models
-from schemas import (
-    APIResponseSchema,
-    PlayersSchema,
-    UserPublic,
-    NewUserSchema,
-)
+from schemas.API_schemas import APIResponseSchema
+from schemas.users_schema import UserPublic, NewUserSchema
+from schemas.players_schema import PlayersTinyDBSchema
+
 from settings import env_settings
 from utils import security
 
@@ -141,12 +139,13 @@ class DB_Manager:
         return response
 
     def createDefaultPlayerStats(self, player_id):
-        newPlayer = PlayersSchema(id=player_id)
+
+        newPlayer = PlayersTinyDBSchema(id=player_id)
         self.tiny_engine.table("player").insert(newPlayer.__dict__)
 
-    def getPlayerById(self, player_id):
-        res = self.tiny_engine.table("player").get(doc_id=player_id)
-        return res
+    def getPlayerById(self, player_id: int):
+        player = self.tiny_engine.table("player").get(doc_id=player_id)
+        return player
 
     def authUser(self, username: str, password: str):
         response = APIResponseSchema(message="username or password invalid")
@@ -181,7 +180,8 @@ class DB_Manager:
         return response
 
     def getUserDataById(self, user_id: int):
-        response = APIResponseSchema(message=f"user with id {user_id} not found")
+        response = APIResponseSchema(
+            message=f"user with id {user_id} not found")
         with Session(self.engine) as session:
             query = select(models.UserModel).where(
                 models.UserModel.id == user_id
@@ -204,6 +204,12 @@ class DB_Manager:
                 print(__file__, "\nusername not found")
 
         return response
+
+    def setPlayerInRoom(self, player_id: int, room_id: str):
+        self.tiny_engine.table("player").update(
+            {"room_or_match_id": room_id}, doc_ids=[player_id])
+
+
 
 
 DB = DB_Manager()

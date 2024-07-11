@@ -1,6 +1,7 @@
 # from utils.GameManager import GameRoom
 # , GameSchema, MoveSchema, CardSchema
-from schemas import RoomSchema, PlayersSchema
+from schemas.games_schema import RoomSchema
+from schemas.players_schema import PlayersSchema
 from pprint import pprint
 
 # from utils.populates.CardPopulate import cardPopulates

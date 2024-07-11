@@ -5,7 +5,8 @@ from fastapi import APIRouter, Depends, WebSocketDisconnect, status, WebSocket
 from utils.RoomManager import ROOMS
 from utils.MatchManager import MATCHES
 from utils.ConnectionManager import WS
-from schemas import UserWs
+from utils.CheckUserState import checkUserStats
+from schemas.users_schema import UserWs
 
 # from utils.security import getCurrentUserAuthenticated
 
@@ -30,6 +31,7 @@ async def handleWSConnect(websocket: WebSocket):
                     websocket=websocket
                 )
                 WS.connect(newUserWs)
+                await checkUserStats(player_id)
             else:
                 await ROOMS.handleRoom(data)
 

@@ -1,6 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
 
-from schemas import APIResponseSchema, RoomSchema, PlayersSchema
+from schemas.API_schemas import APIResponseSchema
+from schemas.games_schema import RoomSchema
+from schemas.players_schema import PlayersSchema
 from utils.RoomManager import ROOMS
 
 router = APIRouter(prefix="/room", tags=["room"])

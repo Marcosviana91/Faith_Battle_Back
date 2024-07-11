@@ -1,5 +1,9 @@
-from schemas import ClientRequestSchema, RoomSchema, PlayersSchema, MatchSchema
+from schemas.API_schemas import ClientRequestSchema
+from schemas.games_schema import RoomSchema
+from schemas.players_schema import PlayersSchema
+from schemas.matches_schema import MatchSchema
 from utils.ConnectionManager import WS
+from utils.DataBaseManager import DB
 from utils.MatchManager import MATCHES
 
 
@@ -30,6 +34,7 @@ class RoomManager:
 
     def createRoom(self, room: RoomSchema):
         self.ROOMS.append(room)
+        DB.setPlayerInRoom(player_id=room.connected_players[0].id, room_id=room.id)
         return room
 
     def endRoom(self, room):
@@ -40,6 +45,7 @@ class RoomManager:
     async def enterRoom(self, room_id: str, player: PlayersSchema, password: str):
         room = self._getRoomById(room_id)
         room_stats = room.connect(player, password)
+        DB.setPlayerInRoom(player_id=player.id, room_id=room_id)
         for player in room.connected_players:
             await WS.sendToPlayer({"data_type": "room_update", "room_data": room_stats}, player.id)
         return room_stats
@@ -53,6 +59,7 @@ class RoomManager:
                 room = self._getRoomById(data.room_data.get('id'))
                 player_id = data.user_data.get('id')
                 room.disconnect(player_id)
+                DB.setPlayerInRoom(player_id=room.connected_players[0].id, room_id="")
                 await WS.sendToPlayer({"data_type": "disconnected"}, player_id)
                 if len(room.connected_players) == 0:
                     self.endRoom(room)

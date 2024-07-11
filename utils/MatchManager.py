@@ -1,4 +1,6 @@
-from schemas import ClientRequestSchema, MatchSchema, PlayersInMatchSchema
+from schemas.API_schemas import ClientRequestSchema
+from schemas.players_schema import PlayersInMatchSchema
+from schemas.matches_schema import MatchSchema
 from utils.ConnectionManager import WS
 
 

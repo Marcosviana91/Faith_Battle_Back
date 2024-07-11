@@ -4,7 +4,7 @@ from uuid import uuid1
 
 from pydantic import BaseModel
 
-from .players_schema import  PlayersSchema
+from schemas.players_schema import  PlayersSchema
 
 
 MINIMUM_DECK_CARDS = 10
@@ -46,7 +46,8 @@ class RoomSchema(BaseModel):
 
     def model_post_init(self, *args, **kwargs):
         self.connect(self.created_by, self.password)
-        self.id = uuid1().hex
+        if not self.id:
+            self.id = uuid1().hex
 
     def _getPlayerById(self, player_id: int):
         for player in self.connected_players:

@@ -5,9 +5,7 @@ from uuid import uuid1
 from pydantic import BaseModel
 
 from schemas.games_schema import RoomSchema
-
-# from . import RoomSchema
-from .players_schema import PlayersInMatchSchema
+from schemas.players_schema import PlayersInMatchSchema
 
 
 MINIMUM_DECK_CARDS = 10

@@ -35,6 +35,12 @@ def handleRoot():
 @app.get("/populate")
 def handlePopulate():
     from utils.populates import UserPopulate
-
     res = {"message": "Populated"}
+    return res
+
+@app.get("/fake_match")
+async def makeFakeMatch():
+    from utils.populates import FakeMatch
+    await FakeMatch.createFakeMatch()
+    res = {"message": "fake_match"}
     return res

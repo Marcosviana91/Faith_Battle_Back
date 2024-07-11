@@ -1,4 +1,4 @@
-from schemas import UserWs
+from schemas.users_schema import UserWs
 
 
 class WS_Manager:
@@ -28,6 +28,7 @@ class WS_Manager:
             if user.token == user_ws.token:
                 user.websocket = user_ws.websocket
             else:
+                user_ws.websocket.close()
                 raise AssertionError("token not match")
         except Exception as e:
             print(f'{e}')
@@ -38,14 +39,18 @@ class WS_Manager:
     def disconnect(self, user_id: int = None):
         user = self.__getUserWsById(user_id)
         user.websocket = None
+        self.all_users.remove(user)
         print(__file__, f"\nWS: User {user_id} has disconnected.")
         print(__file__, f"\nWS: Users connected in game: {
               self.all_users.__len__()}.")
 
     async def sendToPlayer(self, data: dict, user_id: int):
-        user = self.__getUserWsById(user_id)
-        print(f"WS: Send to player {user_id}")
-        await user.websocket.send_json(data)
+        try:
+            user = self.__getUserWsById(user_id)
+            print(f"WS: Send to player {user_id}")
+            await user.websocket.send_json(data)
+        except IndexError as e:
+            print(f"{e}: Player {user_id} not conected.")
 
     # async def sendToAll(self, message):
     #     for user in self.all_users:

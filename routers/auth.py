@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 # from fastapi.security import OAuth2PasswordRequestForm
 
-from schemas import AuthSchema, UserWs
+from schemas.users_schema import AuthSchema, UserWs
 from utils.DataBaseManager import DB
 from utils.ConnectionManager import WS
 from utils.security import createAccessToken
