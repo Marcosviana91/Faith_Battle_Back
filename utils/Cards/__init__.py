@@ -1,7 +1,5 @@
 from secrets import token_hex
-
-from schemas import PlayersInMatchSchema, CardSchema
-
+from schemas.cards_schema import CardSchema
 from .standard import heros
 
 STANDARD_HEROS_CLASSES = {
@@ -24,13 +22,23 @@ STANDARD_HEROS_CLASSES = {
     ]
 }
 
-def createCardListObjectsByPlayer(player: PlayersInMatchSchema) -> list[CardSchema]:
+
+def createCardListObjectsByPlayer(player_id: int, card_list: list[str]) -> list[CardSchema]:
     card_object = []
     heroes: list[CardSchema] = STANDARD_HEROS_CLASSES['HEROS']
-    for card in player.card_deck:
+    for card_slug in card_list:
         for hero in heroes:
-            if card == hero.card_slug:
-                __temp_id = f'{player.id}-{card}-{token_hex(3)}'
-                newHero: CardSchema = hero(__temp_id)
+            if card_slug == hero.slug:
+                __temp_id = f'{player_id}-{card_slug}-{token_hex(3)}'
+                newHero = hero.model_copy()
+                newHero.in_game_id = __temp_id
                 card_object.append(newHero)
+                break
     return card_object
+
+
+def getCardInListBySlug(card_slug: str, card_list: list[CardSchema]) -> CardSchema | None:
+    for card in card_list:
+        if card.slug == card_slug:
+            return card
+    return None

@@ -1,11 +1,11 @@
 from datetime import datetime
 from random import choice, shuffle
-from uuid import uuid1
 
 from pydantic import BaseModel
 
 from schemas.games_schema import RoomSchema
 from schemas.players_schema import PlayersInMatchSchema
+from utils.Cards import createCardListObjectsByPlayer
 
 
 MINIMUM_DECK_CARDS = 10
@@ -58,8 +58,15 @@ class MatchSchema(BaseModel):
         self.match_type = self.room.match_type
         for player in self.room.connected_players:
             new_player = PlayersInMatchSchema(
-                id=player.id, card_deck=player.card_deck, card_hand=player.card_hand, faith_points=MAXIMUM_FAITH_POINTS)
+                id=player.id,
+                card_deck=createCardListObjectsByPlayer(
+                    player.id, player.card_deck),
+                card_hand=createCardListObjectsByPlayer(
+                    player.id, player.card_hand),
+                faith_points=MAXIMUM_FAITH_POINTS
+            )
             self.players_in_match.append(new_player)
+        shuffle(self.players_in_match)
         del self.room
         self.newRoundHandle()
 
@@ -67,17 +74,7 @@ class MatchSchema(BaseModel):
     def getMatchStats(self):
         __players_in_match = []
         for player in self.players_in_match:
-            __players_in_match.append({
-                "id": player.id,
-                "card_hand": player.card_hand,  # REMOVER
-                "card_deck": player.card_deck,  # REMOVER
-                "card_prepare_camp": player.card_prepare_camp,
-                "card_battle_camp": player.card_battle_camp,
-                "card_in_forgotten_sea": player.card_in_forgotten_sea,
-                "faith_points": player.faith_points,
-                "wisdom_points": player.wisdom_points,
-                "wisdom_used":  player.wisdom_used
-            })
+            __players_in_match.append(player.getPlayerStats)
 
         return {
             "id": self.id,
@@ -108,8 +105,8 @@ class MatchSchema(BaseModel):
     def giveCard(self, player: PlayersInMatchSchema, number_of_cards: int = 1):
         count = 0
         while count < number_of_cards:
-            # card_selected = player.card_deck[0]
-            card_selected = choice(player.card_deck)
+            card_selected = player.card_deck[0]
+            # card_selected = choice(player.card_deck)
             player.card_hand.append(card_selected)
             count += 1
             player.card_deck.remove(card_selected)

@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from schemas.cards_schema import CardSchema
 
 
 STANDARD_CARDS = [
@@ -37,7 +38,7 @@ class PlayersSchema(BaseModel):
     ready: bool = False
     card_deck: list[str] = []
     deck_try: int = 0
-    card_hand: list = []
+    card_hand: list[str] = []
 
     def model_post_init(
         self, *args, **kwargs,
@@ -51,12 +52,30 @@ class PlayersInMatchSchema(BaseModel):
     # __pydantic_post_init__ = 'model_post_init'
 
     id: int
-    card_deck: list[str]
-    card_hand: list
-    card_prepare_camp: list = []
-    card_battle_camp: list = []
-    card_in_forgotten_sea: list = []
+    card_deck: list[CardSchema]
+    card_hand: list[CardSchema]
+    card_prepare_camp: list[CardSchema] = []
+    card_battle_camp: list[CardSchema] = []
+    card_in_forgotten_sea: list[CardSchema] = []
     faith_points: int
     wisdom_points: int = 0
     wisdom_used: int = 0
-    # websocket: WebSocket = None
+    
+    @property
+    def getPlayerStats(self):
+        def a(card_list:list[CardSchema]):
+            __list = []
+            for card in card_list:
+                __list.append(card.getCardStats)
+            return __list
+        return {
+                "id": self.id,
+                "card_hand": a(self.card_hand),  # REMOVER
+                "card_deck": a(self.card_deck),  # REMOVER
+                "card_prepare_camp": a(self.card_prepare_camp),
+                "card_battle_camp": a(self.card_battle_camp),
+                "card_in_forgotten_sea": a(self.card_in_forgotten_sea),
+                "faith_points": self.faith_points,
+                "wisdom_points": self.wisdom_points,
+                "wisdom_used":  self.wisdom_used
+            }

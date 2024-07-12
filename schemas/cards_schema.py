@@ -1,18 +1,32 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 class CardSchema(BaseModel):
-    # nome único: jose-do-egito
-    slug: str
-    # player id - card slug - secret
-    in_game_id: str
-    wisdom_cost: int
-    attack_point: int
-    defense_points: int
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     
-    used: bool
-    has_passive_skill: bool
-    has_active_skill: bool
-    attachable: bool
+    # nome único: jose-do-egito
+    slug: str | None
+    wisdom_cost: int | None
+    attack_point: int | None
+    defense_points: int | None
+    # player id - card slug - secret
+    in_game_id: str | None
+    
+    # card_type: int
+    
+    # used: bool
+    # has_passive_skill: bool
+    # has_active_skill: bool
+    # attachable: bool
+    
+    @property
+    def getCardStats(self):
+        return {
+            "slug": self.slug,
+            "in_game_id": self.in_game_id,
+            "wisdom_cost": self.wisdom_cost,
+            "attack_point": self.attack_point,
+            "defense_points": self.defense_points,
+        }
     
     
     def passiveSkill(self):
@@ -27,10 +41,10 @@ class CardSchema(BaseModel):
     def onDettach(self):
         ...
 
-    def onDestroy(self):
+    def onInvoke(self):
         ...
 
-    def onInvoke(self):
+    def onDestroy(self):
         ...
 
     def onAttack(self):

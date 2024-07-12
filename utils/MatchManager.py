@@ -27,7 +27,7 @@ class MatchManager:
         self.MATCHES.append(match)
 
     def endMatch(self, match_id: str):
-        match = self.__getMatchById(match_id)
+        match = self._getMatchById(match_id)
         self.MATCHES.remove(match)
         del match
 
