@@ -7,7 +7,6 @@ from utils.DataBaseManager import DB
 from utils.MatchManager import MATCHES
 
 
-
 class RoomManager:
     ROOMS: list[RoomSchema]
 
@@ -18,7 +17,7 @@ class RoomManager:
         for room in self.ROOMS:
             if room.id == room_id:
                 return room
-        raise IndexError(f"{room_id} not found")
+        return None
 
     def getAllRoomsInfo(self):
         if len(self.ROOMS) < 1:
@@ -34,7 +33,8 @@ class RoomManager:
 
     def createRoom(self, room: RoomSchema):
         self.ROOMS.append(room)
-        DB.setPlayerInRoom(player_id=room.connected_players[0].id, room_id=room.id)
+        DB.setPlayerInRoom(
+            player_id=room.connected_players[0].id, room_id=room.id)
         return room
 
     def endRoom(self, room):
@@ -59,7 +59,8 @@ class RoomManager:
                 room = self._getRoomById(data.room_data.get('id'))
                 player_id = data.user_data.get('id')
                 room.disconnect(player_id)
-                DB.setPlayerInRoom(player_id=room.connected_players[0].id, room_id="")
+                DB.setPlayerInRoom(
+                    player_id=room.connected_players[0].id, room_id="")
                 await WS.sendToPlayer({"data_type": "disconnected"}, player_id)
                 if len(room.connected_players) == 0:
                     self.endRoom(room)
@@ -79,7 +80,7 @@ class RoomManager:
                                 "player_data": {
                                     "id": player.id,
                                     "ready": player.ready,
-                                    "cards_in_hand": player.card_hand
+                                    "card_hand": player.card_hand
                                 }
                             },
                             player.id
@@ -89,7 +90,17 @@ class RoomManager:
                 if room.room_stage == 2:
                     newMatch = MatchSchema(room=room)
                     MATCHES.createMatch(newMatch)
+                    for player in room.connected_players:
+                        await WS.sendToPlayer(
+                            {   
+                                "data_type": "match_update",
+                                "match_data": newMatch.getMatchStats
+                            },
+                            player.id
+                        )
                     self.endRoom(room)
+            case 'match':
+                ...
 
 
 ROOMS = RoomManager()

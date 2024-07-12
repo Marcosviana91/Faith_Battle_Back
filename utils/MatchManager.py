@@ -10,6 +10,13 @@ class MatchManager:
     def __init__(self) -> None:
         self.MATCHES = []
 
+    def _getMatchById(self, match_id: str) -> MatchSchema:
+        for match in self.MATCHES:
+            if match.id == match_id:
+                return match
+        return None
+
+    @property
     def getStats(self):
         response = []
         for match in self.MATCHES:
@@ -20,6 +27,11 @@ class MatchManager:
         self.MATCHES.append(match)
         for match in self.MATCHES:
             print(match)
+
+    def endMatch(self, match_id: str):
+        match = self.__getMatchById(match_id)
+        self.MATCHES.remove(match)
+        del match
 
 
 MATCHES = MatchManager()
