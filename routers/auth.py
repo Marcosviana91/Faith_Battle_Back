@@ -23,10 +23,8 @@ def handleAuth(form_data: AuthSchema):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail=db_response.message
         )
-
     access_token = createAccessToken({
-        "sub": db_response.user_data.get("username"),
-        "inf": db_response.user_data
+        "sub": db_response.user_data.get("id"),
     })
     res = {"access_token": access_token, "token_type": "Bearer"}
     authenticated_user = UserWs(
