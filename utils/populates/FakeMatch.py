@@ -3,7 +3,6 @@
 from schemas.players_schema import PlayersSchema
 from schemas.games_schema import RoomSchema
 from utils.RoomManager import ROOMS
-from utils.MatchManager import MATCHES
 
 
 async def createFakeMatch():
@@ -25,13 +24,13 @@ async def createFakeMatch():
     fake_room.setReady(p0.id)
     
     p9.ready = True
-    # await ROOMS.handleRoom({
-    #     "data_type": "ready",
-    #     "room_data": {
-    #         "id": fake_room.id,
-    #         },
-    #     "user_data": {
-    #         "id": p0.id,
-    #     }
-    # })
+    await ROOMS.handleRoom({
+        "data_type": "ready",
+        "room_data": {
+            "id": fake_room.id,
+            },
+        "user_data": {
+            "id": p0.id,
+        }
+    })
     

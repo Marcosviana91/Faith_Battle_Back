@@ -53,7 +53,7 @@ class MatchSchema(BaseModel):
     __pydantic_post_init__ = 'model_post_init'
 
     def model_post_init(self, *args, **kwargs):
-        self.start_match = str(datetime.now())
+        self.start_match = str(datetime.now().isoformat())
         self.id = self.room.id
         self.match_type = self.room.match_type
         for player in self.room.connected_players:

@@ -5,6 +5,8 @@ from starlette.middleware.sessions import SessionMiddleware
 from routers import auth, room, users, websocket
 from settings import env_settings
 
+from utils.MatchManager import MATCHES
+
 ORIGINS = ["*"]
 METHODS = ["*"]
 HEADERS = ["*"]
@@ -43,4 +45,10 @@ async def makeFakeMatch():
     from utils.populates import FakeMatch
     await FakeMatch.createFakeMatch()
     res = {"message": "fake_match"}
+    return res
+
+
+@app.get("/get_match_stats")
+async def getFakeMatch():
+    res = MATCHES.getStats
     return res

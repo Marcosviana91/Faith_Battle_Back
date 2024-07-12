@@ -25,8 +25,6 @@ class MatchManager:
 
     def createMatch(self, match: MatchSchema):
         self.MATCHES.append(match)
-        for match in self.MATCHES:
-            print(match)
 
     def endMatch(self, match_id: str):
         match = self.__getMatchById(match_id)
