@@ -1,6 +1,6 @@
 from collections import defaultdict
 from random import choice
-from uuid import uuid1
+from nanoid import generate
 
 from pydantic import BaseModel
 
@@ -47,7 +47,7 @@ class RoomSchema(BaseModel):
     def model_post_init(self, *args, **kwargs):
         self.connect(self.created_by, self.password)
         if not self.id:
-            self.id = uuid1().hex
+            self.id = generate(size=12)
 
     def _getPlayerById(self, player_id: int):
         for player in self.connected_players:
