@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from schemas.cards_schema import CardSchema
+from utils.Cards import cardListToDict
 
 
 STANDARD_CARDS = [
@@ -63,18 +64,12 @@ class PlayersInMatchSchema(BaseModel):
     
     @property
     def getPlayerStats(self):
-        def a(card_list:list[CardSchema]):
-            __list = []
-            for card in card_list:
-                __list.append(card.getCardStats)
-            return __list
+        
         return {
                 "id": self.id,
-                "card_hand": a(self.card_hand),  # REMOVER
-                "card_deck": a(self.card_deck),  # REMOVER
-                "card_prepare_camp": a(self.card_prepare_camp),
-                "card_battle_camp": a(self.card_battle_camp),
-                "card_in_forgotten_sea": a(self.card_in_forgotten_sea),
+                "card_prepare_camp": cardListToDict(self.card_prepare_camp),
+                "card_battle_camp": cardListToDict(self.card_battle_camp),
+                "card_in_forgotten_sea": cardListToDict(self.card_in_forgotten_sea),
                 "faith_points": self.faith_points,
                 "wisdom_points": self.wisdom_points,
                 "wisdom_used":  self.wisdom_used

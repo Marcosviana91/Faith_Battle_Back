@@ -1,7 +1,5 @@
 from schemas.API_schemas import ClientRequestSchema
-from schemas.players_schema import PlayersInMatchSchema
 from schemas.matches_schema import MatchSchema
-from utils.ConnectionManager import WS
 
 
 class MatchManager:
@@ -25,6 +23,15 @@ class MatchManager:
 
     def createMatch(self, match: MatchSchema):
         self.MATCHES.append(match)
+        
+    async def handleMove(self, data_raw: dict):
+        data = ClientRequestSchema(**data_raw)
+        # print('>>>>> RECV: ', data)
+        if data.data_type == "match_move":
+            match_room = self._getMatchById(data.match_move.get("match_id"))
+            if (match_room):
+                await match_room.incoming(data.match_move)
+
 
     def endMatch(self, match_id: str):
         match = self._getMatchById(match_id)

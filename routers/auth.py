@@ -26,7 +26,7 @@ def handleAuth(form_data: AuthSchema):
     access_token = createAccessToken({
         "sub": db_response.user_data.get("id"),
     })
-    res = {"access_token": access_token, "token_type": "Bearer"}
+    res = {"access_token": access_token, "token_type": "Bearer", "sub": db_response.user_data.get("id")}
     authenticated_user = UserWs(
         id=db_response.user_data.get("id"),
         token=access_token

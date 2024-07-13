@@ -32,6 +32,8 @@ async def handleWSConnect(websocket: WebSocket):
                 )
                 WS.connect(newUserWs)
                 await checkUserStats(player_id)
+            elif data.get("data_type") == "match_move":
+                await MATCHES.handleMove(data)
             else:
                 await ROOMS.handleRoom(data)
 

@@ -1,5 +1,5 @@
 from schemas.API_schemas import ClientRequestSchema
-from schemas.games_schema import RoomSchema
+from schemas.rooms_schema import RoomSchema
 from schemas.players_schema import PlayersSchema
 from schemas.matches_schema import MatchSchema
 from utils.ConnectionManager import WS
@@ -60,7 +60,7 @@ class RoomManager:
                 player_id = data.user_data.get('id')
                 room.disconnect(player_id)
                 DB.setPlayerInRoom(
-                    player_id=room.connected_players[0].id, room_id="")
+                    player_id=player_id, room_id="")
                 await WS.sendToPlayer({"data_type": "disconnected"}, player_id)
                 if len(room.connected_players) == 0:
                     self.endRoom(room)
@@ -90,14 +90,15 @@ class RoomManager:
                 if room.room_stage == 2:
                     newMatch = MatchSchema(room=room)
                     MATCHES.createMatch(newMatch)
-                    for player in room.connected_players:
-                        await WS.sendToPlayer(
-                            {   
-                                "data_type": "match_update",
-                                "match_data": newMatch.getMatchStats
-                            },
-                            player.id
-                        )
+                    await newMatch.updatePlayers()
+                    # for player in room.connected_players:
+                    #     await WS.sendToPlayer(
+                    #         {   
+                    #             "data_type": "match_update",
+                    #             "match_data": newMatch.getMatchStats
+                    #         },
+                    #         player.id
+                    #     )
                     self.endRoom(room)
             case 'match':
                 ...

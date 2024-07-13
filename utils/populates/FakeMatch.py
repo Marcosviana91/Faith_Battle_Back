@@ -1,7 +1,7 @@
 # Cria uma partida fake com o usuário p0 (id: 1) e p9 (id: 10), para testar a reconexão.
 
 from schemas.players_schema import PlayersSchema
-from schemas.games_schema import RoomSchema
+from schemas.rooms_schema import RoomSchema
 from utils.RoomManager import ROOMS
 
 
