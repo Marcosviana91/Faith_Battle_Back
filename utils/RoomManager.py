@@ -2,6 +2,7 @@ from schemas.API_schemas import ClientRequestSchema
 from schemas.rooms_schema import RoomSchema
 from schemas.players_schema import PlayersSchema
 from schemas.matches_schema import MatchSchema
+from utils.Cards import cardListToDict
 from utils.ConnectionManager import WS
 from utils.DataBaseManager import DB
 from utils.MatchManager import MATCHES
@@ -53,7 +54,7 @@ class RoomManager:
     # WEBSOCKET
     async def handleRoom(self, data_raw):
         data = ClientRequestSchema(**data_raw)
-        # print('>>>>> RECV: ', data)
+        print('>>>>> RECV: ', data)
         match data.data_type:
             case 'disconnect':
                 room = self._getRoomById(data.room_data.get('id'))
@@ -80,7 +81,7 @@ class RoomManager:
                                 "player_data": {
                                     "id": player.id,
                                     "ready": player.ready,
-                                    "card_hand": player.card_hand
+                                    "card_hand": cardListToDict(player.card_hand)
                                 }
                             },
                             player.id
@@ -100,6 +101,23 @@ class RoomManager:
                     #         player.id
                     #     )
                     self.endRoom(room)
+            case 'retry_cards':
+                room = self._getRoomById(data.room_data.get('id'))
+                player_id = data.user_data.get('id')
+                cards_list = data.retry_cards
+                player = room.retryCard(player_id, cards_list)
+                
+                await WS.sendToPlayer(
+                    data={
+                                "data_type": "player_update",
+                                "player_data": {
+                                    "id": player_id,
+                                    "ready": player.ready,
+                                    "card_hand": cardListToDict(player.card_hand)
+                                }
+                            },
+                    user_id=player_id
+                )
             case 'match':
                 ...
 

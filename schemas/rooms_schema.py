@@ -4,6 +4,7 @@ from nanoid import generate
 
 from pydantic import BaseModel
 
+from schemas.cards_schema import CardSchema
 from schemas.players_schema import  PlayersSchema
 
 
@@ -14,10 +15,13 @@ MAXIMUM_FAITH_POINTS = 15
 MAXIMUM_DECK_TRIES = 3
 
 
-def _checkDeckCardsRepeats(deck: list) -> list:
+def _checkDeckCardsRepeats(deck: list[CardSchema]) -> list:
     result = []
+    __list = []
     keys = defaultdict(list)
-    for key, value in enumerate(deck):
+    for card in deck:
+        __list.append(card.slug)
+    for key, value in enumerate(__list):
         keys[value].append(key)
 
     for value in keys:
@@ -25,10 +29,6 @@ def _checkDeckCardsRepeats(deck: list) -> list:
             result.append(value)
     return result
 
-
-class RetryCardsSchema:
-    player_id: int
-    cards_id: list[int]
 
 
 class RoomSchema(BaseModel):
@@ -83,18 +83,12 @@ class RoomSchema(BaseModel):
             "match_type": self.match_type,
 
         }
-
+        
     @property
     def getPlayersStats(self):
         __response = []
         for player in self.connected_players:
-            __response.append({
-                "id": player.id,
-                "ready": player.ready,
-                "xp_points": player.xp_points,
-                "card_deck": player.card_deck,
-                "card_hand": player.card_hand
-            })
+            __response.append(player.getPlayersStats)
         return __response
 
     def connect(self, player: PlayersSchema, password: str = None):
@@ -155,17 +149,19 @@ class RoomSchema(BaseModel):
             player.card_deck.remove(card_selected)
         # print(f"mão: {player.card_hand}\ndeck: {player.card_deck}")
 
-    def retryCard(self, player_id: int, cards: list[str]):
+    def retryCard(self, player_id: int, cards: list[CardSchema]):
         player = self._getPlayerById(player_id)
         if player.deck_try >= MAXIMUM_DECK_TRIES:
             raise Exception(
                 f"Player {player.id} reaches maximum retries"
             )
         for card in cards:
-            player.card_hand.remove(card)
-            player.card_deck.append(card)
+            __card2remove = CardSchema(**card)
+            player.card_hand.remove(__card2remove)
+            player.card_deck.append(__card2remove)
         self.giveCard(player, cards.__len__())
         player.deck_try += 1
         if player.deck_try >= MAXIMUM_DECK_TRIES:
             player.ready = True
+        return player
 

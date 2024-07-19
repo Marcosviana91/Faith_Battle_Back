@@ -19,7 +19,7 @@ class WS_Manager:
             ...
         finally:
             self.all_users.append(user_ws)
-            print(__file__, f"\nWS: User {user_ws.id} has logged in.")
+            print(f"WS: User {user_ws.id} has logged in.")
 
     def connect(self, user_ws: UserWs):
         # print(user_ws)
@@ -32,16 +32,16 @@ class WS_Manager:
                 raise AssertionError("token not match")
         except Exception as e:
             print(f'{e}')
-        print(__file__, f"\nWS: User {user_ws.id} has connected.")
-        print(__file__, f"\nWS: Users connected in game: {
+        print(f"WS: User {user_ws.id} has connected.")
+        print(f"WS: Users connected in game: {
               self.all_users.__len__()}.")
 
     def disconnect(self, user_id: int = None):
         user = self.__getUserWsById(user_id)
         user.websocket = None
         self.all_users.remove(user)
-        print(__file__, f"\nWS: User {user_id} has disconnected.")
-        print(__file__, f"\nWS: Users connected in game: {
+        print(f"WS: User {user_id} has disconnected.")
+        print(f"WS: Users connected in game: {
               self.all_users.__len__()}.")
 
     async def sendToPlayer(self, data: dict, user_id: int):

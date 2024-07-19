@@ -34,17 +34,27 @@ class PlayersSchema(BaseModel):
     Dados do usuário, relativos ao jogo (como jogador)
     '''
     id: int
-    available_cards: list[str] = []
+    available_cards: list[CardSchema] = []
     xp_points: int = 0
     ready: bool = False
-    card_deck: list[str] = []
+    card_deck: list[CardSchema] = []
     deck_try: int = 0
-    card_hand: list[str] = []
+    card_hand: list[CardSchema] = []
 
     def model_post_init(
         self, *args, **kwargs,
     ):
         self.card_deck = self.available_cards
+
+    @property
+    def getPlayersStats(self):
+        return {
+            "id": self.id,
+            "ready": self.ready,
+            "xp_points": self.xp_points,
+            "card_deck": cardListToDict(self.card_deck),
+            "card_hand": cardListToDict(self.card_hand)
+        }
 
 # OK
 
@@ -60,17 +70,17 @@ class PlayersInMatchSchema(BaseModel):
     card_in_forgotten_sea: list[CardSchema] = []
     faith_points: int
     wisdom_points: int = 0
-    wisdom_used: int = 0
-    
+    wisdom_available: int = 0
+
     @property
     def getPlayerStats(self):
-        
+
         return {
-                "id": self.id,
-                "card_prepare_camp": cardListToDict(self.card_prepare_camp),
-                "card_battle_camp": cardListToDict(self.card_battle_camp),
-                "card_in_forgotten_sea": cardListToDict(self.card_in_forgotten_sea),
-                "faith_points": self.faith_points,
-                "wisdom_points": self.wisdom_points,
-                "wisdom_used":  self.wisdom_used
-            }
+            "id": self.id,
+            "card_prepare_camp": cardListToDict(self.card_prepare_camp),
+            "card_battle_camp": cardListToDict(self.card_battle_camp),
+            "card_in_forgotten_sea": cardListToDict(self.card_in_forgotten_sea),
+            "faith_points": self.faith_points,
+            "wisdom_points": self.wisdom_points,
+            "wisdom_available":  self.wisdom_available
+        }

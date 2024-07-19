@@ -23,13 +23,13 @@ STANDARD_HEROS_CLASSES = {
 }
 
 
-def createCardListObjectsByPlayer(player_id: int, card_list: list[str]) -> list[CardSchema]:
+def createCardListObjectsByPlayer(player_id: int, card_list: list[CardSchema]) -> list[CardSchema]:
     card_object = []
     heroes: list[CardSchema] = STANDARD_HEROS_CLASSES['HEROS']
-    for card_slug in card_list:
+    for card in card_list:
         for hero in heroes:
-            if card_slug == hero.slug:
-                __temp_id = f'{player_id}-{card_slug}-{token_hex(3)}'
+            if card.slug == hero.slug:
+                __temp_id = f'{player_id}-{card.slug}-{token_hex(3)}'
                 newHero = hero.model_copy()
                 newHero.in_game_id = __temp_id
                 card_object.append(newHero)

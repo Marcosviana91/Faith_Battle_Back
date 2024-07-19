@@ -18,8 +18,8 @@ class MoveSchema(BaseModel):
     match_id: str
     round_match: int
     player_move: int
-    card_id: str
-    move_type: str  # move_to_prepare, move_to_battle, attack, defense, attach, dettach, active, passive
+    move_type: str  # move_to_prepare, move_to_battle, attack, defense, attach, dettach, active, passive, done
+    card_id: str | None = None
     player_target: int | None = None
     card_target: str | None = None
 
@@ -60,7 +60,7 @@ class MatchSchema(BaseModel):
                         "id": player.id,
                         "card_hand": cardListToDict(player.card_hand),
                         "wisdom_points": player.wisdom_points,
-                        "wisdom_used": player.wisdom_used
+                        "wisdom_available": player.wisdom_available
                     }
                 },
                 player.id
@@ -86,6 +86,7 @@ class MatchSchema(BaseModel):
 
     @property
     def getMatchStats(self):
+        self.__setCardHandStatus()
         __players_in_match = []
         for player in self.players_in_match:
             __players_in_match.append(player.getPlayerStats)
@@ -106,18 +107,32 @@ class MatchSchema(BaseModel):
         for player in self.players_in_match:
             if player.wisdom_points < 10:
                 player.wisdom_points += 1
+                player.wisdom_available += 1
         self.player_turn = 0
         self.playerTurnHandle()
 
     def playerTurnHandle(self):
         print(f'Player {self.players_in_match[self.player_turn].id} turn:')
+        self.player_focus_id = self.players_in_match[self.player_turn].id
         player = self.players_in_match[self.player_turn]
-        player.wisdom_used = 0
+        player.wisdom_available = player.wisdom_points
         self.giveCard(player)
-        # self.updatePlayers()
+        for card in player.card_prepare_camp:
+            card.status = "ready"
+        for card in player.card_battle_camp:
+            card.status = "ready"
         # O jogador prepara suas jogadas
 
+    # setar a disponibilidade de uso das cartas de cada jogador
+    def __setCardHandStatus(self):
+        for player in self.players_in_match:
+            for card in player.card_hand:
+                card.status = "not-enough" if (card.wisdom_cost >
+                                               player.wisdom_available) else "ready"
+
     def giveCard(self, player: PlayersInMatchSchema, number_of_cards: int = 1):
+        if (len(player.card_deck) == 0):
+            return
         count = 0
         while count < number_of_cards:
             # card_selected = player.card_deck[0]
@@ -127,23 +142,47 @@ class MatchSchema(BaseModel):
             player.card_deck.remove(card_selected)
 
     def moveCard(self, player: PlayersInMatchSchema, card_id: str, move_from: str, move_to: str):
+        if (player.id != self.players_in_match[self.player_turn].id):
+            print(f"Não é a vez do jogaodr {player.id}")
+            return False
         print(f"Player {player.id} is moving the card {
               card_id}: {move_from} => {move_to}")
-        for card in player.card_hand:
-            if card.in_game_id == card_id:
-                player.card_hand.remove(card)
-                player.card_prepare_camp.append(card)
+        if (move_from == "hand"):
+            __card_cost = 1
+            for card in player.card_hand:
+                if card.in_game_id == card_id:
+                    __card_cost = card.wisdom_cost
+                    card.status = "used"
+                    player.card_hand.remove(card)
+                    player.card_prepare_camp.append(card)
+            player.wisdom_available -= __card_cost
+        if (move_from == "prepare"):
+            for card in player.card_prepare_camp:
+                if card.in_game_id == card_id:
+                    card.status = "used"
+                    player.card_prepare_camp.remove(card)
+                    player.card_battle_camp.append(card)
 
+    # Durante o jogo a comunicação será (em maior parte) para movimentação
     async def incoming(self, data: dict):
+        print('>>>>> RECV: ', data)
         move = MoveSchema(**data)
-        print('>>>>> RECV: ', move)
         assert self.id == move.match_id
         assert self.round_match == move.round_match
         player = self.__getPlayerById(move.player_move)
         if move.move_type == 'move_to_prepare':
-            self.moveCard(player, card_id=move.card_id, move_from="hand", move_to="prepare")
-
+            self.moveCard(player, card_id=move.card_id,
+                          move_from="hand", move_to="prepare")
+        if move.move_type == 'done':
+            self.finishTurn()
+        if move.move_type == 'move_to_battle':
+            self.moveCard(player, card_id=move.card_id,
+                          move_from="prepare", move_to="battle")
         await self.updatePlayers()
 
     def finishTurn(self):
-        ...
+        if (self.player_turn < len(self.players_in_match)-1):
+            self.player_turn += 1
+            self.playerTurnHandle()
+        else:
+            self.newRoundHandle()

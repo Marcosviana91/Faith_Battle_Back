@@ -7,12 +7,22 @@ from utils.RoomManager import ROOMS
 
 async def createFakeMatch():
     STANDARD_CARDS = [
-        'abraao', 'adao', 'daniel',
-        'davi', 'elias', 'ester',
-        'eva', 'jaco', "jose-do-egito",
-        "josue", "maria", "moises",
-        "noe", "salomao", "sansao",
-    ]
+    {"slug":'abraao'},
+    {"slug":'adao'},
+    {"slug":'daniel'},
+    {"slug":'davi'},
+    {"slug":'elias'},
+    {"slug":'ester'},
+    {"slug":'eva'},
+    {"slug":'jaco'},
+    {"slug":"jose-do-egito"},
+    {"slug":"josue"},
+    {"slug":"maria"},
+    {"slug":"moises"},
+    {"slug":"noe"},
+    {"slug":"salomao"},
+    {"slug":"sansao"},
+]
 
     p0 = PlayersSchema(id=1, available_cards=STANDARD_CARDS)
     p9 = PlayersSchema(id=10, available_cards=STANDARD_CARDS)

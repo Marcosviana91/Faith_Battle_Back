@@ -5,11 +5,12 @@ class CardSchema(BaseModel):
     
     # nome único: jose-do-egito
     slug: str | None
-    wisdom_cost: int | None
-    attack_point: int | None
-    defense_points: int | None
+    wisdom_cost: int | None = None
+    attack_point: int | None = None
+    defense_points: int | None = None
     # player id - card slug - secret
-    in_game_id: str | None
+    in_game_id: str | None = None
+    status: str | None = "ready" #"ready" | "used" | "not-enough" 
     
     # card_type: int
     
@@ -26,6 +27,7 @@ class CardSchema(BaseModel):
             "wisdom_cost": self.wisdom_cost,
             "attack_point": self.attack_point,
             "defense_points": self.defense_points,
+            "status": self.status,
         }
     
     

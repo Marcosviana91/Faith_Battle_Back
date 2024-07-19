@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from .users_schema import UserPublic
 from .rooms_schema import RoomSchema
 
 
@@ -14,5 +13,6 @@ class ClientRequestSchema(BaseModel):
     data_type: str
     user_data: dict | None = None
     room_data: dict | None = None
+    retry_cards: list | None = None
     match_move: dict | None = None
 
