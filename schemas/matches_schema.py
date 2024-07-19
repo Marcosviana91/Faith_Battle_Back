@@ -3,6 +3,7 @@ from random import choice, shuffle
 
 from pydantic import BaseModel
 
+from schemas.cards_schema import CardSchema
 from schemas.rooms_schema import RoomSchema
 from schemas.players_schema import PlayersInMatchSchema
 from utils.Cards import createCardListObjectsByPlayer, cardListToDict
@@ -22,6 +23,7 @@ class MoveSchema(BaseModel):
     card_id: str | None = None
     player_target: int | None = None
     card_target: str | None = None
+    attack_cards: list[CardSchema] | None = []
 
 
 class MatchSchema(BaseModel):
@@ -163,6 +165,18 @@ class MatchSchema(BaseModel):
                     player.card_prepare_camp.remove(card)
                     player.card_battle_camp.append(card)
 
+    def beginAttack(self, move: MoveSchema):
+        print(f'Jogador {move.player_move} está atacando o jogador {move.player_target} com as cartas {move.attack_cards}')
+        self.can_others_move = True
+        self.player_focus_id = move.player_target
+        
+    def beginDefense(self, move: MoveSchema):
+        if ((not move.player_target) or (move.player_move == move.player_target)):
+            print("Escolha um oponente")
+        else:
+            print(f'Jogador {move.player_move} está defendendo o ataque dp jogador {move.player_target} com as cartas {move.attack_cards}')
+            self.can_others_move = True
+
     # Durante o jogo a comunicação será (em maior parte) para movimentação
     async def incoming(self, data: dict):
         print('>>>>> RECV: ', data)
@@ -178,6 +192,10 @@ class MatchSchema(BaseModel):
         if move.move_type == 'move_to_battle':
             self.moveCard(player, card_id=move.card_id,
                           move_from="prepare", move_to="battle")
+        if move.move_type == 'attack':
+            self.beginAttack(move)
+        if move.move_type == 'defense':
+            self.beginDefense(move)
         await self.updatePlayers()
 
     def finishTurn(self):
