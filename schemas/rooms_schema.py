@@ -5,7 +5,7 @@ from nanoid import generate
 from pydantic import BaseModel
 
 from schemas.cards_schema import CardSchema
-from schemas.players_schema import  PlayersSchema
+from schemas.players_schema import PlayersSchema
 
 
 MINIMUM_DECK_CARDS = 10
@@ -28,7 +28,6 @@ def _checkDeckCardsRepeats(deck: list[CardSchema]) -> list:
         if len(keys[value]) > MAXIMUM_CARDS_REPEATS:
             result.append(value)
     return result
-
 
 
 class RoomSchema(BaseModel):
@@ -83,7 +82,7 @@ class RoomSchema(BaseModel):
             "match_type": self.match_type,
 
         }
-        
+
     @property
     def getPlayersStats(self):
         __response = []
@@ -152,16 +151,14 @@ class RoomSchema(BaseModel):
     def retryCard(self, player_id: int, cards: list[CardSchema]):
         player = self._getPlayerById(player_id)
         if player.deck_try >= MAXIMUM_DECK_TRIES:
-            raise Exception(
-                f"Player {player.id} reaches maximum retries"
-            )
-        for card in cards:
-            __card2remove = CardSchema(**card)
-            player.card_hand.remove(__card2remove)
-            player.card_deck.append(__card2remove)
-        self.giveCard(player, cards.__len__())
-        player.deck_try += 1
-        if player.deck_try >= MAXIMUM_DECK_TRIES:
-            player.ready = True
+            print(f"Player {player.id} reaches maximum retries")
+        else:
+            for card in cards:
+                __card2remove = CardSchema(**card)
+                player.card_hand.remove(__card2remove)
+                player.card_deck.append(__card2remove)
+            self.giveCard(player, cards.__len__())
+            player.deck_try += 1
+            if player.deck_try >= MAXIMUM_DECK_TRIES:
+                self.setReady(player.id)
         return player
-
