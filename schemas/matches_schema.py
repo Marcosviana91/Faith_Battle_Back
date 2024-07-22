@@ -36,7 +36,6 @@ class FightSchema(BaseModel):
     defense_cards: list[CardSchema] | None = []
     # defense_abilities: list[CardSchema] | None = []
 
-
     @property
     def getStats(self):
         return {
@@ -48,6 +47,7 @@ class FightSchema(BaseModel):
         }
 
     def fight(self):
+        total_damage = 0
         if (len(self.attack_cards) > len(self.defense_cards)):
             print("Tem mais ataque do que defesa")
         else:
@@ -55,22 +55,31 @@ class FightSchema(BaseModel):
             for card_atk in self.attack_cards:
                 card_def = self.defense_cards[index]
                 print(f'{card_atk.slug} VS {card_def.slug}')
-                if card_atk.attack_point >= card_def.defense_points:
-                    print(f'{card_atk.in_game_id} derrotou {card_def.in_game_id}')
-                    cardObj = getCardInListBySlug(card_slug=card_def.in_game_id, card_list=self.player_defense.card_battle_camp)
-                    print(cardObj)
-                    self.player_defense.card_battle_camp.remove(cardObj)
-                    self.player_defense.card_in_forgotten_sea.append(cardObj)
+
+                cardObj_atk = getCardInListBySlug(
+                    card_atk.in_game_id, self.player_attack.card_battle_camp)
+                cardObj_atk.status = 'used'
+
+                if (card_def.slug == "not-defense"):
+                    total_damage += card_atk.attack_point
                 else:
-                    cardObj = getCardInListBySlug(card_slug=card_atk.in_game_id, card_list=self.player_attack.card_battle_camp)
-                    cardObj.status = 'used'
-                if card_def.attack_point >= card_atk.defense_points:
-                    print(f'{card_def.in_game_id} derrotou {card_atk.in_game_id}')
-                    cardObj = getCardInListBySlug(card_slug=card_atk.in_game_id, card_list=self.player_attack.card_battle_camp)
-                    print(cardObj)
-                    self.player_attack.card_battle_camp.remove(cardObj)
-                    self.player_attack.card_in_forgotten_sea.append(cardObj)
+                    cardObj_def = getCardInListBySlug(
+                        card_def.in_game_id, self.player_defense.card_battle_camp)
+                    if cardObj_atk.attack_point >= cardObj_def.defense_points:
+                        print(f'{cardObj_atk.in_game_id} derrotou {
+                            cardObj_def.in_game_id}')
+                        self.player_defense.card_battle_camp.remove(
+                            cardObj_def)
+                        self.player_defense.card_in_forgotten_sea.append(
+                            cardObj_def)
+                    if cardObj_def.attack_point >= cardObj_atk.defense_points:
+                        print(f'{cardObj_def.in_game_id} derrotou {
+                            cardObj_atk.in_game_id}')
+                        self.player_attack.card_battle_camp.remove(cardObj_atk)
+                        self.player_attack.card_in_forgotten_sea.append(
+                            cardObj_atk)
                 index += 1
+        return total_damage
 
 
 class MatchSchema(BaseModel):
@@ -167,9 +176,11 @@ class MatchSchema(BaseModel):
         self.playerTurnHandle()
 
     def playerTurnHandle(self):
+        player = self.players_in_match[self.player_turn]
+        if player.faith_points < 1:
+            self.finishTurn()
         print(f'Player {self.players_in_match[self.player_turn].id} turn:')
         self.player_focus_id = self.players_in_match[self.player_turn].id
-        player = self.players_in_match[self.player_turn]
         player.wisdom_available = player.wisdom_points
         self.giveCard(player)
         for card in player.card_prepare_camp:
@@ -230,7 +241,11 @@ class MatchSchema(BaseModel):
             player_attack = self.__getPlayerById(move.player_move)
             player_defense = self.__getPlayerById(move.player_target)
             self.fight_camp = FightSchema(
-                player_attack=player_attack, player_defense=player_defense, attack_cards=move.card_list, defense_cards=[])
+                player_attack=player_attack,
+                player_defense=player_defense,
+                attack_cards=move.card_list,
+                defense_cards=[]
+            )
 
     def beginDefense(self, move: MoveSchema):
         print(f'Jogador {move.player_move} está defendendo o ataque do jogador {
@@ -239,11 +254,27 @@ class MatchSchema(BaseModel):
         self.fight_camp.fight_stage = 1
 
     def fightNow(self):
-        self.fight_camp.fight()
+        damage = self.fight_camp.fight()
+        self.takeDamage(self.fight_camp.player_defense, damage)
         self.fight_camp = None
-        
+
+    def takeDamage(self, player: PlayersInMatchSchema, damage: int):
+        player.faith_points -= damage
+        print(f'Jogador {player.id} perdeu {damage} de fé.')
+        if (player.faith_points < 1):
+            print(f'Jogador {player.id} morreu.')
+        self.checkWinner()
+
+    def checkWinner(self):
+        winner:list[PlayersInMatchSchema] = []
+        for player in self.players_in_match:
+            if player.faith_points > 0:
+                winner.append(player)
+        if len(winner) == 1:
+            print(f'{ winner[0].id } venceu')
 
     # Durante o jogo a comunicação será (em maior parte) para movimentação
+
     async def incoming(self, data: dict):
         print('>>>>> RECV: ', data)
         move = MoveSchema(**data)
