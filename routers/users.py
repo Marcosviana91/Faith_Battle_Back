@@ -2,7 +2,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from schemas import APIResponseSchema, UserSchema
+from schemas.API_schemas import APIResponseSchema
+from schemas.users_schema import NewUserSchema
 from utils.DataBaseManager import DB
 from utils.security import getCurrentUserAuthenticated
 
@@ -17,7 +18,7 @@ T_CurrentUser = Annotated[str, Depends(getCurrentUserAuthenticated)]
     status_code=status.HTTP_201_CREATED,
     response_model=APIResponseSchema,
 )
-def handleNewUser(user: UserSchema):
+def handleNewUser(user: NewUserSchema):
     db_response = DB.createNewUser(user)
     if db_response.data_type == "error":
         raise HTTPException(
@@ -48,7 +49,7 @@ async def getUserDataById(
 )
 def updateUserData(
     user_id: int,
-    user_new_data: UserSchema,
+    user_new_data: NewUserSchema,
     current_user_authenticated: T_CurrentUser,
 ):
     __user = DB.getUserDataById(user_id)

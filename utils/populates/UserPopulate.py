@@ -1,4 +1,4 @@
-from schemas import UserSchema
+from schemas import NewUserSchema
 from utils.DataBaseManager import DB
 
 # username, password, real_name, e-mail
@@ -67,6 +67,6 @@ fake_users = [
 
 
 for user in fake_users:
-    newUser = UserSchema(**user)
+    newUser = NewUserSchema(**user)
     # print(newUser)
     print(DB.createNewUser(newUser).message)

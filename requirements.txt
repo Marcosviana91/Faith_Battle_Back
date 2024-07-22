@@ -1,8 +1,10 @@
 fastapi[all]==0.111.0
 python-dotenv==1.0.1
+pydantic-settings==2.3.1
 sqlmodel==0.0.18
 passlib[argon2]==1.7.4
 tinydb==4.8.0
 itsdangerous==2.2.0
 PyJWT==2.8.0
 tzdata==2024.1
+nanoid==2.0.0
