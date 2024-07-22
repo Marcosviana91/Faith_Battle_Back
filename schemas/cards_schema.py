@@ -1,5 +1,39 @@
 from pydantic import BaseModel, ConfigDict
 
+
+class PlayersInMatchSchema:
+    id: int
+    card_deck: list['CardSchema']
+    card_hand: list['CardSchema']
+    card_prepare_camp: list['CardSchema'] = []
+    card_battle_camp: list['CardSchema'] = []
+    card_in_forgotten_sea: list['CardSchema'] = []
+    faith_points: int
+    wisdom_points: int = 0
+    wisdom_available: int = 0
+
+    @property
+    def getPlayerStats(self):
+        ...
+
+class MatchSchema:
+
+    id: str = None
+    start_match: str = None
+    match_type: str = None
+    players_in_match: list[PlayersInMatchSchema] = []
+    round_match: int = 0
+    player_turn: int = 0
+    player_focus_id: int = 0
+    can_others_move: bool = False
+    
+    def giveCard(self, player: PlayersInMatchSchema, number_of_cards: int = 1):
+        ...
+    def moveCard(self, player: PlayersInMatchSchema, card_id: str, move_from: str, move_to: str):
+        ...
+    
+##################################################################
+
 class CardSchema(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     
@@ -43,8 +77,8 @@ class CardSchema(BaseModel):
     def onDettach(self):
         ...
 
-    def onInvoke(self):
-        ...
+    def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
+        print(f'invocou: {self.in_game_id}')
 
     def onDestroy(self):
         ...
