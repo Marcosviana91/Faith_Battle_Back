@@ -53,7 +53,7 @@ class PlayersSchema(BaseModel):
             "ready": self.ready,
             "xp_points": self.xp_points,
             "card_deck": cardListToDict(self.card_deck),
-            "card_hand": cardListToDict(self.card_hand)
+            "card_hand": cardListToDict(self.card_hand),
         }
 
 # OK

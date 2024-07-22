@@ -159,6 +159,6 @@ class RoomSchema(BaseModel):
                 player.card_deck.append(__card2remove)
             self.giveCard(player, cards.__len__())
             player.deck_try += 1
-            if player.deck_try >= MAXIMUM_DECK_TRIES:
-                self.setReady(player.id)
+            # if player.deck_try >= MAXIMUM_DECK_TRIES:
+            #     self.setReady(player.id)
         return player

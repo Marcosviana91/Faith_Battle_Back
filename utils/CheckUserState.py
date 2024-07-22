@@ -24,6 +24,7 @@ async def checkUserStats(player_id):
                     "player_data": {
                         "id": player.id,
                         "ready": player.ready,
+                        "deck_try": player.deck_try,
                         "card_hand": cardListToDict(player.card_hand),
                     }
                 }

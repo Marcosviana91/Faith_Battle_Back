@@ -42,8 +42,8 @@ def cardListToDict(card_list:list[CardSchema]):
                 __list.append(card.getCardStats)
             return __list
 
-# def getCardInListBySlug(card_slug: str, card_list: list[CardSchema]) -> CardSchema | None:
-#     for card in card_list:
-#         if card.slug == card_slug:
-#             return card
-#     return None
+def getCardInListBySlug(card_slug: str, card_list: list[CardSchema]) -> CardSchema | None:
+    for card in card_list:
+        if card.in_game_id.find(card_slug) >= 0:
+            return card
+    return None

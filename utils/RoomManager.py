@@ -80,6 +80,7 @@ class RoomManager:
                                 "data_type": "player_update",
                                 "player_data": {
                                     "id": player.id,
+                                    "deck_try": player.deck_try,
                                     "ready": player.ready,
                                     "card_hand": cardListToDict(player.card_hand)
                                 }
@@ -115,6 +116,7 @@ class RoomManager:
                                 "player_data": {
                                     "id": player_id,
                                     "ready": player.ready,
+                                    "deck_try": player.deck_try,
                                     "card_hand": cardListToDict(player.card_hand)
                                 }
                             },
