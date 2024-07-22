@@ -42,4 +42,4 @@ async def handleWSConnect(websocket: WebSocket):
 
 @router.get("/")
 async def handleMatchWS():
-    return MATCHES.getStats()
+    return MATCHES.getStats
