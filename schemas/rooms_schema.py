@@ -1,12 +1,11 @@
 from collections import defaultdict
 from random import choice
-from nanoid import generate
 
+from nanoid import generate
 from pydantic import BaseModel
 
 from schemas.cards_schema import CardSchema
 from schemas.players_schema import PlayersSchema
-
 
 MINIMUM_DECK_CARDS = 10
 MAXIMUM_CARDS_REPEATS = 2

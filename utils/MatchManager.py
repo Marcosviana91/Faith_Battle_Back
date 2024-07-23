@@ -23,7 +23,7 @@ class MatchManager:
 
     def createMatch(self, match: MatchSchema):
         self.MATCHES.append(match)
-        
+
     async def handleMove(self, data_raw: dict):
         data = ClientRequestSchema(**data_raw)
         # print('>>>>> RECV: ', data)

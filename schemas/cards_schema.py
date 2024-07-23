@@ -26,17 +26,17 @@ class MatchSchema:
     player_turn: int = 0
     player_focus_id: int = 0
     can_others_move: bool = False
-    
+
     def giveCard(self, player: PlayersInMatchSchema, number_of_cards: int = 1):
         ...
     def moveCard(self, player: PlayersInMatchSchema, card_id: str, move_from: str, move_to: str):
         ...
-    
+
 ##################################################################
 
 class CardSchema(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
-    
+
     # nome único: jose-do-egito
     slug: str | None
     wisdom_cost: int | None = None
@@ -44,15 +44,15 @@ class CardSchema(BaseModel):
     defense_points: int | None = None
     # player id - card slug - secret
     in_game_id: str | None = None
-    status: str | None = "ready" #"ready" | "used" | "not-enough" 
-    
+    status: str | None = "ready" #"ready" | "used" | "not-enough"
+
     # card_type: int
-    
+
     # used: bool
     # has_passive_skill: bool
     # has_active_skill: bool
     # attachable: bool
-    
+
     @property
     def getCardStats(self):
         return {
@@ -63,8 +63,8 @@ class CardSchema(BaseModel):
             "defense_points": self.defense_points,
             "status": self.status,
         }
-    
-    
+
+
     def passiveSkill(self):
         ...
 

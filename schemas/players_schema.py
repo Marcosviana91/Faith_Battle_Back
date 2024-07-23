@@ -1,7 +1,7 @@
 from pydantic import BaseModel
+
 from schemas.cards_schema import CardSchema
 from utils.Cards import cardListToDict
-
 
 STANDARD_CARDS = [
     'abraao', 'adao', 'daniel',

@@ -4,11 +4,14 @@ from random import choice, shuffle
 from pydantic import BaseModel
 
 from schemas.cards_schema import CardSchema
-from schemas.rooms_schema import RoomSchema
 from schemas.players_schema import PlayersInMatchSchema
-from utils.Cards import createCardListObjectsByPlayer, cardListToDict, getCardInListBySlug
+from schemas.rooms_schema import RoomSchema
+from utils.Cards import (
+    cardListToDict,
+    createCardListObjectsByPlayer,
+    getCardInListBySlug,
+)
 from utils.ConnectionManager import WS
-
 
 MINIMUM_DECK_CARDS = 10
 INITIAL_CARDS = 5

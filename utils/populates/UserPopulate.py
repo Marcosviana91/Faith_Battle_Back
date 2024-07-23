@@ -1,4 +1,4 @@
-from schemas import NewUserSchema
+from schemas.users_schema import NewUserSchema
 from utils.DataBaseManager import DB
 
 # username, password, real_name, e-mail

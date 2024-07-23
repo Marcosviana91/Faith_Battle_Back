@@ -1,5 +1,5 @@
-from pydantic import BaseModel, EmailStr, ConfigDict
 from fastapi import WebSocket
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 
 class AuthSchema(BaseModel):

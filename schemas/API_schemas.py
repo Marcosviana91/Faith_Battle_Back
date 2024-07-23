@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+
 from .rooms_schema import RoomSchema
 
 
@@ -8,7 +9,7 @@ class APIResponseSchema(BaseModel):
     user_data: dict | None = None
     room_list: list | None = None
     room_data: RoomSchema | None = None #OK
-    
+
 class ClientRequestSchema(BaseModel):
     data_type: str
     user_data: dict | None = None

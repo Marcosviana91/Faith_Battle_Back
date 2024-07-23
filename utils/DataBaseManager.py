@@ -5,9 +5,8 @@ from tinydb.storages import MemoryStorage
 # from settings import Settings
 import models
 from schemas.API_schemas import APIResponseSchema
-from schemas.users_schema import UserPublic, NewUserSchema
 from schemas.players_schema import PlayersTinyDBSchema
-
+from schemas.users_schema import NewUserSchema, UserPublic
 from settings import env_settings
 from utils import security
 
