@@ -1,6 +1,6 @@
-from schemas.cards_schema import CardSchema, ConfigDict
+from schemas.cards_schema import CardSchema, ConfigDict, MatchSchema, PlayersInMatchSchema
 
-# from utils.Cards import getCardInListBySlug
+# from utils.Cards import getCardInListBySlugId
 
 
 class PlayersInMatchSchema:
@@ -17,6 +17,16 @@ class PlayersInMatchSchema:
     @property
     def getPlayerStats(self):
         ...
+        
+class MoveSchema:
+    match_id: str
+    round_match: int
+    player_move: int
+    move_type: str  # move_to_prepare, move_to_battle, attack, defense, attach, dettach, active, passive, done
+    card_id: str | None = None
+    player_target: int | None = None
+    card_target: str | None = None
+    card_list: list[CardSchema] | None = []
 
 
 class MatchSchema:
@@ -29,12 +39,20 @@ class MatchSchema:
     player_turn: int = 0
     player_focus_id: int = 0
     can_others_move: bool = False
+    move_now: MoveSchema = None
+    
+    def _getPlayerById(self, player_id: int):
+        ...
+        
+    async def updatePlayers(self):
+        ...
 
     def giveCard(self, player: PlayersInMatchSchema, number_of_cards: int = 1):
         ...
 
     def moveCard(self, player: PlayersInMatchSchema, card_id: str, move_from: str, move_to: str):
         ...
+        
 
 ##################################################################
 
@@ -86,7 +104,7 @@ Adao = CardSchema(
 #     used = False
 
 #     # def passiveSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
-#     #     if (getCardInListBySlug(slug='eva', card_list=player.card_battle_camp)) or (getCardInListBySlug(slug='eva', card_list=player.card_prepare_camp)):
+#     #     if (getCardInListBySlugId(slug='eva', card_list=player.card_battle_camp)) or (getCardInListBySlugId(slug='eva', card_list=player.card_prepare_camp)):
 #     #         # Verificar por EVA
 #     #         self.attack_point += 2
 #     #         self.defense_points += 2
@@ -145,7 +163,15 @@ Davi = CardSchema(
 #     # def activeSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
 #     #     player.faith_points -= 1
 
-Elias = CardSchema(
+class C_Elias(CardSchema):
+    def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
+        super().onInvoke(player, match)
+        print(match.move_now)
+        print(f"{match.move_now.card_id} destroi a carta {match.move_now.card_target}")
+        player_target = match._getPlayerById(match.move_now.player_target)
+        match.moveCard(player_target, match.move_now.card_target, "battle", "forgotten")
+
+Elias = C_Elias(
     slug="elias",
     wisdom_cost=4,
     attack_point=3,
@@ -201,7 +227,12 @@ Ester = CardSchema(
 #     #     # Precisa reorganizar
 #     #     return player.card_deck[:3]
 
-Eva = CardSchema(
+class C_Eva(CardSchema):
+    def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
+        super().onInvoke(player, match)
+        match.giveCard(player, 1)
+
+Eva = C_Eva(
     slug="eva",
     wisdom_cost=1,
     attack_point=1,
@@ -384,7 +415,14 @@ Noe = CardSchema(
 #     # def passiveSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
 #     #     ...
 
-Salomao = CardSchema(
+class C_Salomao(CardSchema):
+    def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
+        super().onInvoke(player, match)
+        if player.wisdom_points < 10:
+            player.wisdom_available +=1
+            player.wisdom_points += 1
+
+Salomao = C_Salomao(
     slug="salomao",
     wisdom_cost=4,
     attack_point=2,

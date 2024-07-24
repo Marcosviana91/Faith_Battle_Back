@@ -47,7 +47,7 @@ def cardListToDict(card_list:list[CardSchema]):
                     __list.append({"slug": "not-defense"})
             return __list
 
-def getCardInListBySlug(card_slug: str, card_list: list[CardSchema]) -> CardSchema | None:
+def getCardInListBySlugId(card_slug: str, card_list: list[CardSchema]) -> CardSchema | None:
     for card in card_list:
         if card.in_game_id.find(card_slug) >= 0:
             return card

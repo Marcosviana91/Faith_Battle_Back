@@ -26,11 +26,22 @@ class MatchSchema:
     player_turn: int = 0
     player_focus_id: int = 0
     can_others_move: bool = False
+    move_now: 'MoveSchema' = None
 
     def giveCard(self, player: PlayersInMatchSchema, number_of_cards: int = 1):
         ...
     def moveCard(self, player: PlayersInMatchSchema, card_id: str, move_from: str, move_to: str):
         ...
+        
+class MoveSchema(BaseModel):
+    match_id: str
+    round_match: int
+    player_move: int
+    move_type: str  # move_to_prepare, move_to_battle, attack, defense, attach, dettach, active, passive, done
+    card_id: str | None = None
+    player_target: int | None = None
+    card_target: str | None = None
+    card_list: list['CardSchema'] | None = []
 
 ##################################################################
 
