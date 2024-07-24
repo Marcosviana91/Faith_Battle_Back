@@ -41,7 +41,10 @@ def createCardListObjectsByPlayer(player_id: int, card_list: list[CardSchema]) -
 def cardListToDict(card_list:list[CardSchema]):
             __list = []
             for card in card_list:
-                __list.append(card.getCardStats)
+                if card:
+                    __list.append(card.getCardStats)
+                else:
+                    __list.append({"slug": "not-defense"})
             return __list
 
 def getCardInListBySlug(card_slug: str, card_list: list[CardSchema]) -> CardSchema | None:

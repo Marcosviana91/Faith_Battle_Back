@@ -1,5 +1,5 @@
 from datetime import datetime
-from random import choice, shuffle
+from random import shuffle
 
 from pydantic import BaseModel
 
@@ -12,6 +12,7 @@ from utils.Cards import (
     getCardInListBySlug,
 )
 from utils.ConnectionManager import WS
+from utils.DataBaseManager import DB
 
 MINIMUM_DECK_CARDS = 10
 INITIAL_CARDS = 5
@@ -38,6 +39,12 @@ class FightSchema(BaseModel):
     player_defense: PlayersInMatchSchema
     defense_cards: list[CardSchema] | None = []
     # defense_abilities: list[CardSchema] | None = []
+    
+    __pydantic_post_init__ = 'model_post_init'
+
+    def model_post_init(self, *args, **kwargs):
+        for card in self.attack_cards:
+            self.defense_cards.append(None)
 
     @property
     def getStats(self):
@@ -106,6 +113,7 @@ class MatchSchema(BaseModel):
         self.id = self.room.id
         self.match_type = self.room.match_type
         for player in self.room.connected_players:
+            shuffle(player.card_deck)
             new_player = PlayersInMatchSchema(
                 id=player.id,
                 card_deck=createCardListObjectsByPlayer(
@@ -140,7 +148,8 @@ class MatchSchema(BaseModel):
                         "id": player.id,
                         "card_hand": cardListToDict(player.card_hand),
                         "wisdom_points": player.wisdom_points,
-                        "wisdom_available": player.wisdom_available
+                        "wisdom_available": player.wisdom_available,
+                        "faith_points": player.faith_points
                     }
                 },
                 player.id
@@ -167,6 +176,10 @@ class MatchSchema(BaseModel):
             response.update({
                 "fight_camp": self.fight_camp.getStats
             })
+        if (self.end_match):
+            response.update({
+                "end_match": self.end_match
+            })
         return response
 
     def newRoundHandle(self):
@@ -176,6 +189,9 @@ class MatchSchema(BaseModel):
                 player.wisdom_points += 1
                 player.wisdom_available += 1
         self.player_turn = 0
+        if self.round_match >10:
+            for player in self.players_in_match:
+                self.takeDamage(player, 1)
         self.playerTurnHandle()
 
     def playerTurnHandle(self):
@@ -204,8 +220,8 @@ class MatchSchema(BaseModel):
             return
         count = 0
         while count < number_of_cards:
-            # card_selected = player.card_deck[0]
-            card_selected = choice(player.card_deck)
+            card_selected = player.card_deck[0]
+            # card_selected = choice(player.card_deck)
             player.card_hand.append(card_selected)
             count += 1
             player.card_deck.remove(card_selected)
@@ -275,6 +291,9 @@ class MatchSchema(BaseModel):
                 winner.append(player)
         if len(winner) == 1:
             print(f'{ winner[0].id } venceu')
+            self.player_focus_id = winner[0].id
+            return True
+        return False
 
     # Durante o jogo a comunicação será (em maior parte) para movimentação
 
@@ -298,6 +317,12 @@ class MatchSchema(BaseModel):
             self.beginDefense(move)
         if move.move_type == 'fight':
             self.fightNow()
+        if move.move_type == 'surrender':
+            print(f'{player.id} SURRENDERED...')
+            if player.id == self.player_focus_id:
+                self.finishTurn()
+            self.takeDamage(player, player.faith_points)
+            DB.setPlayerInRoom(player_id=player.id, room_id="")
         await self.updatePlayers()
 
     def finishTurn(self):

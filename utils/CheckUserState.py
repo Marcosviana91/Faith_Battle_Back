@@ -45,7 +45,8 @@ async def checkUserStats(player_id):
                             "id": player.id,
                             "card_hand": cardListToDict(player.card_hand),
                             "wisdom_points": player.wisdom_points,
-                            "wisdom_available": player.wisdom_available
+                            "wisdom_available": player.wisdom_available,
+                            "faith_points": player.faith_points
                         }
                     }
                     await WS.sendToPlayer(data=player_to_send, user_id=player_id)
