@@ -226,9 +226,9 @@ class MatchSchema(BaseModel):
         if (move_from == "hand" and (card.wisdom_cost <= player.wisdom_available)):
             __card_cost = 1
             __card_cost = card.wisdom_cost
+            card.status = "used" # Precisa ficar antes do card.onInvoke - Sansão
             move_stop = await card.onInvoke(player, self)
             player.wisdom_available -= __card_cost
-            card.status = "used"
         if (move_from == "prepare"):
             card = getCardInListBySlugId(card_id, player.card_prepare_camp)
             card.status = "used"
