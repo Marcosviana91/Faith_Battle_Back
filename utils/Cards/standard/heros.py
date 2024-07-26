@@ -165,6 +165,7 @@ Elias = C_Elias(
 
 class C_Ester(CardSchema):
     async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
+        self.status = "ready"
         send_data = player.getPlayerStats(private=True)
         __card_deck = []
         for __card in player.card_deck[:3]:
@@ -185,6 +186,7 @@ class C_Ester(CardSchema):
             player_id=player.id
         )
         await super().onInvoke(player, match)
+        self.status = "used"
         return True
 
 
