@@ -1,23 +1,8 @@
-from schemas.cards_schema import CardSchema, ConfigDict, MatchSchema, PlayersInMatchSchema
+from schemas.cards_schema import CardSchema,  MatchSchema, PlayersInMatchSchema
 
 # from utils.Cards import getCardInListBySlugId
 
 
-class PlayersInMatchSchema:
-    id: int
-    card_deck: list[CardSchema]
-    card_hand: list[CardSchema]
-    card_prepare_camp: list[CardSchema] = []
-    card_battle_camp: list[CardSchema] = []
-    card_in_forgotten_sea: list[CardSchema] = []
-    faith_points: int
-    wisdom_points: int = 0
-    wisdom_available: int = 0
-
-    @property
-    def getPlayerStats(self):
-        ...
-        
 class MoveSchema:
     match_id: str
     round_match: int
@@ -27,32 +12,6 @@ class MoveSchema:
     player_target: int | None = None
     card_target: str | None = None
     card_list: list[CardSchema] | None = []
-
-
-class MatchSchema:
-
-    id: str = None
-    start_match: str = None
-    match_type: str = None
-    players_in_match: list[PlayersInMatchSchema] = []
-    round_match: int = 0
-    player_turn: int = 0
-    player_focus_id: int = 0
-    can_others_move: bool = False
-    move_now: MoveSchema = None
-    
-    def _getPlayerById(self, player_id: int):
-        ...
-        
-    async def updatePlayers(self):
-        ...
-
-    def giveCard(self, player: PlayersInMatchSchema, number_of_cards: int = 1):
-        ...
-
-    def moveCard(self, player: PlayersInMatchSchema, card_id: str, move_from: str, move_to: str):
-        ...
-        
 
 ##################################################################
 
@@ -163,13 +122,16 @@ Davi = CardSchema(
 #     # def activeSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
 #     #     player.faith_points -= 1
 
+
 class C_Elias(CardSchema):
-    def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
-        super().onInvoke(player, match)
+    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
+        await super().onInvoke(player, match)
         print(match.move_now)
-        print(f"{match.move_now.card_id} destroi a carta {match.move_now.card_target}")
+        print(f"{match.move_now.card_id} destroi a carta {
+              match.move_now.card_target}")
         player_target = match._getPlayerById(match.move_now.player_target)
-        match.moveCard(player_target, match.move_now.card_target, "battle", "forgotten")
+        await match.moveCard(player_target, match.move_now.card_target, "battle", "forgotten")
+
 
 Elias = C_Elias(
     slug="elias",
@@ -200,13 +162,40 @@ Elias = C_Elias(
 #     #     card_id = 0
 #     #     oponent_target.card_battle_camp.remove(card_id)
 
-Ester = CardSchema(
+
+class C_Ester(CardSchema):
+    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
+        send_data = player.getPlayerStats(private=True)
+        __card_deck = []
+        for __card in player.card_deck[:3]:
+            __card_deck.append(
+                {
+                    "slug": __card.slug,
+                    "in_game_id": __card.in_game_id
+                }
+            )
+        print(send_data)
+        print(__card_deck)
+        send_data["card_deck"] = __card_deck
+        await match.sendToPlayer(
+            data={
+                "data_type": "player_update",
+                "player_data": send_data
+            },
+            player_id=player.id
+        )
+        await super().onInvoke(player, match)
+        return True
+
+
+Ester = C_Ester(
     slug="ester",
     wisdom_cost=1,
     attack_point=0,
     defense_points=2,
-    in_game_id=None
+    in_game_id=None,
 )
+
 # class Ester(CardSchema):
 #     __pydantic_post_init__ = 'model_post_init'
 
@@ -227,10 +216,12 @@ Ester = CardSchema(
 #     #     # Precisa reorganizar
 #     #     return player.card_deck[:3]
 
+
 class C_Eva(CardSchema):
-    def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
-        super().onInvoke(player, match)
+    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
+        await super().onInvoke(player, match)
         match.giveCard(player, 1)
+
 
 Eva = C_Eva(
     slug="eva",
@@ -415,12 +406,14 @@ Noe = CardSchema(
 #     # def passiveSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
 #     #     ...
 
+
 class C_Salomao(CardSchema):
-    def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
-        super().onInvoke(player, match)
+    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
+        await super().onInvoke(player, match)
         if player.wisdom_points < 10:
-            player.wisdom_available +=1
+            player.wisdom_available += 1
             player.wisdom_points += 1
+
 
 Salomao = C_Salomao(
     slug="salomao",
@@ -450,9 +443,9 @@ Salomao = C_Salomao(
 
 
 class C_Sansao(CardSchema):
-    def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
-        super().onInvoke(player, match)
-        match.moveCard(player, self.in_game_id, "prepare", "battle")
+    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
+        await super().onInvoke(player, match)
+        await match.moveCard(player, self.in_game_id, "prepare", "battle")
         self.status = "ready"
         print(player.id)
         print(match.id)

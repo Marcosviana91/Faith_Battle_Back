@@ -12,8 +12,7 @@ class PlayersInMatchSchema:
     wisdom_points: int = 0
     wisdom_available: int = 0
 
-    @property
-    def getPlayerStats(self):
+    def getPlayerStats(self, private: bool = False) -> dict:
         ...
 
 class MatchSchema:
@@ -28,9 +27,11 @@ class MatchSchema:
     can_others_move: bool = False
     move_now: 'MoveSchema' = None
 
+    async def sendToPlayer(self, data: dict, player_id: int):
+        ...
     def giveCard(self, player: PlayersInMatchSchema, number_of_cards: int = 1):
         ...
-    def moveCard(self, player: PlayersInMatchSchema, card_id: str, move_from: str, move_to: str):
+    async def moveCard(self, player: PlayersInMatchSchema, card_id: str, move_from: str, move_to: str):
         ...
         
 class MoveSchema(BaseModel):
@@ -88,7 +89,9 @@ class CardSchema(BaseModel):
     def onDettach(self):
         ...
 
-    def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
+    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
+        player.card_hand.remove(self)
+        player.card_prepare_camp.append(self)
         print(f'invocou: {self.in_game_id}')
 
     def onDestroy(self):

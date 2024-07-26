@@ -72,11 +72,18 @@ class PlayersInMatchSchema(BaseModel):
     wisdom_points: int = 0
     wisdom_available: int = 0
 
-    @property
-    def getPlayerStats(self):
-
+    def getPlayerStats(self, private: bool = False) -> dict:
+        if private:
+            return {
+            "id": self.id,
+            "card_hand": cardListToDict(self.card_hand),
+            "faith_points": self.faith_points,
+            "wisdom_points": self.wisdom_points,
+            "wisdom_available":  self.wisdom_available
+        } 
         return {
             "id": self.id,
+            "card_deck": cardListToDict(self.card_deck),
             "card_prepare_camp": cardListToDict(self.card_prepare_camp),
             "card_battle_camp": cardListToDict(self.card_battle_camp),
             "card_in_forgotten_sea": cardListToDict(self.card_in_forgotten_sea),
@@ -84,3 +91,4 @@ class PlayersInMatchSchema(BaseModel):
             "wisdom_points": self.wisdom_points,
             "wisdom_available":  self.wisdom_available
         }
+
