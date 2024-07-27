@@ -21,6 +21,7 @@ Abraao = CardSchema(
     wisdom_cost=2,
     attack_point=1,
     defense_points=2,
+    card_type="hero",
     in_game_id=None
 )
 
@@ -44,6 +45,7 @@ Adao = CardSchema(
     wisdom_cost=1,
     attack_point=1,
     defense_points=1,
+    card_type="hero",
     in_game_id=None
 )
 # class Adao(CardSchema):
@@ -73,6 +75,7 @@ Daniel = CardSchema(
     wisdom_cost=2,
     attack_point=1,
     defense_points=2,
+    card_type="hero",
     in_game_id=None
 )
 # class Daniel(CardSchema):
@@ -101,6 +104,7 @@ Davi = CardSchema(
     wisdom_cost=3,
     attack_point=3,
     defense_points=2,
+    card_type="hero",
     in_game_id=None
 )
 # class Davi(CardSchema):
@@ -138,6 +142,7 @@ Elias = C_Elias(
     wisdom_cost=4,
     attack_point=3,
     defense_points=1,
+    card_type="hero",
     in_game_id=None
 )
 # class Elias(CardSchema):
@@ -175,8 +180,6 @@ class C_Ester(CardSchema):
                     "in_game_id": __card.in_game_id
                 }
             )
-        print(send_data)
-        print(__card_deck)
         send_data["card_deck"] = __card_deck
         await match.sendToPlayer(
             data={
@@ -195,6 +198,7 @@ Ester = C_Ester(
     wisdom_cost=1,
     attack_point=0,
     defense_points=2,
+    card_type="hero",
     in_game_id=None,
 )
 
@@ -230,6 +234,7 @@ Eva = C_Eva(
     wisdom_cost=1,
     attack_point=1,
     defense_points=1,
+    card_type="hero",
     in_game_id=None
 )
 # class Eva(CardSchema):
@@ -257,6 +262,7 @@ Jaco = CardSchema(
     wisdom_cost=2,
     attack_point=2,
     defense_points=2,
+    card_type="hero",
     in_game_id=None
 )
 # class Jaco(CardSchema):
@@ -283,6 +289,7 @@ JoseDoEgito = CardSchema(
     wisdom_cost=2,
     attack_point=2,
     defense_points=1,
+    card_type="hero",
     in_game_id=None
 )
 # class JoseDoEgito(CardSchema):
@@ -309,6 +316,7 @@ Josue = CardSchema(
     wisdom_cost=3,
     attack_point=3,
     defense_points=1,
+    card_type="hero",
     in_game_id=None
 )
 # class Josue(CardSchema):
@@ -330,11 +338,39 @@ Josue = CardSchema(
 #     # def activeSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
 #     #     ...
 
-Maria = CardSchema(
+class C_Maria(CardSchema):
+    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
+        self.status = "ready"
+        send_data = player.getPlayerStats(private=True)
+        __card_deck = []
+        for __card in player.card_deck:
+            if __card.card_type == 'hero':
+                __card_deck.append(
+                    {
+                        "slug": __card.slug,
+                        "in_game_id": __card.in_game_id
+                    }
+                )
+        print(send_data)
+        print(__card_deck)
+        send_data["card_deck"] = __card_deck
+        await match.sendToPlayer(
+            data={
+                "data_type": "player_update",
+                "player_data": send_data
+            },
+            player_id=player.id
+        )
+        await super().onInvoke(player, match)
+        self.status = "used"
+        return True
+
+Maria = C_Maria(
     slug="maria",
     wisdom_cost=2,
     attack_point=1,
     defense_points=2,
+    card_type="hero",
     in_game_id=None
 )
 # class Maria(CardSchema):
@@ -361,6 +397,7 @@ Moises = CardSchema(
     wisdom_cost=3,
     attack_point=2,
     defense_points=1,
+    card_type="hero",
     in_game_id=None
 )
 # class Moises(CardSchema):
@@ -387,6 +424,7 @@ Noe = CardSchema(
     wisdom_cost=1,
     attack_point=2,
     defense_points=1,
+    card_type="hero",
     in_game_id=None
 )
 # class Noe(CardSchema):
@@ -422,6 +460,7 @@ Salomao = C_Salomao(
     wisdom_cost=4,
     attack_point=2,
     defense_points=2,
+    card_type="hero",
     in_game_id=None
 )
 # class Salomao(CardSchema):
@@ -458,6 +497,7 @@ Sansao = C_Sansao(
     wisdom_cost=6,
     attack_point=5,
     defense_points=5,
+    card_type="hero",
     in_game_id=None
 )
 
