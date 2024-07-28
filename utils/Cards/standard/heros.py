@@ -1,6 +1,6 @@
 from schemas.cards_schema import CardSchema,  MatchSchema, PlayersInMatchSchema
 
-# from utils.Cards import getCardInListBySlugId
+# from utils.Cards import getCardInListBySlug
 
 
 class MoveSchema:
@@ -65,7 +65,7 @@ Adao = CardSchema(
 #     used = False
 
 #     # def passiveSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
-#     #     if (getCardInListBySlugId(slug='eva', card_list=player.card_battle_camp)) or (getCardInListBySlugId(slug='eva', card_list=player.card_prepare_camp)):
+#     #     if (getCardInListBySlug(slug='eva', card_list=player.card_battle_camp)) or (getCardInListBySlug(slug='eva', card_list=player.card_prepare_camp)):
 #     #         # Verificar por EVA
 #     #         self.attack_point += 2
 #     #         self.defense_points += 2
@@ -453,6 +453,11 @@ class C_Salomao(CardSchema):
         if player.wisdom_points < 10:
             player.wisdom_available += 1
             player.wisdom_points += 1
+            
+    def onAttack(self, player: PlayersInMatchSchema, match: MatchSchema, player_target: PlayersInMatchSchema):
+        super().onAttack(player, match, player_target)
+        if player.wisdom_available < player.wisdom_points:
+            player.wisdom_available +=1
 
 
 Salomao = C_Salomao(
