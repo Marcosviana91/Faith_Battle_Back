@@ -1,7 +1,5 @@
 from schemas.cards_schema import CardSchema,  MatchSchema, PlayersInMatchSchema
 
-# from utils.Cards import getCardInListBySlug
-
 
 class MoveSchema:
     match_id: str
@@ -14,7 +12,6 @@ class MoveSchema:
     card_list: list[CardSchema] | None = []
 
 ##################################################################
-
 
 Abraao = CardSchema(
     slug="abraao",

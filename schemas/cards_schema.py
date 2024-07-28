@@ -46,6 +46,7 @@ class MoveSchema(BaseModel):
 
 ##################################################################
 
+
 class CardSchema(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
@@ -58,7 +59,7 @@ class CardSchema(BaseModel):
     in_game_id: str | None = None
     status: str | None = "ready" #"ready" | "used" | "not-enough"
 
-    # card_type: int
+    card_type: str | None = None # 'hero' | 'miracle' | 'sin' | 'artfacts' | 'legendary'
 
     # used: bool
     # has_passive_skill: bool
@@ -70,6 +71,7 @@ class CardSchema(BaseModel):
         return {
             "slug": self.slug,
             "in_game_id": self.in_game_id,
+            "card_type": self.card_type,
             "wisdom_cost": self.wisdom_cost,
             "attack_point": self.attack_point,
             "defense_points": self.defense_points,
@@ -92,7 +94,13 @@ class CardSchema(BaseModel):
     async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
         player.card_hand.remove(self)
         player.card_prepare_camp.append(self)
-        print(f'invocou: {self.in_game_id}')
+        print(f'invocou: {self}')
+        if self.card_type == 'hero':
+            print('é heroi')
+            if getCardInListBySlugId('abraao', player.card_battle_camp):
+                print('tem abraao')
+                print(f"player {player.id} ativou abraão")
+                player.faith_points += 1
 
     def onDestroy(self):
         ...
@@ -103,3 +111,8 @@ class CardSchema(BaseModel):
     def onDefense(self):
         ...
 
+def getCardInListBySlugId(card_slug: str, card_list: list[CardSchema]) -> CardSchema | None:
+    for card in card_list:
+        if card.in_game_id.find(card_slug) >= 0:
+            return card
+    return None
