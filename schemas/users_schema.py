@@ -11,13 +11,13 @@ class NewUserSchema(BaseModel):
     username: str
     password: str
     real_name: str
-    email: EmailStr
+    # email: EmailStr
 
 
 class UserPublic(BaseModel):
     id: int
     username: str
-    email: EmailStr
+    # email: EmailStr
     real_name: str
 
 

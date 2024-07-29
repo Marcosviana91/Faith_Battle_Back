@@ -105,10 +105,10 @@ class CardSchema(BaseModel):
                 player.faith_points += 1
 
     def onDestroy(self, player: PlayersInMatchSchema, match: MatchSchema):
-         print(f'destruiu: {self}')
+         print(f'destruiu: {self.in_game_id}')
 
     def onAttack(self):
-        ...
+        print(f'{self.in_game_id} está atacando')
 
     def onDefense(self):
         ...
