@@ -244,6 +244,7 @@ class MatchSchema(BaseModel):
                 card = getCardInListBySlugId(card_id, player.card_battle_camp)
                 player.card_battle_camp.remove(card)
                 player.card_prepare_camp.append(card)
+                card.status = "used"
         print("moveCard Stop? ", bool(move_stop))
         return bool(move_stop)
 
