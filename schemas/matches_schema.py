@@ -237,7 +237,7 @@ class MatchSchema(BaseModel):
         if (move_from == "battle"):
             if (move_to == "forgotten"):
                 card = getCardInListBySlugId(card_id, player.card_battle_camp)
-                card.onDestroy()  # PENDENTE
+                # card.onDestroy()  # PENDENTE
                 player.card_battle_camp.remove(card)
                 player.card_in_forgotten_sea.append(card)
             if (move_to == "prepare"):
