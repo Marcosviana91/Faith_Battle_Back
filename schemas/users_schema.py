@@ -11,6 +11,16 @@ class NewUserSchema(BaseModel):
     username: str
     password: str
     real_name: str
+    avatar: int
+    # email: EmailStr
+    
+class UpdateUserSchema(BaseModel):
+    id: int
+    username: str
+    password: str
+    real_name: str
+    avatar: int
+    token:str
     # email: EmailStr
 
 
@@ -19,6 +29,7 @@ class UserPublic(BaseModel):
     username: str
     # email: EmailStr
     real_name: str
+    avatar: int
 
 
 class UserWs(BaseModel):

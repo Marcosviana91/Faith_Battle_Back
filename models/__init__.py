@@ -18,12 +18,14 @@ class UserModel(SQLModel, table=True):
     password: str
     real_name: str
     # email: str
+    avatar: int
 
     # def __init__(self, username, password, real_name, email):
-    def __init__(self, username, password, real_name):
+    def __init__(self, username, password, real_name, avatar):
         self.username = username
         self.password = password
         self.real_name = real_name
+        self.avatar = avatar
         # self.email = email
 
     def onLogin(self):

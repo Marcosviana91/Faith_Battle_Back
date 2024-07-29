@@ -99,6 +99,7 @@ class DB_Manager:
                 # user.email = user_new_data.email
                 user.real_name = user_new_data.real_name
                 user.username = user_new_data.username
+                user.avatar = user_new_data.avatar
                 if user_new_data.password != "__not-change__":
                     user.password = security.encrypt(user_new_data.password)
 
