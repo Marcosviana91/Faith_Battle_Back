@@ -78,6 +78,8 @@ class CardSchema(BaseModel):
             "status": self.status,
         }
 
+    def resetCardStats(self):
+        ...
 
     def passiveSkill(self):
         ...
@@ -102,8 +104,8 @@ class CardSchema(BaseModel):
                 print(f"player {player.id} ativou abraão")
                 player.faith_points += 1
 
-    def onDestroy(self):
-        ...
+    def onDestroy(self, player: PlayersInMatchSchema, match: MatchSchema):
+         print(f'destruiu: {self}')
 
     def onAttack(self):
         ...
