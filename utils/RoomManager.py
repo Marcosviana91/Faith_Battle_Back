@@ -36,7 +36,7 @@ class RoomManager:
         self.ROOMS.append(room)
         DB.setPlayerInRoom(
             player_id=room.connected_players[0].id, room_id=room.id)
-        return room
+        return room.getRoomStats
 
     def endRoom(self, room):
         self.ROOMS.remove(room)
