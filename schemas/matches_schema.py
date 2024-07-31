@@ -45,6 +45,8 @@ class FightSchema(BaseModel):
             self.defense_cards.append(None)
             cardObj_atk = getCardInListBySlugId(
                     card.in_game_id, self.player_attack.card_battle_camp)
+            if card.skill_focus_player_id:
+                cardObj_atk.skill_focus_player_id = card.skill_focus_player_id
             __temp_cards_attack.append(cardObj_atk)
             cardObj_atk.onAttack(
                 player=self.player_attack,
@@ -151,6 +153,7 @@ class MatchSchema(BaseModel):
         for player in self.players_in_match:
             if player_id == player.id:
                 return player
+        return None
 
     async def sendToPlayer(self, data: dict, player_id: int):
         await WS.sendToPlayer(data, player_id)

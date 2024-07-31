@@ -146,7 +146,16 @@ Daniel = C_Daniel(
 #     #     # Precisa manter até o fim do turno
 #     #     self.attack_point += oponents_in_target_battle_zone
 
-Davi = CardSchema(
+class C_Davi(CardSchema):
+    def onAttack(self, player: PlayersInMatchSchema, match: MatchSchema, player_target: PlayersInMatchSchema | None = None):
+        super().onAttack(player, match, player_target)
+        print(f'Tirar um ponto de fé do jogador {self.skill_focus_player_id}')
+        skill_player_target = match._getPlayerById(self.skill_focus_player_id)
+        if skill_player_target is not None:
+            match.takeDamage(skill_player_target, 1)
+        
+
+Davi = C_Davi(
     slug="davi",
     wisdom_cost=3,
     attack_point=3,
@@ -373,6 +382,14 @@ class C_Josue(CardSchema):
         self.attack_point = 3
         self.defense_points = 1
 
+    def addSkill(self, player: PlayersInMatchSchema = None, match: MatchSchema = None):
+        super().addSkill()
+        for card in match.fight_camp.attack_cards:
+            print(f'Add 1/0 to {card.in_game_id}')
+        
+    def onAttack(self, player: PlayersInMatchSchema, match: MatchSchema, player_target: PlayersInMatchSchema | None = None):
+        super().onAttack(player, match, player_target)
+        self.addSkill(match)
 
 Josue = C_Josue(
     slug="josue",
