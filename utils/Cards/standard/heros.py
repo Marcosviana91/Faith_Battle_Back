@@ -90,7 +90,21 @@ Adao = C_Adao(
 #     #         self.attack_point += 2
 #     #         self.defense_points += 2
 
-Daniel = CardSchema(
+class C_Daniel(CardSchema):
+    def resetCardStats(self):
+        super().resetCardStats()
+        self.attack_point = 1
+        self.defense_points = 2
+        
+    def onAttack(self, player: PlayersInMatchSchema, match: MatchSchema, player_target: PlayersInMatchSchema | None = None):
+        super().onAttack(player, match, player_target)
+        print('Habilidade de Daniel')
+        increse_attack =  len(player_target.card_battle_camp)
+        print(f'{increse_attack} cartas no campo de batalha do jogador {player_target.id}')
+        self.attack_point += increse_attack
+        
+    
+Daniel = C_Daniel(
     slug="daniel",
     wisdom_cost=2,
     attack_point=1,
@@ -484,7 +498,7 @@ class C_Salomao(CardSchema):
             player.wisdom_available += 1
             player.wisdom_points += 1
 
-    def onAttack(self, player: PlayersInMatchSchema, match: MatchSchema, player_target: PlayersInMatchSchema):
+    def onAttack(self, player: PlayersInMatchSchema, match: MatchSchema, player_target: PlayersInMatchSchema | None = None):
         super().onAttack(player, match, player_target)
         if player.wisdom_available < player.wisdom_points:
             player.wisdom_available += 1
