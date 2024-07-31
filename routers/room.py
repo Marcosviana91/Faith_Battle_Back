@@ -24,7 +24,7 @@ def getRoomList():
 def createRoom(new_room: RoomSchema):
     response = APIResponseSchema(message='Something goes wrong')
     room = ROOMS.createRoom(new_room)
-    response.message = f"room created: {room.id}"
+    response.message = f"room created: {room['id']}"
     response.data_type = "room_data"
     response.room_data = room
     return response
