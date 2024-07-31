@@ -85,10 +85,10 @@ class CardSchema(BaseModel):
     def resetCardStats(self):
         ...
 
-    def passiveSkill(self):
+    def addSkill(self):
         ...
 
-    def activeSkill(self):
+    def rmvSkill(self):
         ...
 
     def onAttach(self):
