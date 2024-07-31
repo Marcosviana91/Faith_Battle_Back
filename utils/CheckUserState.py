@@ -2,15 +2,15 @@
 from utils.Cards import cardListToDict
 from utils.ConnectionManager import WS
 from utils.DataBaseManager import DB
-from utils.RoomManager import ROOMS
 from utils.MatchManager import MATCHES
+from utils.RoomManager import ROOMS
 
 
 async def checkUserStats(player_id):
     room_id = DB.getPlayerById(player_id).get("room_or_match_id")
     if not room_id:
         return None
-    
+
     room = ROOMS._getRoomById(room_id)
     if room:
         for player in room.connected_players:
@@ -45,7 +45,8 @@ async def checkUserStats(player_id):
                             "id": player.id,
                             "card_hand": cardListToDict(player.card_hand),
                             "wisdom_points": player.wisdom_points,
-                            "wisdom_available": player.wisdom_available
+                            "wisdom_available": player.wisdom_available,
+                            "faith_points": player.faith_points
                         }
                     }
                     await WS.sendToPlayer(data=player_to_send, user_id=player_id)

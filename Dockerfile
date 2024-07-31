@@ -5,7 +5,7 @@ COPY . .
 
 RUN rm -rf .venv
 RUN rm -rf database
-RUN python -m pip install -r req.txt
+RUN python -m pip install -r requirements.txt
 
 
 # VOLUME /api/database

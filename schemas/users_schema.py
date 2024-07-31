@@ -1,5 +1,5 @@
-from pydantic import BaseModel, EmailStr, ConfigDict
 from fastapi import WebSocket
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 
 class AuthSchema(BaseModel):
@@ -11,14 +11,25 @@ class NewUserSchema(BaseModel):
     username: str
     password: str
     real_name: str
-    email: EmailStr
+    avatar: int
+    # email: EmailStr
+    
+class UpdateUserSchema(BaseModel):
+    id: int
+    username: str
+    password: str
+    real_name: str
+    avatar: int
+    token:str
+    # email: EmailStr
 
 
 class UserPublic(BaseModel):
     id: int
     username: str
-    email: EmailStr
+    # email: EmailStr
     real_name: str
+    avatar: int
 
 
 class UserWs(BaseModel):

@@ -17,13 +17,16 @@ class UserModel(SQLModel, table=True):
     username: str = Field(index=True)
     password: str
     real_name: str
-    email: str
+    # email: str
+    avatar: int
 
-    def __init__(self, username, password, real_name, email):
+    # def __init__(self, username, password, real_name, email):
+    def __init__(self, username, password, real_name, avatar):
         self.username = username
         self.password = password
         self.real_name = real_name
-        self.email = email
+        self.avatar = avatar
+        # self.email = email
 
     def onLogin(self):
         self.last_login = datetime.now()

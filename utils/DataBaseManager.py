@@ -5,9 +5,8 @@ from tinydb.storages import MemoryStorage
 # from settings import Settings
 import models
 from schemas.API_schemas import APIResponseSchema
-from schemas.users_schema import UserPublic, NewUserSchema
 from schemas.players_schema import PlayersTinyDBSchema
-
+from schemas.users_schema import NewUserSchema, UserPublic
 from settings import env_settings
 from utils import security
 
@@ -51,25 +50,25 @@ class DB_Manager:
                 models.UserModel.username == newUser.username
             )
             check_username = session.exec(query_username)
-            query_email = select(models.UserModel).where(
-                models.UserModel.email == newUser.email
-            )
-            check_email = session.exec(query_email)
+            # query_email = select(models.UserModel).where(
+            #     models.UserModel.email == newUser.email
+            # )
+            # check_email = session.exec(query_email)
 
             if len(check_username.all()) > 0:
                 # print("username already exists")
                 response.data_type = "error"
                 response.message = "username already exists"
 
-            if len(check_email.all()) > 0:
-                # print("email already in use")
-                response.data_type = "error"
-                if response.message == "username already exists":
-                    response.message = (
-                        "username already exists\nemail already in use"
-                    )
-                else:
-                    response.message = "email already in use"
+            # if len(check_email.all()) > 0:
+            #     # print("email already in use")
+            #     response.data_type = "error"
+            #     if response.message == "username already exists":
+            #         response.message = (
+            #             "username already exists\nemail already in use"
+            #         )
+            #     else:
+            #         response.message = "email already in use"
 
             else:
                 # print("user successful created")
@@ -97,9 +96,10 @@ class DB_Manager:
                     query_user_data
                 ).one()  # Possível erro de usuário não encontrado
 
-                user.email = user_new_data.email
+                # user.email = user_new_data.email
                 user.real_name = user_new_data.real_name
                 user.username = user_new_data.username
+                user.avatar = user_new_data.avatar
                 if user_new_data.password != "__not-change__":
                     user.password = security.encrypt(user_new_data.password)
 

@@ -1,7 +1,7 @@
 from schemas.API_schemas import ClientRequestSchema
-from schemas.rooms_schema import RoomSchema
-from schemas.players_schema import PlayersSchema
 from schemas.matches_schema import MatchSchema
+from schemas.players_schema import PlayersSchema
+from schemas.rooms_schema import RoomSchema
 from utils.Cards import cardListToDict
 from utils.ConnectionManager import WS
 from utils.DataBaseManager import DB
@@ -36,7 +36,7 @@ class RoomManager:
         self.ROOMS.append(room)
         DB.setPlayerInRoom(
             player_id=room.connected_players[0].id, room_id=room.id)
-        return room
+        return room.getRoomStats
 
     def endRoom(self, room):
         self.ROOMS.remove(room)
@@ -68,7 +68,7 @@ class RoomManager:
                 else:
                     for player in room.connected_players:
                         await WS.sendToPlayer({"data_type": "room_update", "room_data": room.getRoomStats}, player.id)
-            case 'ready': # Aplicar DRY com 'retry_cards'
+            case 'ready':  # Aplicar DRY com 'retry_cards'
                 room = self._getRoomById(data.room_data.get('id'))
                 player_id = data.user_data.get('id')
                 room.setReady(player_id)
@@ -88,38 +88,48 @@ class RoomManager:
                             player.id
                         )
                 for player in room.connected_players:
-                    await WS.sendToPlayer({"data_type": "room_update", "room_data": room.getRoomStats}, player.id)
+                    await WS.sendToPlayer(
+                        {
+                            "data_type": "room_update",
+                            "room_data": room.getRoomStats
+                        }, player.id
+                    )
                 if room.room_stage == 2:
                     newMatch = MatchSchema(room=room)
                     MATCHES.createMatch(newMatch)
                     await newMatch.updatePlayers()
                     # for player in room.connected_players:
                     #     await WS.sendToPlayer(
-                    #         {   
+                    #         {
                     #             "data_type": "match_update",
                     #             "match_data": newMatch.getMatchStats
                     #         },
                     #         player.id
                     #     )
                     self.endRoom(room)
-            case 'retry_cards': # Aplicar DRY com 'ready'
+            case 'retry_cards':  # Aplicar DRY com 'ready'
                 room = self._getRoomById(data.room_data.get('id'))
                 player_id = data.user_data.get('id')
                 cards_list = data.retry_cards
                 player = room.retryCard(player_id, cards_list)
                 if (player.ready):
                     for _player in room.connected_players:
-                        await WS.sendToPlayer({"data_type": "room_update", "room_data": room.getRoomStats}, _player.id)
+                        await WS.sendToPlayer(
+                            {
+                                "data_type": "room_update",
+                                "room_data": room.getRoomStats
+                            }, _player.id
+                        )
                 await WS.sendToPlayer(
                     data={
-                                "data_type": "player_update",
-                                "player_data": {
-                                    "id": player_id,
-                                    "ready": player.ready,
-                                    "deck_try": player.deck_try,
-                                    "card_hand": cardListToDict(player.card_hand)
-                                }
-                            },
+                        "data_type": "player_update",
+                        "player_data": {
+                            "id": player_id,
+                            "ready": player.ready,
+                            "deck_try": player.deck_try,
+                            "card_hand": cardListToDict(player.card_hand)
+                        }
+                    },
                     user_id=player_id
                 )
                 if room.room_stage == 2:
@@ -127,7 +137,6 @@ class RoomManager:
                     MATCHES.createMatch(newMatch)
                     await newMatch.updatePlayers()
                     self.endRoom(room)
-
 
 
 ROOMS = RoomManager()

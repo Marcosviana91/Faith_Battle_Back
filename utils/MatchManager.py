@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from schemas.API_schemas import ClientRequestSchema
 from schemas.matches_schema import MatchSchema
 
@@ -23,7 +25,7 @@ class MatchManager:
 
     def createMatch(self, match: MatchSchema):
         self.MATCHES.append(match)
-        
+
     async def handleMove(self, data_raw: dict):
         data = ClientRequestSchema(**data_raw)
         # print('>>>>> RECV: ', data)
@@ -31,10 +33,15 @@ class MatchManager:
             match_room = self._getMatchById(data.match_move.get("match_id"))
             if (match_room):
                 await match_room.incoming(data.match_move)
+            if (match_room.checkWinner()):
+                await self.endMatch(match_room)
 
 
-    def endMatch(self, match_id: str):
-        match = self._getMatchById(match_id)
+
+    async def endMatch(self, match: MatchSchema):
+        match.end_match = str(datetime.now().isoformat())
+        await match.updatePlayers()
+        
         self.MATCHES.remove(match)
         del match
 

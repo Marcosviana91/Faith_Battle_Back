@@ -1,40 +1,15 @@
-from schemas.cards_schema import CardSchema, ConfigDict
-
-# from utils.Cards import getCardInListBySlug
+from schemas.cards_schema import CardSchema,  MatchSchema, PlayersInMatchSchema, getCardInListBySlugId
 
 
-class PlayersInMatchSchema:
-    id: int
-    card_deck: list[CardSchema]
-    card_hand: list[CardSchema]
-    card_prepare_camp: list[CardSchema] = []
-    card_battle_camp: list[CardSchema] = []
-    card_in_forgotten_sea: list[CardSchema] = []
-    faith_points: int
-    wisdom_points: int = 0
-    wisdom_available: int = 0
-
-    @property
-    def getPlayerStats(self):
-        ...
-
-
-class MatchSchema:
-
-    id: str = None
-    start_match: str = None
-    match_type: str = None
-    players_in_match: list[PlayersInMatchSchema] = []
-    round_match: int = 0
-    player_turn: int = 0
-    player_focus_id: int = 0
-    can_others_move: bool = False
-
-    def giveCard(self, player: PlayersInMatchSchema, number_of_cards: int = 1):
-        ...
-
-    def moveCard(self, player: PlayersInMatchSchema, card_id: str, move_from: str, move_to: str):
-        ...
+class MoveSchema:
+    match_id: str
+    round_match: int
+    player_move: int
+    move_type: str  # move_to_prepare, move_to_battle, attack, defense, attach, dettach, active, passive, done
+    card_id: str | None = None
+    player_target: int | None = None
+    card_target: str | None = None
+    card_list: list[CardSchema] | None = []
 
 ##################################################################
 
@@ -44,6 +19,7 @@ Abraao = CardSchema(
     wisdom_cost=2,
     attack_point=1,
     defense_points=2,
+    card_type="hero",
     in_game_id=None
 )
 
@@ -57,16 +33,44 @@ Abraao = CardSchema(
 #     attachable = False
 #     used = False
 
-# def passiveSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
+# def addSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
 #     if self in player.card_battle_camp:
 #         # Precisa de evento ao entrar herói no jogo
 #         player.faith_points += 1
 
-Adao = CardSchema(
+
+class C_Adao(CardSchema):
+    def resetCardStats(self):
+        self.attack_point = 1,
+        self.defense_points = 1
+
+    def addSkill(self):
+        super().addSkill()
+        self.attack_point += 2
+        self.defense_points += 2
+
+    def rmvSkill(self):
+        super().rmvSkill()
+        self.attack_point -= 2
+        self.defense_points -= 2
+
+    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
+        await super().onInvoke(player, match)
+        # Procurar por Eva no campo de preparação e no campo de batalha
+        if getCardInListBySlugId("eva", player.card_prepare_camp) or getCardInListBySlugId("eva", player.card_battle_camp):
+            self.addSkill()
+
+    def onDestroy(self, player: PlayersInMatchSchema, match: MatchSchema):
+        super().onDestroy(player, match)
+        self.resetCardStats()
+
+
+Adao = C_Adao(
     slug="adao",
     wisdom_cost=1,
     attack_point=1,
     defense_points=1,
+    card_type="hero",
     in_game_id=None
 )
 # class Adao(CardSchema):
@@ -85,17 +89,40 @@ Adao = CardSchema(
 
 #     used = False
 
-#     # def passiveSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
+#     # def addSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
 #     #     if (getCardInListBySlug(slug='eva', card_list=player.card_battle_camp)) or (getCardInListBySlug(slug='eva', card_list=player.card_prepare_camp)):
 #     #         # Verificar por EVA
 #     #         self.attack_point += 2
 #     #         self.defense_points += 2
 
-Daniel = CardSchema(
+
+class C_Daniel(CardSchema):
+
+    def resetCardStats(self):
+        super().resetCardStats()
+        self.attack_point = 1
+        self.defense_points = 2
+
+    def rmvSkill(self):
+        super().rmvSkill()
+        self.attack_point -= self.increase_attack
+        self.increase_attack = 0
+
+    def onAttack(self, player: PlayersInMatchSchema, match: MatchSchema, player_target: PlayersInMatchSchema | None = None):
+        super().onAttack(player, match, player_target)
+        print('Habilidade de Daniel')
+        self.increase_attack = len(player_target.card_battle_camp)
+        print(f'{self.increase_attack} cartas no campo de batalha do jogador {
+              player_target.id}')
+        self.attack_point += self.increase_attack
+
+
+Daniel = C_Daniel(
     slug="daniel",
     wisdom_cost=2,
     attack_point=1,
     defense_points=2,
+    card_type="hero",
     in_game_id=None
 )
 # class Daniel(CardSchema):
@@ -114,16 +141,26 @@ Daniel = CardSchema(
 
 #     used = False
 
-#     # def activeSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
+#     # def rmvSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
 #     #     oponents_in_target_battle_zone = player.card_battle_camp.__len__()
 #     #     # Precisa manter até o fim do turno
 #     #     self.attack_point += oponents_in_target_battle_zone
 
-Davi = CardSchema(
+class C_Davi(CardSchema):
+    def onAttack(self, player: PlayersInMatchSchema, match: MatchSchema, player_target: PlayersInMatchSchema | None = None):
+        super().onAttack(player, match, player_target)
+        print(f'Tirar um ponto de fé do jogador {self.skill_focus_player_id}')
+        skill_player_target = match._getPlayerById(self.skill_focus_player_id)
+        if skill_player_target is not None:
+            match.takeDamage(skill_player_target, 1)
+        
+
+Davi = C_Davi(
     slug="davi",
     wisdom_cost=3,
     attack_point=3,
     defense_points=2,
+    card_type="hero",
     in_game_id=None
 )
 # class Davi(CardSchema):
@@ -142,14 +179,26 @@ Davi = CardSchema(
 
 #     used = False
 
-#     # def activeSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
+#     # def rmvSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
 #     #     player.faith_points -= 1
 
-Elias = CardSchema(
+
+class C_Elias(CardSchema):
+    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
+        await super().onInvoke(player, match)
+        print(match.move_now)
+        print(f"{match.move_now.card_id} destroi a carta {
+              match.move_now.card_target}")
+        player_target = match._getPlayerById(match.move_now.player_target)
+        await match.moveCard(player_target, match.move_now.card_target, "battle", "forgotten")
+
+
+Elias = C_Elias(
     slug="elias",
     wisdom_cost=4,
     attack_point=3,
     defense_points=1,
+    card_type="hero",
     in_game_id=None
 )
 # class Elias(CardSchema):
@@ -168,19 +217,47 @@ Elias = CardSchema(
 
 #     used = False
 
-#     # def activeSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
+#     # def rmvSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
 #     #     oponent_target = player
 #     #     # Precisa definir a carta a ser destuída
 #     #     card_id = 0
 #     #     oponent_target.card_battle_camp.remove(card_id)
 
-Ester = CardSchema(
+
+class C_Ester(CardSchema):
+    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
+        self.status = "ready"
+        send_data = player.getPlayerStats(private=True)
+        __card_deck = []
+        for __card in player.card_deck[:3]:
+            __card_deck.append(
+                {
+                    "slug": __card.slug,
+                    "in_game_id": __card.in_game_id
+                }
+            )
+        send_data["card_deck"] = __card_deck
+        await match.sendToPlayer(
+            data={
+                "data_type": "player_update",
+                "player_data": send_data
+            },
+            player_id=player.id
+        )
+        await super().onInvoke(player, match)
+        self.status = "used"
+        return True
+
+
+Ester = C_Ester(
     slug="ester",
     wisdom_cost=1,
     attack_point=0,
     defense_points=2,
-    in_game_id=None
+    card_type="hero",
+    in_game_id=None,
 )
+
 # class Ester(CardSchema):
 #     __pydantic_post_init__ = 'model_post_init'
 
@@ -197,15 +274,31 @@ Ester = CardSchema(
 
 #     used = False
 
-#     # def activeSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
+#     # def rmvSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
 #     #     # Precisa reorganizar
 #     #     return player.card_deck[:3]
 
-Eva = CardSchema(
+
+class C_Eva(CardSchema):
+    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
+        await super().onInvoke(player, match)
+        match.giveCard(player, 1)
+        # Procurar por Adão no campo de preparação
+        card = getCardInListBySlugId("adao", player.card_prepare_camp)
+        if card:
+            card.addSkill()
+        # Procurar por Adão no campo de batalha
+        card = getCardInListBySlugId("adao", player.card_battle_camp)
+        if card:
+            card.addSkill()
+
+
+Eva = C_Eva(
     slug="eva",
     wisdom_cost=1,
     attack_point=1,
     defense_points=1,
+    card_type="hero",
     in_game_id=None
 )
 # class Eva(CardSchema):
@@ -224,7 +317,7 @@ Eva = CardSchema(
 
 #     used = False
 
-#     # def activeSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
+#     # def rmvSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
 #     #     # Precisa verificar se está entrando no jogo
 #     #     game.giveCard(player, 1)
 
@@ -233,6 +326,7 @@ Jaco = CardSchema(
     wisdom_cost=2,
     attack_point=2,
     defense_points=2,
+    card_type="hero",
     in_game_id=None
 )
 # class Jaco(CardSchema):
@@ -251,7 +345,7 @@ Jaco = CardSchema(
 
 #     used = False
 
-#     # def activeSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
+#     # def rmvSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
 #     #     ...
 
 JoseDoEgito = CardSchema(
@@ -259,6 +353,7 @@ JoseDoEgito = CardSchema(
     wisdom_cost=2,
     attack_point=2,
     defense_points=1,
+    card_type="hero",
     in_game_id=None
 )
 # class JoseDoEgito(CardSchema):
@@ -277,14 +372,31 @@ JoseDoEgito = CardSchema(
 
 #     used = False
 
-#     # def activeSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
+#     # def rmvSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
 #     #     ...
 
-Josue = CardSchema(
+
+class C_Josue(CardSchema):
+    def resetCardStats(self):
+        super().resetCardStats()
+        self.attack_point = 3
+        self.defense_points = 1
+
+    def addSkill(self, player: PlayersInMatchSchema = None, match: MatchSchema = None):
+        super().addSkill()
+        for card in match.fight_camp.attack_cards:
+            print(f'Add 1/0 to {card.in_game_id}')
+        
+    def onAttack(self, player: PlayersInMatchSchema, match: MatchSchema, player_target: PlayersInMatchSchema | None = None):
+        super().onAttack(player, match, player_target)
+        self.addSkill(match)
+
+Josue = C_Josue(
     slug="josue",
     wisdom_cost=3,
     attack_point=3,
     defense_points=1,
+    card_type="hero",
     in_game_id=None
 )
 # class Josue(CardSchema):
@@ -303,14 +415,44 @@ Josue = CardSchema(
 
 #     used = False
 
-#     # def activeSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
+#     # def rmvSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
 #     #     ...
 
-Maria = CardSchema(
+
+class C_Maria(CardSchema):
+    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
+        self.status = "ready"
+        send_data = player.getPlayerStats(private=True)
+        __card_deck = []
+        for __card in player.card_deck:
+            if __card.card_type == 'hero':
+                __card_deck.append(
+                    {
+                        "slug": __card.slug,
+                        "in_game_id": __card.in_game_id
+                    }
+                )
+        print(send_data)
+        print(__card_deck)
+        send_data["card_deck"] = __card_deck
+        await match.sendToPlayer(
+            data={
+                "data_type": "player_update",
+                "player_data": send_data
+            },
+            player_id=player.id
+        )
+        await super().onInvoke(player, match)
+        self.status = "used"
+        return True
+
+
+Maria = C_Maria(
     slug="maria",
     wisdom_cost=2,
     attack_point=1,
     defense_points=2,
+    card_type="hero",
     in_game_id=None
 )
 # class Maria(CardSchema):
@@ -329,7 +471,7 @@ Maria = CardSchema(
 
 #     used = False
 
-#     # def activeSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
+#     # def rmvSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
 #     #     ...
 
 Moises = CardSchema(
@@ -337,6 +479,7 @@ Moises = CardSchema(
     wisdom_cost=3,
     attack_point=2,
     defense_points=1,
+    card_type="hero",
     in_game_id=None
 )
 # class Moises(CardSchema):
@@ -355,7 +498,7 @@ Moises = CardSchema(
 
 #     used = False
 
-#     # def activeSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
+#     # def rmvSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
 #     #     ...
 
 Noe = CardSchema(
@@ -363,6 +506,7 @@ Noe = CardSchema(
     wisdom_cost=1,
     attack_point=2,
     defense_points=1,
+    card_type="hero",
     in_game_id=None
 )
 # class Noe(CardSchema):
@@ -381,14 +525,29 @@ Noe = CardSchema(
 
 #     used = False
 
-#     # def passiveSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
+#     # def addSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
 #     #     ...
 
-Salomao = CardSchema(
+
+class C_Salomao(CardSchema):
+    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
+        await super().onInvoke(player, match)
+        if player.wisdom_points < 10:
+            player.wisdom_available += 1
+            player.wisdom_points += 1
+
+    def onAttack(self, player: PlayersInMatchSchema, match: MatchSchema, player_target: PlayersInMatchSchema | None = None):
+        super().onAttack(player, match, player_target)
+        if player.wisdom_available < player.wisdom_points:
+            player.wisdom_available += 1
+
+
+Salomao = C_Salomao(
     slug="salomao",
     wisdom_cost=4,
     attack_point=2,
     defense_points=2,
+    card_type="hero",
     in_game_id=None
 )
 # class Salomao(CardSchema):
@@ -407,14 +566,14 @@ Salomao = CardSchema(
 
 #     used = False
 
-#     # def activeSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
+#     # def rmvSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
 #     #     self.used = True
 
 
 class C_Sansao(CardSchema):
-    def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
-        super().onInvoke(player, match)
-        match.moveCard(player, self.in_game_id, "prepare", "battle")
+    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
+        await super().onInvoke(player, match)
+        await match.moveCard(player, self.in_game_id, "prepare", "battle")
         self.status = "ready"
         print(player.id)
         print(match.id)
@@ -425,6 +584,7 @@ Sansao = C_Sansao(
     wisdom_cost=6,
     attack_point=5,
     defense_points=5,
+    card_type="hero",
     in_game_id=None
 )
 
@@ -446,5 +606,5 @@ Sansao = C_Sansao(
 #     # Sansão entra em jogo pronto para atacar
 #     used = True
 
-#     # def activeSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
+#     # def rmvSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
 #     #     self.used = True

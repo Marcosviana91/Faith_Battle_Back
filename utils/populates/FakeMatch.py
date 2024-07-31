@@ -1,4 +1,5 @@
-# Cria uma partida fake com o usuário p0 (id: 1) e p9 (id: 10), para testar a reconexão.
+# Cria uma partida fake com o usuário p0 (id: 1) e p9 (id: 10),
+# para testar a reconexão.
 
 from schemas.players_schema import PlayersSchema
 from schemas.rooms_schema import RoomSchema
@@ -32,7 +33,7 @@ async def createFakeMatch():
     await ROOMS.enterRoom(room_id=fake_room.id, player=p9, password="")
     p9.ready = True
     fake_room.setReady(p0.id)
-    
+
     p9.ready = True
     await ROOMS.handleRoom({
         "data_type": "ready",
@@ -43,4 +44,3 @@ async def createFakeMatch():
             "id": p0.id,
         }
     })
-    

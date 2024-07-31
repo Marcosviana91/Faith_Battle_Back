@@ -1,5 +1,7 @@
 from secrets import token_hex
+
 from schemas.cards_schema import CardSchema
+
 from .standard import heros
 
 STANDARD_HEROS_CLASSES = {
@@ -39,11 +41,16 @@ def createCardListObjectsByPlayer(player_id: int, card_list: list[CardSchema]) -
 def cardListToDict(card_list:list[CardSchema]):
             __list = []
             for card in card_list:
-                __list.append(card.getCardStats)
+                if card:
+                    __list.append(card.getCardStats)
+                else:
+                    __list.append({"slug": "not-defense"})
             return __list
 
-def getCardInListBySlug(card_slug: str, card_list: list[CardSchema]) -> CardSchema | None:
-    for card in card_list:
-        if card.in_game_id.find(card_slug) >= 0:
-            return card
+def getCardInListBySlugId(card_slug: str, card_list: list[CardSchema]) -> CardSchema | None:
+    if card_slug != None:
+        for card in card_list:
+            if card != None:
+                if card.in_game_id.find(card_slug) >= 0:
+                    return card
     return None

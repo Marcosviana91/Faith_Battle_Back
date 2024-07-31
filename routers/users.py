@@ -53,7 +53,7 @@ def updateUserData(
     current_user_authenticated: T_CurrentUser,
 ):
     __user = DB.getUserDataById(user_id)
-    if current_user_authenticated != __user.user_data.get("username"):
+    if current_user_authenticated != __user.user_data.get("id"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=(

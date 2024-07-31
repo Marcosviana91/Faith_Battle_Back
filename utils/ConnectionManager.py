@@ -47,7 +47,7 @@ class WS_Manager:
     async def sendToPlayer(self, data: dict, user_id: int):
         try:
             user = self.__getUserWsById(user_id)
-            print(f"WS: Send to player {user_id}")
+            # print(f"WS: Send to player {user_id}")
             await user.websocket.send_json(data)
         except IndexError as e:
             print(f"{e}: Player {user_id} not conected.")

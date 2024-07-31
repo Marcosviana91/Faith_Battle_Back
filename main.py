@@ -5,7 +5,6 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from routers import auth, room, users, websocket
 from settings import env_settings
-
 from utils.MatchManager import MATCHES
 
 ORIGINS = ["*"]

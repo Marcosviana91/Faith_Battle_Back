@@ -1,12 +1,12 @@
 # from typing import Annotated
 
-from fastapi import APIRouter, Depends, WebSocketDisconnect, status, WebSocket
+from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, status
 
 from schemas.users_schema import UserWs
-from utils.RoomManager import ROOMS
-from utils.MatchManager import MATCHES
-from utils.ConnectionManager import WS
 from utils.CheckUserState import checkUserStats
+from utils.ConnectionManager import WS
+from utils.MatchManager import MATCHES
+from utils.RoomManager import ROOMS
 
 # from utils.security import getCurrentUserAuthenticated
 
