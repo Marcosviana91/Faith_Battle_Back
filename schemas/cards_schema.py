@@ -16,6 +16,18 @@ class PlayersInMatchSchema:
         ...
 
 
+class FightSchema:
+    match_room: 'MatchSchema'
+    fight_stage: int | None = 0
+    player_attack: PlayersInMatchSchema
+    attack_cards: list['CardSchema'] | None
+    # attack_abilities: list[CardSchema] | None = []
+
+    player_defense: PlayersInMatchSchema
+    defense_cards: list['CardSchema'] | None = []
+    # defense_abilities: list[CardSchema] | None = []
+
+
 class MatchSchema:
 
     id: str = None
@@ -26,6 +38,7 @@ class MatchSchema:
     player_turn: int = 0
     player_focus_id: int = 0
     can_others_move: bool = False
+    fight_camp: FightSchema = None
     move_now: 'MoveSchema' = None
 
     async def sendToPlayer(self, data: dict, player_id: int):
@@ -87,10 +100,10 @@ class CardSchema(BaseModel):
     def resetCardStats(self):
         print(f'Resetou {self.in_game_id}')
 
-    def addSkill(self):
+    def addSkill(self, player: PlayersInMatchSchema = None, match: MatchSchema = None):
         print(f'Adcionou skill de {self.in_game_id}')
 
-    def rmvSkill(self):
+    def rmvSkill(self, player: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
         print(f'Removeu skill de {self.in_game_id}')
 
     def onAttach(self):
