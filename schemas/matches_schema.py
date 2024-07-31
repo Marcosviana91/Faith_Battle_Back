@@ -202,13 +202,17 @@ class MatchSchema(BaseModel):
     def newRoundHandle(self):
         self.round_match += 1
         for player in self.players_in_match:
+            # Reseta as cartas ['daniel', ]
+            daniel_card = getCardInListBySlugId('daniel', player.card_battle_camp)
+            if daniel_card:
+                print(f'Achou {daniel_card.in_game_id}')
+                daniel_card.rmvSkill()
             if player.wisdom_points < 10:
                 player.wisdom_points += 1
                 player.wisdom_available += 1
-        self.player_turn = 0
-        if self.round_match > 10:
-            for player in self.players_in_match:
+            if self.round_match > 10:
                 self.takeDamage(player, 1)
+        self.player_turn = 0
         self.playerTurnHandle()
 
     def playerTurnHandle(self):

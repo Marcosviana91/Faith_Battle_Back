@@ -43,11 +43,16 @@ class C_Adao(CardSchema):
     def resetCardStats(self):
         self.attack_point = 1,
         self.defense_points = 1
-        
+
     def addSkill(self):
         super().addSkill()
         self.attack_point += 2
         self.defense_points += 2
+
+    def rmvSkill(self):
+        super().rmvSkill()
+        self.attack_point -= 2
+        self.defense_points -= 2
 
     async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
         await super().onInvoke(player, match)
@@ -90,20 +95,28 @@ Adao = C_Adao(
 #     #         self.attack_point += 2
 #     #         self.defense_points += 2
 
+
 class C_Daniel(CardSchema):
+
     def resetCardStats(self):
         super().resetCardStats()
         self.attack_point = 1
         self.defense_points = 2
-        
+
+    def rmvSkill(self):
+        super().rmvSkill()
+        self.attack_point -= self.increase_attack
+        self.increase_attack = 0
+
     def onAttack(self, player: PlayersInMatchSchema, match: MatchSchema, player_target: PlayersInMatchSchema | None = None):
         super().onAttack(player, match, player_target)
         print('Habilidade de Daniel')
-        increse_attack =  len(player_target.card_battle_camp)
-        print(f'{increse_attack} cartas no campo de batalha do jogador {player_target.id}')
-        self.attack_point += increse_attack
-        
-    
+        self.increase_attack = len(player_target.card_battle_camp)
+        print(f'{self.increase_attack} cartas no campo de batalha do jogador {
+              player_target.id}')
+        self.attack_point += self.increase_attack
+
+
 Daniel = C_Daniel(
     slug="daniel",
     wisdom_cost=2,
@@ -353,11 +366,13 @@ JoseDoEgito = CardSchema(
 #     # def rmvSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
 #     #     ...
 
+
 class C_Josue(CardSchema):
     def resetCardStats(self):
         super().resetCardStats()
         self.attack_point = 3
         self.defense_points = 1
+
 
 Josue = C_Josue(
     slug="josue",

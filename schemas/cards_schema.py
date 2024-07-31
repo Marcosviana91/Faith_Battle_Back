@@ -65,6 +65,8 @@ class CardSchema(BaseModel):
 
     card_type: str | None = None  # 'hero' | 'miracle' | 'sin' | 'artfacts' | 'legendary'
 
+    increase_attack: int | None = 0
+    increase_defense: int | None = 0
     # used: bool
     # has_passive_skill: bool
     # has_active_skill: bool
@@ -83,13 +85,13 @@ class CardSchema(BaseModel):
         }
 
     def resetCardStats(self):
-        ...
+        print(f'Resetou {self.in_game_id}')
 
     def addSkill(self):
-        ...
+        print(f'Adcionou skill de {self.in_game_id}')
 
     def rmvSkill(self):
-        ...
+        print(f'Removeu skill de {self.in_game_id}')
 
     def onAttach(self):
         ...
