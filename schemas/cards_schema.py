@@ -15,6 +15,7 @@ class PlayersInMatchSchema:
     def getPlayerStats(self, private: bool = False) -> dict:
         ...
 
+
 class MatchSchema:
 
     id: str = None
@@ -29,11 +30,14 @@ class MatchSchema:
 
     async def sendToPlayer(self, data: dict, player_id: int):
         ...
+
     def giveCard(self, player: PlayersInMatchSchema, number_of_cards: int = 1):
         ...
+
     async def moveCard(self, player: PlayersInMatchSchema, card_id: str, move_from: str, move_to: str):
         ...
-        
+
+
 class MoveSchema(BaseModel):
     match_id: str
     round_match: int
@@ -57,9 +61,9 @@ class CardSchema(BaseModel):
     defense_points: int | None = None
     # player id - card slug - secret
     in_game_id: str | None = None
-    status: str | None = "ready" #"ready" | "used" | "not-enough"
+    status: str | None = "ready"  # "ready" | "used" | "not-enough"
 
-    card_type: str | None = None # 'hero' | 'miracle' | 'sin' | 'artfacts' | 'legendary'
+    card_type: str | None = None  # 'hero' | 'miracle' | 'sin' | 'artfacts' | 'legendary'
 
     # used: bool
     # has_passive_skill: bool
@@ -105,13 +109,24 @@ class CardSchema(BaseModel):
                 player.faith_points += 1
 
     def onDestroy(self, player: PlayersInMatchSchema, match: MatchSchema):
-         print(f'destruiu: {self.in_game_id}')
+        print(f'destruiu: {self.in_game_id}')
 
-    def onAttack(self):
+    def onAttack(
+        self,
+        player: PlayersInMatchSchema,
+        match: MatchSchema,
+        player_target: PlayersInMatchSchema | None = None
+    ):
         print(f'{self.in_game_id} está atacando')
 
-    def onDefense(self):
-        ...
+    def onDefense(
+        self,
+        player: PlayersInMatchSchema,
+        match: MatchSchema,
+        player_target: PlayersInMatchSchema | None = None
+    ):
+        print(f'{self.in_game_id} está defendendo')
+
 
 def getCardInListBySlugId(card_slug: str, card_list: list[CardSchema]) -> CardSchema | None:
     for card in card_list:
