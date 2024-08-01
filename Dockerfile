@@ -3,8 +3,8 @@ FROM python:3.12
 WORKDIR /api
 COPY . .
 
+RUN timedatectl set-timezone America/Sao_Paulo
 RUN rm -rf .venv
-#RUN rm -rf database
 RUN python -m pip install -r requirements.txt
 
 
