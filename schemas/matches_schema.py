@@ -44,24 +44,28 @@ class FightSchema(BaseModel):
         for card in self.attack_cards:
             self.defense_cards.append(None)
             cardObj_atk = getCardInListBySlugId(
-                    card.in_game_id, self.player_attack.card_battle_camp)
+                card.in_game_id, self.player_attack.card_battle_camp)
             if card.skill_focus_player_id:
                 cardObj_atk.skill_focus_player_id = card.skill_focus_player_id
             __temp_cards_attack.append(cardObj_atk)
-            cardObj_atk.onAttack(
+        self.attack_cards = __temp_cards_attack
+        del __temp_cards_attack
+
+    def attack(self) -> None:
+        for card in self.attack_cards:
+            card.onAttack(
                 player=self.player_attack,
+                attack_cards=self.attack_cards,
                 match=self.match_room,
                 player_target=self.player_defense
             )
-        self.attack_cards = __temp_cards_attack
-        del __temp_cards_attack
 
     def defense(self, card_list: list[CardSchema]) -> None:
         __temp_cards_defense = []
         for card in card_list:
             if card.slug != 'not-defense':
                 cardObj_def = getCardInListBySlugId(
-                        card.in_game_id, self.player_defense.card_battle_camp)
+                    card.in_game_id, self.player_defense.card_battle_camp)
                 __temp_cards_defense.append(cardObj_def)
                 if cardObj_def != None:
                     cardObj_def.onDefense(
@@ -74,7 +78,7 @@ class FightSchema(BaseModel):
             self.defense_cards = __temp_cards_defense
         del __temp_cards_defense
         self.fight_stage = 1
-        
+
     @property
     def getStats(self):
         return {
@@ -109,6 +113,8 @@ class FightSchema(BaseModel):
                             card_atk.in_game_id}')
                         await self.match_room.moveCard(
                             self.player_attack, card_atk.in_game_id, "battle", "forgotten")
+                if card_atk.slug in ['josue']:
+                    card_atk.rmvSkill(attack_cards=self.attack_cards)
                 index += 1
         return total_damage
 
@@ -206,9 +212,9 @@ class MatchSchema(BaseModel):
         self.round_match += 1
         for player in self.players_in_match:
             # Reseta as cartas ['daniel', ]
-            daniel_card = getCardInListBySlugId('daniel', player.card_battle_camp)
+            daniel_card = getCardInListBySlugId(
+                'daniel', player.card_battle_camp)
             if daniel_card:
-                print(f'Achou {daniel_card.in_game_id}')
                 daniel_card.rmvSkill()
             if player.wisdom_points < 10:
                 player.wisdom_points += 1
@@ -297,6 +303,7 @@ class MatchSchema(BaseModel):
                 attack_cards=move.card_list,
                 defense_cards=[]
             )
+            self.fight_camp.attack()
 
     def beginDefense(self, move: MoveSchema):
         print(f'Jogador {move.player_move} está defendendo o ataque do jogador {
