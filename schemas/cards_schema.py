@@ -107,7 +107,7 @@ class CardSchema(BaseModel):
     def resetCardStats(self):
         print(f'Resetou {self.in_game_id}')
 
-    def addSkill(
+    async def addSkill(
         self,
         player: PlayersInMatchSchema | None = None,
         attack_cards: list['CardSchema'] | None = None,
@@ -116,7 +116,7 @@ class CardSchema(BaseModel):
     ):
         print(f'Adcionou skill de {self.in_game_id}')
 
-    def rmvSkill(
+    async def rmvSkill(
         self,
         player: PlayersInMatchSchema | None = None,
         attack_cards: list['CardSchema'] | None = None,
@@ -125,10 +125,10 @@ class CardSchema(BaseModel):
     ):
         print(f'Removeu skill de {self.in_game_id}')
 
-    def onAttach(self):
+    async def onAttach(self):
         ...
 
-    def onDettach(self):
+    async def onDettach(self):
         ...
 
     async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
@@ -142,26 +142,46 @@ class CardSchema(BaseModel):
                 print(f"player {player.id} ativou abraão")
                 player.faith_points += 1
 
-    def onDestroy(self, player: PlayersInMatchSchema, match: MatchSchema):
+    async def onDestroy(self, player: PlayersInMatchSchema, match: MatchSchema):
         print(f'destruiu: {self.in_game_id}')
 
-    def onAttack(
+    async def onAttack(
         self,
-        player: PlayersInMatchSchema,
+        player: PlayersInMatchSchema | None = None,
         attack_cards: list['CardSchema'] | None = None,
         player_target: PlayersInMatchSchema | None = None,
         match: MatchSchema | None = None,
     ):
         print(f'{self.in_game_id} está atacando')
 
-    def onDefense(
+    async def onDefense(
         self,
-        player: PlayersInMatchSchema,
-        match: MatchSchema,
-        player_target: PlayersInMatchSchema | None = None
+        player: PlayersInMatchSchema | None = None,
+        attack_cards: list['CardSchema'] | None = None,
+        player_target: PlayersInMatchSchema | None = None,
+        match: MatchSchema | None = None,
     ):
         print(f'{self.in_game_id} está defendendo')
 
+    async def hasSuccessfullyAttacked(
+        self,
+        player: PlayersInMatchSchema | None = None,
+        attack_cards: list['CardSchema'] | None = None,
+        player_target: PlayersInMatchSchema | None = None,
+        defense_cards: list['CardSchema'] | None = None,
+        match: MatchSchema | None = None,
+    ):
+        print(f'{self.in_game_id} atacou com sucesso na sala {match.id}!')
+        
+    async def hasNotSuccessfullyAttacked(
+        self,
+        player: PlayersInMatchSchema | None = None,
+        attack_cards: list['CardSchema'] | None = None,
+        player_target: PlayersInMatchSchema | None = None,
+        defense_cards: list['CardSchema'] | None = None,
+        match: MatchSchema | None = None,
+    ):
+        print(f'{self.in_game_id} foi defendido na sala {match.id}!')
 
 def getCardInListBySlugId(card_slug: str, card_list: list[CardSchema]) -> CardSchema | None:
     for card in card_list:
