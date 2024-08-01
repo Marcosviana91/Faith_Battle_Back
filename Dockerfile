@@ -3,7 +3,7 @@ FROM python:3.12
 WORKDIR /api
 COPY . .
 
-RUN timedatectl set-timezone America/Sao_Paulo
+ENV TZ=America/Sao_Paulo
 RUN rm -rf .venv
 RUN python -m pip install -r requirements.txt
 
