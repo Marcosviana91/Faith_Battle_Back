@@ -96,7 +96,7 @@ class RoomManager:
                     )
                 if room.room_stage == 2:
                     newMatch = MatchSchema(room=room)
-                    MATCHES.createMatch(newMatch)
+                    await MATCHES.createMatch(newMatch)
                     await newMatch.updatePlayers()
                     # for player in room.connected_players:
                     #     await WS.sendToPlayer(
@@ -134,7 +134,7 @@ class RoomManager:
                 )
                 if room.room_stage == 2:
                     newMatch = MatchSchema(room=room)
-                    MATCHES.createMatch(newMatch)
+                    await MATCHES.createMatch(newMatch)
                     await newMatch.updatePlayers()
                     self.endRoom(room)
 

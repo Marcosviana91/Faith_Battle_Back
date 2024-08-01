@@ -1,3 +1,4 @@
+from random import choice
 from schemas.cards_schema import CardSchema,  MatchSchema, PlayersInMatchSchema, getCardInListBySlugId
 
 
@@ -44,13 +45,13 @@ class C_Adao(CardSchema):
         self.attack_point = 1,
         self.defense_points = 1
 
-    def addSkill(self):
-        super().addSkill()
+    async def addSkill(self):
+        await super().addSkill()
         self.attack_point += 2
         self.defense_points += 2
 
-    def rmvSkill(self):
-        super().rmvSkill()
+    async def rmvSkill(self):
+        await super().rmvSkill()
         self.attack_point -= 2
         self.defense_points -= 2
 
@@ -58,10 +59,10 @@ class C_Adao(CardSchema):
         await super().onInvoke(player, match)
         # Procurar por Eva no campo de preparação e no campo de batalha
         if getCardInListBySlugId("eva", player.card_prepare_camp) or getCardInListBySlugId("eva", player.card_battle_camp):
-            self.addSkill()
+            await self.addSkill()
 
-    def onDestroy(self, player: PlayersInMatchSchema, match: MatchSchema):
-        super().onDestroy(player, match)
+    async def onDestroy(self, player: PlayersInMatchSchema, match: MatchSchema):
+        await super().onDestroy(player, match)
         self.resetCardStats()
 
 
@@ -103,13 +104,13 @@ class C_Daniel(CardSchema):
         self.attack_point = 1
         self.defense_points = 2
 
-    def rmvSkill(self):
-        super().rmvSkill()
+    async def rmvSkill(self):
+        await super().rmvSkill()
         self.attack_point -= self.increase_attack
         self.increase_attack = 0
 
-    def onAttack(self, player: PlayersInMatchSchema, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
-        super().onAttack(player, attack_cards, player_target, match)
+    async def onAttack(self, player: PlayersInMatchSchema, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
+        await super().onAttack(player, attack_cards, player_target, match)
         print('Habilidade de Daniel')
         self.increase_attack = len(player_target.card_battle_camp)
         print(f'{self.increase_attack} cartas no campo de batalha do jogador {
@@ -146,14 +147,15 @@ Daniel = C_Daniel(
 #     #     # Precisa manter até o fim do turno
 #     #     self.attack_point += oponents_in_target_battle_zone
 
+
 class C_Davi(CardSchema):
-    def onAttack(self, player: PlayersInMatchSchema, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
-        super().onAttack(player, attack_cards, player_target, match)
+    async def onAttack(self, player: PlayersInMatchSchema, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
+        await super().onAttack(player, attack_cards, player_target, match)
         print(f'Tirar um ponto de fé do jogador {self.skill_focus_player_id}')
         skill_player_target = match._getPlayerById(self.skill_focus_player_id)
         if skill_player_target is not None:
             match.takeDamage(skill_player_target, 1)
-        
+
 
 Davi = C_Davi(
     slug="davi",
@@ -286,11 +288,11 @@ class C_Eva(CardSchema):
         # Procurar por Adão no campo de preparação
         card = getCardInListBySlugId("adao", player.card_prepare_camp)
         if card:
-            card.addSkill()
+            await card.addSkill()
         # Procurar por Adão no campo de batalha
         card = getCardInListBySlugId("adao", player.card_battle_camp)
         if card:
-            card.addSkill()
+            await card.addSkill()
 
 
 Eva = C_Eva(
@@ -348,7 +350,47 @@ Jaco = CardSchema(
 #     # def rmvSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
 #     #     ...
 
-JoseDoEgito = CardSchema(
+
+class C_JoseDoEgito(CardSchema):
+    def resetCardStats(self):
+        super().resetCardStats()
+        self.attack_point = 2,
+        self.defense_points = 1
+
+    async def addSkill(
+        self,
+        player: PlayersInMatchSchema | None = None,
+        attack_cards: list[CardSchema] | None = None,
+        player_target: PlayersInMatchSchema | None = None,
+        match: MatchSchema | None = None
+    ):
+        await super().addSkill()
+        if len(player_target.card_hand) <1:
+            print('Não tem cartas para descartar')
+        else:
+            __card_to_discart = choice(player_target.card_hand)
+            await match.moveCard(
+                player=player_target,
+                card_id=__card_to_discart.in_game_id,
+                move_from='hand',
+                move_to='forgotten'
+            )
+            print(f'Descartou a carta {__card_to_discart.in_game_id} na sala {match.id}')
+
+    async def rmvSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
+        await super().rmvSkill()
+        match.giveCard(player, 1)
+
+    async def hasSuccessfullyAttacked(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, defense_cards: list[CardSchema] | None = None, match: MatchSchema | None = None):
+        await super().hasSuccessfullyAttacked(player, attack_cards, player_target, defense_cards, match)
+        await self.addSkill(player_target=player_target, match=match)
+
+    async def hasNotSuccessfullyAttacked(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, defense_cards: list[CardSchema] | None = None, match: MatchSchema | None = None):
+        await super().hasNotSuccessfullyAttacked(player, attack_cards, player_target, defense_cards, match)
+        await self.rmvSkill(player=player, match=match)
+
+
+JoseDoEgito = C_JoseDoEgito(
     slug="jose-do-egito",
     wisdom_cost=2,
     attack_point=2,
@@ -382,23 +424,24 @@ class C_Josue(CardSchema):
         self.attack_point = 3
         self.defense_points = 1
 
-    def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
-        super().addSkill(player, attack_cards, player_target, match)
+    async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
+        await super().addSkill()
         for card in attack_cards:
             if card.in_game_id != self.in_game_id:
                 print(f'Add 1/0 to {card.in_game_id}')
-                card.attack_point +=1
-    
-    def rmvSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
-        super().rmvSkill(player, attack_cards, player_target, match)
+                card.attack_point += 1
+
+    async def rmvSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
+        await super().rmvSkill(player, attack_cards, player_target, match)
         for card in attack_cards:
             if card.in_game_id != self.in_game_id:
                 print(f'Remove 1/0 to {card.in_game_id}')
-                card.attack_point -=1
-        
-    def onAttack(self, player: PlayersInMatchSchema, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
-        super().onAttack(player, attack_cards, player_target, match)
-        self.addSkill(attack_cards=attack_cards)
+                card.attack_point -= 1
+
+    async def onAttack(self, player: PlayersInMatchSchema, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
+        await super().onAttack(player, attack_cards, player_target, match)
+        await self.addSkill(attack_cards=attack_cards)
+
 
 Josue = C_Josue(
     slug="josue",
@@ -545,8 +588,8 @@ class C_Salomao(CardSchema):
             player.wisdom_available += 1
             player.wisdom_points += 1
 
-    def onAttack(self, player: PlayersInMatchSchema, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
-        super().onAttack(player, attack_cards, player_target, match)
+    async def onAttack(self, player: PlayersInMatchSchema, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
+        await super().onAttack(player, attack_cards, player_target, match)
         if player.wisdom_available < player.wisdom_points:
             player.wisdom_available += 1
 

@@ -50,17 +50,19 @@ class FightSchema(BaseModel):
             __temp_cards_attack.append(cardObj_atk)
         self.attack_cards = __temp_cards_attack
         del __temp_cards_attack
+        print(f"Criado fight_camp para sala {self.match_room.id}")
+        
 
-    def attack(self) -> None:
+    async def attack(self) -> None:
         for card in self.attack_cards:
-            card.onAttack(
+            await card.onAttack(
                 player=self.player_attack,
                 attack_cards=self.attack_cards,
                 match=self.match_room,
                 player_target=self.player_defense
             )
 
-    def defense(self, card_list: list[CardSchema]) -> None:
+    async def defense(self, card_list: list[CardSchema]) -> None:
         __temp_cards_defense = []
         for card in card_list:
             if card.slug != 'not-defense':
@@ -68,7 +70,7 @@ class FightSchema(BaseModel):
                     card.in_game_id, self.player_defense.card_battle_camp)
                 __temp_cards_defense.append(cardObj_def)
                 if cardObj_def != None:
-                    cardObj_def.onDefense(
+                    await cardObj_def.onDefense(
                         player=self.player_defense,
                         match=self.match_room,
                         player_target=self.player_attack
@@ -91,6 +93,7 @@ class FightSchema(BaseModel):
 
     async def fight(self):
         total_damage = 0
+        print(f'Uma luta está sendo travada em {self.match_room.id}')
         if (len(self.attack_cards) > len(self.defense_cards)):
             print("Tem mais ataque do que defesa")
         else:
@@ -100,9 +103,11 @@ class FightSchema(BaseModel):
                 card_atk.status = 'used'
                 if (card_def == None):
                     total_damage += card_atk.attack_point
-                    print(f'{card_atk.in_game_id} attack the FAITH')
+                    print(f'{card_atk.in_game_id} não foi defendido!')
+                    await card_atk.hasSuccessfullyAttacked(player_target=self.player_defense, match=self.match_room)
                 else:
                     print(f'{card_atk.in_game_id} VS {card_def.in_game_id}')
+                    await card_atk.hasNotSuccessfullyAttacked(player=self.player_attack, match=self.match_room)
                     if card_atk.attack_point >= card_def.defense_points:
                         print(f'{card_atk.in_game_id} derrotou {
                             card_def.in_game_id}')
@@ -153,7 +158,6 @@ class MatchSchema(BaseModel):
             self.players_in_match.append(new_player)
         shuffle(self.players_in_match)
         del self.room
-        self.newRoundHandle()
 
     def _getPlayerById(self, player_id: int):
         for player in self.players_in_match:
@@ -208,26 +212,26 @@ class MatchSchema(BaseModel):
             })
         return response
 
-    def newRoundHandle(self):
+    async def newRoundHandle(self):
         self.round_match += 1
         for player in self.players_in_match:
             # Reseta as cartas ['daniel', ]
             daniel_card = getCardInListBySlugId(
                 'daniel', player.card_battle_camp)
             if daniel_card:
-                daniel_card.rmvSkill()
+                await daniel_card.rmvSkill()
             if player.wisdom_points < 10:
                 player.wisdom_points += 1
                 player.wisdom_available += 1
             if self.round_match > 10:
                 self.takeDamage(player, 1)
         self.player_turn = 0
-        self.playerTurnHandle()
+        await self.playerTurnHandle()
 
-    def playerTurnHandle(self):
+    async def playerTurnHandle(self):
         player = self.players_in_match[self.player_turn]
         if player.faith_points < 1:
-            self.finishTurn()
+            await self.finishTurn()
         print(f'Player {self.players_in_match[self.player_turn].id} turn:')
         self.player_focus_id = self.players_in_match[self.player_turn].id
         player.wisdom_available = player.wisdom_points
@@ -260,13 +264,17 @@ class MatchSchema(BaseModel):
         move_stop: bool = False
         print(f"Player {player.id} is moving the card {
               card_id}: {move_from} => {move_to}")
-        card = getCardInListBySlugId(card_id, player.card_hand)
-        if (move_from == "hand" and (card.wisdom_cost <= player.wisdom_available)):
-            __card_cost = 1
-            __card_cost = card.wisdom_cost
-            card.status = "used"  # Precisa ficar antes do card.onInvoke - Sansão
-            move_stop = await card.onInvoke(player, self)
-            player.wisdom_available -= __card_cost
+        if (move_from == "hand"):
+            card = getCardInListBySlugId(card_id, player.card_hand)
+            if (move_to == "prepare" and (card.wisdom_cost <= player.wisdom_available)):
+                __card_cost = 1
+                __card_cost = card.wisdom_cost
+                card.status = "used"  # Precisa ficar antes do card.onInvoke - Sansão
+                move_stop = await card.onInvoke(player, self)
+                player.wisdom_available -= __card_cost
+            elif (move_to == 'forgotten'):
+                player.card_hand.remove(card)
+                player.card_in_forgotten_sea.append(card)
         if (move_from == "prepare"):
             card = getCardInListBySlugId(card_id, player.card_prepare_camp)
             card.status = "used"
@@ -286,7 +294,7 @@ class MatchSchema(BaseModel):
         print("moveCard Stop? ", bool(move_stop))
         return bool(move_stop)
 
-    def beginAttack(self, move: MoveSchema):
+    async def beginAttack(self, move: MoveSchema):
         if ((not move.player_target) or (move.player_move == move.player_target)):
             print("Escolha um oponente")
         else:
@@ -296,6 +304,7 @@ class MatchSchema(BaseModel):
             self.player_focus_id = move.player_target
             player_attack = self._getPlayerById(move.player_move)
             player_defense = self._getPlayerById(move.player_target)
+            print(f"Sala {self.id} vai criar fight_camp")
             self.fight_camp = FightSchema(
                 match_room=self,
                 player_attack=player_attack,
@@ -303,12 +312,12 @@ class MatchSchema(BaseModel):
                 attack_cards=move.card_list,
                 defense_cards=[]
             )
-            self.fight_camp.attack()
+            await self.fight_camp.attack()
 
-    def beginDefense(self, move: MoveSchema):
+    async def beginDefense(self, move: MoveSchema):
         print(f'Jogador {move.player_move} está defendendo o ataque do jogador {
             move.player_target} com as cartas {move.card_list}')
-        self.fight_camp.defense(move.card_list)
+        await self.fight_camp.defense(move.card_list)
 
     async def fightNow(self):
         damage = await self.fight_camp.fight()
@@ -347,7 +356,7 @@ class MatchSchema(BaseModel):
             move_stop = await self.moveCard(player, card_id=move.card_id,
                                             move_from="hand", move_to="prepare")
         if move.move_type == 'done':
-            self.finishTurn()
+            await self.finishTurn()
         if move.move_type == 'move_to_battle':
             await self.moveCard(player, card_id=move.card_id,
                                 move_from="prepare", move_to="battle")
@@ -355,15 +364,15 @@ class MatchSchema(BaseModel):
             await self.moveCard(player, card_id=move.card_id,
                                 move_from="battle", move_to="prepare")
         if move.move_type == 'attack':
-            self.beginAttack(move)
+            await self.beginAttack(move)
         if move.move_type == 'defense':
-            self.beginDefense(move)
+            await self.beginDefense(move)
         if move.move_type == 'fight':
             await self.fightNow()
         if move.move_type == 'surrender':
             print(f'{player.id} SURRENDERED...')
             if player.id == self.player_focus_id:
-                self.finishTurn()
+                await self.finishTurn()
             self.takeDamage(player, player.faith_points)
             DB.setPlayerInRoom(player_id=player.id, room_id="")
         if move.move_type == 'change_deck':
@@ -382,9 +391,9 @@ class MatchSchema(BaseModel):
             player.card_deck.remove(_card)
             player.card_deck.insert(0, _card)
 
-    def finishTurn(self):
+    async def finishTurn(self):
         if (self.player_turn < len(self.players_in_match)-1):
             self.player_turn += 1
-            self.playerTurnHandle()
+            await self.playerTurnHandle()
         else:
-            self.newRoundHandle()
+            await self.newRoundHandle()
