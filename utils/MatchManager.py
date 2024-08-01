@@ -23,8 +23,9 @@ class MatchManager:
             response.append(match.getMatchStats)
         return {"matches": response}
 
-    def createMatch(self, match: MatchSchema):
+    async def createMatch(self, match: MatchSchema):
         self.MATCHES.append(match)
+        await match.newRoundHandle()
 
     async def handleMove(self, data_raw: dict):
         data = ClientRequestSchema(**data_raw)
