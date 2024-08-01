@@ -108,8 +108,8 @@ class C_Daniel(CardSchema):
         self.attack_point -= self.increase_attack
         self.increase_attack = 0
 
-    def onAttack(self, player: PlayersInMatchSchema, match: MatchSchema, player_target: PlayersInMatchSchema | None = None):
-        super().onAttack(player, match, player_target)
+    def onAttack(self, player: PlayersInMatchSchema, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
+        super().onAttack(player, attack_cards, player_target, match)
         print('Habilidade de Daniel')
         self.increase_attack = len(player_target.card_battle_camp)
         print(f'{self.increase_attack} cartas no campo de batalha do jogador {
@@ -147,8 +147,8 @@ Daniel = C_Daniel(
 #     #     self.attack_point += oponents_in_target_battle_zone
 
 class C_Davi(CardSchema):
-    def onAttack(self, player: PlayersInMatchSchema, match: MatchSchema, player_target: PlayersInMatchSchema | None = None):
-        super().onAttack(player, match, player_target)
+    def onAttack(self, player: PlayersInMatchSchema, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
+        super().onAttack(player, attack_cards, player_target, match)
         print(f'Tirar um ponto de fé do jogador {self.skill_focus_player_id}')
         skill_player_target = match._getPlayerById(self.skill_focus_player_id)
         if skill_player_target is not None:
@@ -382,14 +382,23 @@ class C_Josue(CardSchema):
         self.attack_point = 3
         self.defense_points = 1
 
-    def addSkill(self, player: PlayersInMatchSchema = None, match: MatchSchema = None):
-        super().addSkill()
-        for card in match.fight_camp.attack_cards:
-            print(f'Add 1/0 to {card.in_game_id}')
+    def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
+        super().addSkill(player, attack_cards, player_target, match)
+        for card in attack_cards:
+            if card.in_game_id != self.in_game_id:
+                print(f'Add 1/0 to {card.in_game_id}')
+                card.attack_point +=1
+    
+    def rmvSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
+        super().rmvSkill(player, attack_cards, player_target, match)
+        for card in attack_cards:
+            if card.in_game_id != self.in_game_id:
+                print(f'Remove 1/0 to {card.in_game_id}')
+                card.attack_point -=1
         
-    def onAttack(self, player: PlayersInMatchSchema, match: MatchSchema, player_target: PlayersInMatchSchema | None = None):
-        super().onAttack(player, match, player_target)
-        self.addSkill(match)
+    def onAttack(self, player: PlayersInMatchSchema, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
+        super().onAttack(player, attack_cards, player_target, match)
+        self.addSkill(attack_cards=attack_cards)
 
 Josue = C_Josue(
     slug="josue",
@@ -536,8 +545,8 @@ class C_Salomao(CardSchema):
             player.wisdom_available += 1
             player.wisdom_points += 1
 
-    def onAttack(self, player: PlayersInMatchSchema, match: MatchSchema, player_target: PlayersInMatchSchema | None = None):
-        super().onAttack(player, match, player_target)
+    def onAttack(self, player: PlayersInMatchSchema, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
+        super().onAttack(player, attack_cards, player_target, match)
         if player.wisdom_available < player.wisdom_points:
             player.wisdom_available += 1
 
