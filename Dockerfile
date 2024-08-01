@@ -4,7 +4,7 @@ WORKDIR /api
 COPY . .
 
 RUN rm -rf .venv
-RUN rm -rf database
+#RUN rm -rf database
 RUN python -m pip install -r requirements.txt
 
 
