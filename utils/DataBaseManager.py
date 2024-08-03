@@ -190,9 +190,15 @@ class DB_Manager:
                 user = session.exec(
                     query
                 ).one()  # Possível erro de usuário não encontrado
+                player = self.getPlayerById(user_id)
                 results = user.model_dump()
                 results["created_at"] = str(results["created_at"])
                 results["last_login"] = str(results["last_login"])
+                results["xp_points"] = player.get("xp_points")
+                __available_cards = []
+                for card in player.get("available_cards"):
+                    __available_cards.append({"slug": card})
+                results["available_cards"] = __available_cards
                 # remove password data
                 results.pop("password")
 
