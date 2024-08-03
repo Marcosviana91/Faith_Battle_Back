@@ -530,7 +530,7 @@ Moises = CardSchema(
     slug="moises",
     wisdom_cost=3,
     attack_point=2,
-    defense_points=1,
+    defense_points=2,
     card_type="hero",
     in_game_id=None
 )
