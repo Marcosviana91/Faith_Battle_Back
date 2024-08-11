@@ -32,6 +32,7 @@ class WS_Manager:
                 raise AssertionError("token not match")
         except Exception as e:
             print(f'{e}')
+        self.login(user_ws)
         print(f"WS: User {user_ws.id} has connected.")
         print(f"WS: Users connected in game: {
               self.all_users.__len__()}.")
