@@ -86,10 +86,10 @@ class CardSchema(BaseModel):
 
     increase_attack: int | None = 0
     increase_defense: int | None = 0
-    skill_focus_player_id: int | None = None
-    # used: bool
-    # has_passive_skill: bool
-    # has_active_skill: bool
+    skill_focus_player_id: int | None = None 
+    skill_focus_player2_id: int | None = None
+    skill_focus_card_id: int | None = None
+
     # attachable: bool
 
     @property

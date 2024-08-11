@@ -3,13 +3,22 @@ from pydantic import BaseModel
 from schemas.cards_schema import CardSchema
 from utils.Cards import cardListToDict
 
-STANDARD_CARDS = [
+STANDARD_CARDS_HEROS = [
     'abraao', 'adao', 'daniel',
     'davi', 'elias', 'ester',
     'eva', 'jaco', "jose-do-egito",
     "josue", "maria", "moises",
     "noe", "salomao", "sansao",
 ]
+STANDARD_CARDS_MIRACLES = [
+    'cordeiro-de-deus', 'diluvio', 'fogo-do-ceu',
+    'forca-de-sansao', 'liberacao-celestial', 'no-ceu-tem-pao',
+    'passagem-segura', 'protecao-divina', 'ressurreicao',
+    'restauracao-de-fe', 'sabedoria-de-salomao', 'sarca-ardente',
+]
+
+# STANDARD_CARDS = [*STANDARD_CARDS_HEROS, *STANDARD_CARDS_MIRACLES]
+STANDARD_CARDS = [*STANDARD_CARDS_HEROS]
 
 
 class PlayersTinyDBSchema(BaseModel):
@@ -75,12 +84,12 @@ class PlayersInMatchSchema(BaseModel):
     def getPlayerStats(self, private: bool = False) -> dict:
         if private:
             return {
-            "id": self.id,
-            "card_hand": cardListToDict(self.card_hand),
-            "faith_points": self.faith_points,
-            "wisdom_points": self.wisdom_points,
-            "wisdom_available":  self.wisdom_available
-        } 
+                "id": self.id,
+                "card_hand": cardListToDict(self.card_hand),
+                "faith_points": self.faith_points,
+                "wisdom_points": self.wisdom_points,
+                "wisdom_available":  self.wisdom_available
+            }
         return {
             "id": self.id,
             "card_deck": cardListToDict(self.card_deck),
@@ -91,4 +100,3 @@ class PlayersInMatchSchema(BaseModel):
             "wisdom_points": self.wisdom_points,
             "wisdom_available":  self.wisdom_available
         }
-

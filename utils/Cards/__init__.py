@@ -2,10 +2,9 @@ from secrets import token_hex
 
 from schemas.cards_schema import CardSchema
 
-from .standard import heros
+from .standard import heros, miracles
 
-STANDARD_HEROS_CLASSES = {
-    'HEROS': [
+STANDARD_CARDS_CLASSES = [
         heros.Abraao,
         heros.Adao,
         heros.Daniel,
@@ -20,14 +19,26 @@ STANDARD_HEROS_CLASSES = {
         heros.Moises,
         heros.Noe,
         heros.Salomao,
-        heros.Sansao
+        heros.Sansao,
+        miracles.CordeiroDeDeus,
+        miracles.Diluvio,
+        miracles.FogoDoCeu,
+        miracles.ForcaDeSansao,
+        miracles.LiberacaoCelestial,
+        miracles.NoCeuTemPao,
+        miracles.PassagemSegura,
+        miracles.ProtecaoDivina,
+        miracles.Ressurreicao,
+        miracles.RestauracaoDeFe,
+        miracles.SabedoriaDeSalomao,
+        miracles.SarcaArdente,
     ]
-}
+
 
 
 def createCardListObjectsByPlayer(player_id: int, card_list: list[CardSchema]) -> list[CardSchema]:
     card_object = []
-    heroes: list[CardSchema] = STANDARD_HEROS_CLASSES['HEROS']
+    heroes: list[CardSchema] = STANDARD_CARDS_CLASSES
     for card in card_list:
         for hero in heroes:
             if card.slug == hero.slug:
