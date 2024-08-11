@@ -24,21 +24,6 @@ Abraao = CardSchema(
     in_game_id=None
 )
 
-#     self.slug = "abraao"
-#     self.wisdom_cost = 2
-#     self.attack_point = 1
-#     self.defense_points = 2
-#     card_type = 1
-#     has_passive_skill = True
-#     has_active_skill = False
-#     attachable = False
-#     used = False
-
-# def addSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
-#     if self in player.card_battle_camp:
-#         # Precisa de evento ao entrar herói no jogo
-#         player.faith_points += 1
-
 
 class C_Adao(CardSchema):
     def resetCardStats(self):
@@ -74,27 +59,6 @@ Adao = C_Adao(
     card_type="hero",
     in_game_id=None
 )
-# class Adao(CardSchema):
-#     __pydantic_post_init__ = 'model_post_init'
-
-#     def model_post_init(self, *args, **kwargs):
-#         self.slug = "adao"
-#         self.wisdom_cost = 1
-#         self.attack_point = 1
-#         self.defense_points = 1
-#     card_type = 1
-#     card_name = "Adão"
-#     has_passive_skill = True
-#     has_active_skill = False
-#     attachable = False
-
-#     used = False
-
-#     # def addSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
-#     #     if (getCardInListBySlug(slug='eva', card_list=player.card_battle_camp)) or (getCardInListBySlug(slug='eva', card_list=player.card_prepare_camp)):
-#     #         # Verificar por EVA
-#     #         self.attack_point += 2
-#     #         self.defense_points += 2
 
 
 class C_Daniel(CardSchema):
@@ -126,26 +90,6 @@ Daniel = C_Daniel(
     card_type="hero",
     in_game_id=None
 )
-# class Daniel(CardSchema):
-#     __pydantic_post_init__ = 'model_post_init'
-
-#     def model_post_init(self, *args, **kwargs):
-#         self.slug = "daniel"
-#         self.wisdom_cost = 2
-#         self.attack_point = 1
-#         self.defense_points = 2
-#     card_type = 1
-#     card_name = "Daniel"
-#     has_passive_skill = False
-#     has_active_skill = True
-#     attachable = False
-
-#     used = False
-
-#     # def rmvSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
-#     #     oponents_in_target_battle_zone = player.card_battle_camp.__len__()
-#     #     # Precisa manter até o fim do turno
-#     #     self.attack_point += oponents_in_target_battle_zone
 
 
 class C_Davi(CardSchema):
@@ -165,24 +109,6 @@ Davi = C_Davi(
     card_type="hero",
     in_game_id=None
 )
-# class Davi(CardSchema):
-#     __pydantic_post_init__ = 'model_post_init'
-
-#     def model_post_init(self, *args, **kwargs):
-#         self.slug = "davi"
-#         self.wisdom_cost = 3
-#         self.attack_point = 3
-#         self.defense_points = 2
-#     card_type = 1
-#     card_name = 'Davi'
-#     has_passive_skill = False
-#     has_active_skill = True
-#     attachable = False
-
-#     used = False
-
-#     # def rmvSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
-#     #     player.faith_points -= 1
 
 
 class C_Elias(CardSchema):
@@ -203,27 +129,6 @@ Elias = C_Elias(
     card_type="hero",
     in_game_id=None
 )
-# class Elias(CardSchema):
-#     __pydantic_post_init__ = 'model_post_init'
-
-#     def model_post_init(self, *args, **kwargs):
-#         self.slug = "elias"
-#         self.wisdom_cost = 4
-#         self.attack_point = 3
-#         self.defense_points = 1
-#     card_type = 1
-#     card_name = 'Elias'
-#     has_passive_skill = False
-#     has_active_skill = True
-#     attachable = False
-
-#     used = False
-
-#     # def rmvSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
-#     #     oponent_target = player
-#     #     # Precisa definir a carta a ser destuída
-#     #     card_id = 0
-#     #     oponent_target.card_battle_camp.remove(card_id)
 
 
 class C_Ester(CardSchema):
@@ -260,26 +165,6 @@ Ester = C_Ester(
     in_game_id=None,
 )
 
-# class Ester(CardSchema):
-#     __pydantic_post_init__ = 'model_post_init'
-
-#     def model_post_init(self, *args, **kwargs):
-#         self.slug = "ester"
-#         self.wisdom_cost = 1
-#         self.attack_point = 0
-#         self.defense_points = 2
-#     card_type = 1
-#     card_name = 'Ester'
-#     has_passive_skill = False
-#     has_active_skill = True
-#     attachable = False
-
-#     used = False
-
-#     # def rmvSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
-#     #     # Precisa reorganizar
-#     #     return player.card_deck[:3]
-
 
 class C_Eva(CardSchema):
     async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
@@ -303,25 +188,7 @@ Eva = C_Eva(
     card_type="hero",
     in_game_id=None
 )
-# class Eva(CardSchema):
-#     __pydantic_post_init__ = 'model_post_init'
 
-#     def model_post_init(self, *args, **kwargs):
-#         self.slug = "eva"
-#         self.wisdom_cost = 1
-#         self.attack_point = 1
-#         self.defense_points = 1
-#     card_type = 1
-#     card_name = 'Eva'
-#     has_passive_skill = False
-#     has_active_skill = True
-#     attachable = False
-
-#     used = False
-
-#     # def rmvSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
-#     #     # Precisa verificar se está entrando no jogo
-#     #     game.giveCard(player, 1)
 
 Jaco = CardSchema(
     slug="jaco",
@@ -331,24 +198,6 @@ Jaco = CardSchema(
     card_type="hero",
     in_game_id=None
 )
-# class Jaco(CardSchema):
-#     __pydantic_post_init__ = 'model_post_init'
-
-#     def model_post_init(self, *args, **kwargs):
-#         self.slug = "jaco"
-#         self.wisdom_cost = 2
-#         self.attack_point = 2
-#         self.defense_points = 2
-#     card_type = 1
-#     card_name = 'Jacó'
-#     has_passive_skill = False
-#     has_active_skill = True
-#     attachable = False
-
-#     used = False
-
-#     # def rmvSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
-#     #     ...
 
 
 class C_JoseDoEgito(CardSchema):
@@ -365,7 +214,7 @@ class C_JoseDoEgito(CardSchema):
         match: MatchSchema | None = None
     ):
         await super().addSkill()
-        if len(player_target.card_hand) <1:
+        if len(player_target.card_hand) < 1:
             print('Não tem cartas para descartar')
         else:
             __card_to_discart = choice(player_target.card_hand)
@@ -375,7 +224,8 @@ class C_JoseDoEgito(CardSchema):
                 move_from='hand',
                 move_to='forgotten'
             )
-            print(f'Descartou a carta {__card_to_discart.in_game_id} na sala {match.id}')
+            print(f'Descartou a carta {
+                  __card_to_discart.in_game_id} na sala {match.id}')
 
     async def rmvSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
         await super().rmvSkill()
@@ -398,24 +248,6 @@ JoseDoEgito = C_JoseDoEgito(
     card_type="hero",
     in_game_id=None
 )
-# class JoseDoEgito(CardSchema):
-#     __pydantic_post_init__ = 'model_post_init'
-
-#     def model_post_init(self, *args, **kwargs):
-#         self.slug = "jose-do-egito"
-#         self.wisdom_cost = 2
-#         self.attack_point = 2
-#         self.defense_points = 1
-#     card_type = 1
-#     card_name = 'José do Egito'
-#     has_passive_skill = False
-#     has_active_skill = True
-#     attachable = False
-
-#     used = False
-
-#     # def rmvSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
-#     #     ...
 
 
 class C_Josue(CardSchema):
@@ -451,24 +283,6 @@ Josue = C_Josue(
     card_type="hero",
     in_game_id=None
 )
-# class Josue(CardSchema):
-#     __pydantic_post_init__ = 'model_post_init'
-
-#     def model_post_init(self, *args, **kwargs):
-#         self.slug = "josue"
-#         self.wisdom_cost = 3
-#         self.attack_point = 3
-#         self.defense_points = 1
-#     card_type = 1
-#     card_name = 'Josué'
-#     has_passive_skill = False
-#     has_active_skill = True
-#     attachable = False
-
-#     used = False
-
-#     # def rmvSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
-#     #     ...
 
 
 class C_Maria(CardSchema):
@@ -507,24 +321,7 @@ Maria = C_Maria(
     card_type="hero",
     in_game_id=None
 )
-# class Maria(CardSchema):
-#     __pydantic_post_init__ = 'model_post_init'
 
-#     def model_post_init(self, *args, **kwargs):
-#         self.slug = "maria"
-#         self.wisdom_cost = 2
-#         self.attack_point = 1
-#         self.defense_points = 2
-#     card_type = 1
-#     card_name = 'Maria'
-#     has_passive_skill = False
-#     has_active_skill = True
-#     attachable = False
-
-#     used = False
-
-#     # def rmvSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
-#     #     ...
 
 Moises = CardSchema(
     slug="moises",
@@ -534,24 +331,7 @@ Moises = CardSchema(
     card_type="hero",
     in_game_id=None
 )
-# class Moises(CardSchema):
-#     __pydantic_post_init__ = 'model_post_init'
 
-#     def model_post_init(self, *args, **kwargs):
-#         self.slug = "moises"
-#         self.wisdom_cost = 3
-#         self.attack_point = 2
-#         self.defense_points = 1
-#     card_type = 1
-#     card_name = 'Moisés'
-#     has_passive_skill = False
-#     has_active_skill = True
-#     attachable = False
-
-#     used = False
-
-#     # def rmvSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
-#     #     ...
 
 Noe = CardSchema(
     slug="noe",
@@ -561,24 +341,6 @@ Noe = CardSchema(
     card_type="hero",
     in_game_id=None
 )
-# class Noe(CardSchema):
-#     __pydantic_post_init__ = 'model_post_init'
-
-#     def model_post_init(self, *args, **kwargs):
-#         self.slug = "noe"
-#         self.wisdom_cost = 1
-#         self.attack_point = 2
-#         self.defense_points = 1
-#     card_type = 1
-#     card_name = 'Noé'
-#     has_passive_skill = True
-#     has_active_skill = False
-#     attachable = False
-
-#     used = False
-
-#     # def addSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
-#     #     ...
 
 
 class C_Salomao(CardSchema):
@@ -602,24 +364,6 @@ Salomao = C_Salomao(
     card_type="hero",
     in_game_id=None
 )
-# class Salomao(CardSchema):
-#     __pydantic_post_init__ = 'model_post_init'
-
-#     def model_post_init(self, *args, **kwargs):
-#         self.slug = "salomao"
-#         self.wisdom_cost = 4
-#         self.attack_point = 2
-#         self.defense_points = 2
-#     card_type = 1
-#     card_name = 'Salomão'
-#     has_passive_skill = False
-#     has_active_skill = True
-#     attachable = False
-
-#     used = False
-
-#     # def rmvSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
-#     #     self.used = True
 
 
 class C_Sansao(CardSchema):
@@ -627,8 +371,6 @@ class C_Sansao(CardSchema):
         await super().onInvoke(player, match)
         await match.moveCard(player, self.in_game_id, "prepare", "battle")
         self.status = "ready"
-        print(player.id)
-        print(match.id)
 
 
 Sansao = C_Sansao(
@@ -639,24 +381,3 @@ Sansao = C_Sansao(
     card_type="hero",
     in_game_id=None
 )
-
-
-# class Sansao(CardSchema):
-#     __pydantic_post_init__ = 'model_post_init'
-
-#     def model_post_init(self, *args, **kwargs):
-#         self.slug = "sansao"
-#         self.wisdom_cost = 6
-#         self.attack_point = 5
-#         self.defense_points = 5
-#     card_type = 1
-#     card_name = 'Sansão'
-#     has_passive_skill = False
-#     has_active_skill = True
-#     attachable = False
-
-#     # Sansão entra em jogo pronto para atacar
-#     used = True
-
-#     # def rmvSkill(self, player: PlayersInMatchSchema, game: MatchSchema):
-#     #     self.used = True
