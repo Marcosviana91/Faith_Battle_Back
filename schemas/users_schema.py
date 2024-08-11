@@ -30,6 +30,8 @@ class UserPublic(BaseModel):
     # email: EmailStr
     real_name: str
     avatar: int
+    available_cards: list[str] | None = []
+    xp_points: int | None = 0
 
 
 class UserWs(BaseModel):
