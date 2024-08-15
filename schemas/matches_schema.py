@@ -275,14 +275,18 @@ class MatchSchema(BaseModel):
                 # card.status = "used"  # Precisa ficar antes do card.onInvoke - Sansão
                 move_stop = await card.onInvoke(player, self)
                 player.wisdom_available -= __card_cost
-            # elif (move_to == 'forgotten'):
-            #     player.card_hand.remove(card)
-            #     player.card_in_forgotten_sea.append(card)
+            elif (move_to == 'forgotten'):
+                player.card_hand.remove(card)
+                player.card_in_forgotten_sea.append(card)
         if (move_from == "prepare"):
             card = getCardInListBySlugId(card_id, player.card_prepare_camp)
             card.status = "used"
-            player.card_prepare_camp.remove(card)
-            player.card_battle_camp.append(card)
+            if (move_to == 'forgotten'):
+                player.card_prepare_camp.remove(card)
+                player.card_in_forgotten_sea.append(card)
+            elif (move_to == 'battle'):
+                player.card_prepare_camp.remove(card)
+                player.card_battle_camp.append(card)
         if (move_from == "battle"):
             card = getCardInListBySlugId(card_id, player.card_battle_camp)
             if (move_to == "forgotten"):

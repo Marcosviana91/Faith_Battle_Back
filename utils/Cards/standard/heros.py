@@ -125,15 +125,13 @@ class C_Elias(CardSchema):
             },
             player_id=player.id
         )
-    
+
     async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
         await super().addSkill(player, attack_cards, player_target, match)
         player_target = match._getPlayerById(match.move_now.player_target)
         await match.moveCard(player_target, match.move_now.card_target, "battle", "forgotten")
-        consolePrint.status(f'A carta {match.move_now.card_target} foi destruída')
-        
-
-
+        consolePrint.status(
+            f'A carta {match.move_now.card_target} foi destruída')
 
 
 Elias = C_Elias(
@@ -322,7 +320,6 @@ class C_Maria(CardSchema):
             },
             player_id=player.id
         )
-        
 
 
 Maria = C_Maria(
@@ -333,6 +330,7 @@ Maria = C_Maria(
     card_type="hero",
     in_game_id=None
 )
+
 
 class C_Moise(CardSchema):
     async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
@@ -346,8 +344,9 @@ class C_Moise(CardSchema):
                         "in_game_id": __card.in_game_id
                     }
                 )
-        sorted_miracles_in_deck = sorted(__miracles_in_deck, key=lambda card: card["slug"])
-        
+        sorted_miracles_in_deck = sorted(
+            __miracles_in_deck, key=lambda card: card["slug"])
+
         __miracles_in_forgoten_sea = []
         for __card_forgotten in player.card_in_forgotten_sea:
             if __card_forgotten.card_type == 'miracle':
@@ -357,18 +356,37 @@ class C_Moise(CardSchema):
                         "in_game_id": __card_forgotten.in_game_id
                     }
                 )
-        sorted_miracles_in_forgoten_sea = sorted(__miracles_in_forgoten_sea, key=lambda card: card["slug"])
+        sorted_miracles_in_forgoten_sea = sorted(
+            __miracles_in_forgoten_sea, key=lambda card: card["slug"])
         await match.sendToPlayer(
             data={
                 "data_type": "card_skill",
                 "card_data": {
                     "slug": self.slug,
                     "deck": sorted_miracles_in_deck,
-                    "forgotten_sea":sorted_miracles_in_forgoten_sea,
+                    "forgotten_sea": sorted_miracles_in_forgoten_sea,
                 }
             },
             player_id=player.id
         )
+
+    async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
+        await super().addSkill(player, attack_cards, player_target, match)
+        card_id = match.move_now.card_list[0].in_game_id
+        card_in_deck = getCardInListBySlugId(card_id, player.card_deck)
+        card_in_sea = getCardInListBySlugId(
+            card_id, player.card_in_forgotten_sea)
+        print(card_in_deck, card_in_sea)
+        if card_in_deck is not None:
+            player.card_deck.remove(card_in_deck)
+            player.card_hand.append(card_in_deck)
+            card_in_deck.status = 'ready'
+        elif card_in_sea is not None:
+            player.card_in_forgotten_sea.remove(card_in_sea)
+            player.card_hand.append(card_in_sea)
+            card_in_sea.status = "ready"
+        
+
 
 Moises = C_Moise(
     slug="moises",

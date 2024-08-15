@@ -46,7 +46,7 @@ Diluvio = C_Diluvio(
 class C_FogoDoCeu(CardSchema):
     async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
         await super().addSkill(player, attack_cards, player_target, match)
-        # Destroi uma carta da zona de batalha
+        # Destrói uma carta da zona de batalha
         # Mesma habilidade de Elias
         player_target = match._getPlayerById(match.move_now.player_target)
         await match.moveCard(player_target, match.move_now.card_target, "battle", "forgotten")
