@@ -20,7 +20,7 @@ class RoomManager:
         for room in self.ROOMS:
             if room.id == room_id:
                 return room
-        consolePrint.info(f'Room ID not found: {room_id}')
+        consolePrint.danger(f'Room ID not found: {room_id}')
         return None
 
     def getAllRoomsInfo(self):

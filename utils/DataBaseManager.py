@@ -178,7 +178,7 @@ class DB_Manager:
                 consolePrint.info(f"DB: {response.message}")
 
             except Exception as e:
-                consolePrint.danger(msg=(__file__, e, "\nDB: username or password invalid"))
+                consolePrint.danger(msg=("DB: username or password invalid"))
 
         return response
 
