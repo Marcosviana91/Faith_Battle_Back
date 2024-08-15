@@ -36,6 +36,7 @@ Currently, there are 15 basic hero cards available in the game. Each hero card f
 The next update will introduce miracle cards, which will be listed alphabetically rather than by priority:
 - Miracle skills that work:
     1. Fogo do Céu
+    0. Restauração da Fé
 
 - Miracle cards that **DON’T** work:
     1. Cordeiro de Deus
@@ -46,6 +47,5 @@ The next update will introduce miracle cards, which will be listed alphabeticall
     0. Passagem Segura
     0. Proteção Divina
     0. Ressurreição
-    0. Restauração da Fé
     0. Sabedoria de Salomão
     0. Sarça Ardente
