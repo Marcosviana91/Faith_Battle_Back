@@ -78,5 +78,4 @@ fake_users = [
 
 for user in fake_users:
     newUser = NewUserSchema(**user)
-    # print(newUser)
-    print(DB.createNewUser(newUser).message)
+    DB.createNewUser(newUser)

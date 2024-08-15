@@ -1,6 +1,8 @@
 from random import choice
 from schemas.cards_schema import CardSchema,  MatchSchema, PlayersInMatchSchema, getCardInListBySlugId
 
+from utils.console import consolePrint
+
 
 class MoveSchema:
     match_id: str
@@ -114,11 +116,24 @@ Davi = C_Davi(
 class C_Elias(CardSchema):
     async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
         await super().onInvoke(player, match)
-        print(match.move_now)
-        print(f"{match.move_now.card_id} destroi a carta {
-              match.move_now.card_target}")
+        await match.sendToPlayer(
+            data={
+                "data_type": "card_skill",
+                "card_data": {
+                    "slug": self.slug,
+                }
+            },
+            player_id=player.id
+        )
+    
+    async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
+        await super().addSkill(player, attack_cards, player_target, match)
         player_target = match._getPlayerById(match.move_now.player_target)
         await match.moveCard(player_target, match.move_now.card_target, "battle", "forgotten")
+        consolePrint.status(f'A carta {match.move_now.card_target} foi destruída')
+        
+
+
 
 
 Elias = C_Elias(
@@ -133,8 +148,7 @@ Elias = C_Elias(
 
 class C_Ester(CardSchema):
     async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
-        self.status = "ready"
-        send_data = player.getPlayerStats(private=True)
+        await super().onInvoke(player, match)
         __card_deck = []
         for __card in player.card_deck[:3]:
             __card_deck.append(
@@ -143,17 +157,17 @@ class C_Ester(CardSchema):
                     "in_game_id": __card.in_game_id
                 }
             )
-        send_data["card_deck"] = __card_deck
         await match.sendToPlayer(
             data={
-                "data_type": "player_update",
-                "player_data": send_data
+                "data_type": "card_skill",
+                "card_data": {
+                    "slug": self.slug,
+                    "deck": __card_deck
+                }
             },
             player_id=player.id
         )
-        await super().onInvoke(player, match)
-        self.status = "used"
-        return True
+        return False
 
 
 Ester = C_Ester(
@@ -287,30 +301,29 @@ Josue = C_Josue(
 
 class C_Maria(CardSchema):
     async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
-        self.status = "ready"
-        send_data = player.getPlayerStats(private=True)
-        __card_deck = []
+        await super().onInvoke(player, match)
+        __heros_in_deck = []
         for __card in player.card_deck:
             if __card.card_type == 'hero':
-                __card_deck.append(
+                __heros_in_deck.append(
                     {
                         "slug": __card.slug,
                         "in_game_id": __card.in_game_id
                     }
                 )
-        print(send_data)
-        print(__card_deck)
-        send_data["card_deck"] = __card_deck
+        sorted_cards = sorted(__heros_in_deck, key=lambda card: card["slug"])
+        print(__heros_in_deck)
         await match.sendToPlayer(
             data={
-                "data_type": "player_update",
-                "player_data": send_data
+                "data_type": "card_skill",
+                "card_data": {
+                    "slug": self.slug,
+                    "deck": sorted_cards
+                }
             },
             player_id=player.id
         )
-        await super().onInvoke(player, match)
-        self.status = "used"
-        return True
+        
 
 
 Maria = C_Maria(

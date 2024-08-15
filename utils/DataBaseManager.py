@@ -9,6 +9,7 @@ from schemas.players_schema import PlayersTinyDBSchema
 from schemas.users_schema import NewUserSchema, UserPublic
 from settings import env_settings
 from utils import security
+from utils.console import consolePrint
 
 
 class DB_Manager:
@@ -75,11 +76,13 @@ class DB_Manager:
                 newUser.password = security.encrypt(data.password)
                 session.add(newUser)
                 session.commit()
+                session.refresh(newUser)
 
                 self.createDefaultPlayerStats(player_id=newUser.id)
                 response.data_type = "user_created"
                 response.message = "user successful created"
                 response.user_data = UserPublic(**newUser.model_dump())
+                consolePrint.info(f'DB: Novo usuário criado - ID: {newUser.id} - Username: {newUser.username}')
 
         return response
 
@@ -112,7 +115,7 @@ class DB_Manager:
                 response.user_data = UserPublic(**(user.model_dump()))
             except Exception as e:
                 response.message = e
-                print(e)
+                consolePrint.danger(msg=f'DB: {e}')
         return response
 
     # Não acessado pela API
@@ -134,7 +137,7 @@ class DB_Manager:
                 self.tiny_engine.table("player").remove(doc_ids=[user_id])
                 response.message = f"user {user_id} has been deleted"
             except Exception as e:
-                print(__file__, e, "\nusername not found")
+                consolePrint.danger(msg=(__file__, e, "\nDB: username not found"))
 
         return response
 
@@ -167,15 +170,15 @@ class DB_Manager:
                 results.pop("password")
 
                 response.data_type = "user_data"
-                response.message = f"{username} has authentication successful"
+                response.message = f"{user.id} has authentication successful"
                 response.user_data = results
-                print(response.message)
                 user.onLogin()
                 session.add(user)
                 session.commit()
+                consolePrint.info(f"DB: {response.message}")
 
             except Exception as e:
-                print(__file__, e, "\nusername or password invalid")
+                consolePrint.danger(msg=(__file__, e, "\nDB: username or password invalid"))
 
         return response
 
@@ -207,13 +210,17 @@ class DB_Manager:
                 response.user_data = results
 
             except:
-                print(__file__, "\nusername not found")
+                consolePrint.danger(msg=("DB: username not found"))
 
         return response
 
     def setPlayerInRoom(self, player_id: int, room_id: str):
         self.tiny_engine.table("player").update(
             {"room_or_match_id": room_id}, doc_ids=[player_id])
+        if room_id != '':
+            consolePrint.info(f"DB: Player {player_id} connected in room {room_id}")
+        else:
+            consolePrint.info(f"DB: Player {player_id} not connected in any room")
 
 
 

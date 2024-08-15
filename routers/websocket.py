@@ -18,7 +18,6 @@ router = APIRouter(prefix="/ws", tags=["websockets"])
 @router.websocket("/")
 async def handleWSConnect(websocket: WebSocket):
     await websocket.accept()
-    player_id = None
     try:
         while True:
             data: dict = await websocket.receive_json()
@@ -36,7 +35,6 @@ async def handleWSConnect(websocket: WebSocket):
                 await MATCHES.handleMove(data)
             else:
                 await ROOMS.handleRoom(data)
-
     except WebSocketDisconnect:
         WS.disconnect(player_id)
 

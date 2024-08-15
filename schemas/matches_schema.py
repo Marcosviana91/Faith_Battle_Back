@@ -14,12 +14,14 @@ from utils.Cards import (
 from utils.ConnectionManager import WS
 from utils.DataBaseManager import DB
 
+from utils.console import consolePrint
+
 
 class MoveSchema(BaseModel):
     match_id: str
     round_match: int
     player_move: int
-    move_type: str  # move_to_prepare, move_to_battle, retreat_to_prepare, attack, defense, attach, dettach, active, passive, done, change_deck
+    move_type: str  # move_to_prepare, move_to_battle, retreat_to_prepare, attack, defense, attach, dettach, card_skill, done, change_deck
     card_id: str | None = None
     player_target: int | None = None
     card_target: str | None = None
@@ -50,7 +52,7 @@ class FightSchema(BaseModel):
             __temp_cards_attack.append(cardObj_atk)
         self.attack_cards = __temp_cards_attack
         del __temp_cards_attack
-        print(f"Criado fight_camp para sala {self.match_room.id}")
+        consolePrint.status(msg=f"Criado fight_camp para sala {self.match_room.id}")
         
 
     async def attack(self) -> None:
@@ -163,6 +165,7 @@ class MatchSchema(BaseModel):
         for player in self.players_in_match:
             if player_id == player.id:
                 return player
+        print(f'_getPlayerById: ID {player_id} not found')
         return None
 
     async def sendToPlayer(self, data: dict, player_id: int):
@@ -232,7 +235,6 @@ class MatchSchema(BaseModel):
         player = self.players_in_match[self.player_turn]
         if player.faith_points < 1:
             await self.finishTurn()
-        print(f'Player {self.players_in_match[self.player_turn].id} turn:')
         self.player_focus_id = self.players_in_match[self.player_turn].id
         player.wisdom_available = player.wisdom_points
         self.giveCard(player)
@@ -269,7 +271,7 @@ class MatchSchema(BaseModel):
             if (move_to == "prepare" and (card.wisdom_cost <= player.wisdom_available)):
                 __card_cost = 1
                 __card_cost = card.wisdom_cost
-                card.status = "used"  # Precisa ficar antes do card.onInvoke - Sansão
+                # card.status = "used"  # Precisa ficar antes do card.onInvoke - Sansão
                 move_stop = await card.onInvoke(player, self)
                 player.wisdom_available -= __card_cost
             elif (move_to == 'forgotten'):
@@ -376,16 +378,16 @@ class MatchSchema(BaseModel):
             self.takeDamage(player, player.faith_points)
             DB.setPlayerInRoom(player_id=player.id, room_id="")
         if move.move_type == 'change_deck':
-            print("change player deck")
             self._reorderPlayerDeck(player, new_deck=move.card_list)
+        if move.move_type == 'card_skill':
+            card = getCardInListBySlugId(card_slug=move.card_id, card_list=player.card_prepare_camp)
+            await card.addSkill(match=self)
         self.move_now = None
         print("Move Stop? ", move_stop)
         if move_stop == False:
             await self.updatePlayers()
 
     def _reorderPlayerDeck(self, player: PlayersInMatchSchema, new_deck: list[CardSchema]):
-        print("actual deck: ", player.card_deck)
-        print("deck changes: ", new_deck)
         for card in new_deck[::-1]:
             _card = getCardInListBySlugId(card.in_game_id, player.card_deck)
             player.card_deck.remove(_card)

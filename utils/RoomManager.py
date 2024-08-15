@@ -7,6 +7,8 @@ from utils.ConnectionManager import WS
 from utils.DataBaseManager import DB
 from utils.MatchManager import MATCHES
 
+from utils.console import consolePrint
+
 
 class RoomManager:
     ROOMS: list[RoomSchema]
@@ -18,6 +20,7 @@ class RoomManager:
         for room in self.ROOMS:
             if room.id == room_id:
                 return room
+        consolePrint.info(f'Room ID not found: {room_id}')
         return None
 
     def getAllRoomsInfo(self):
@@ -38,11 +41,11 @@ class RoomManager:
             player_id=room.connected_players[0].id, room_id=room.id)
         return room.getRoomStats
 
-    def endRoom(self, room):
+    def endRoom(self, room:RoomSchema):
         self.ROOMS.remove(room)
+        consolePrint.info(f'Room {room.id} finished')
         del room
 
-    # WEBSOCKET
     async def enterRoom(self, room_id: str, player: PlayersSchema, password: str):
         room = self._getRoomById(room_id)
         room_stats = room.connect(player, password)
@@ -51,10 +54,9 @@ class RoomManager:
             await WS.sendToPlayer({"data_type": "room_update", "room_data": room_stats}, player.id)
         return room_stats
 
-    # WEBSOCKET
     async def handleRoom(self, data_raw):
         data = ClientRequestSchema(**data_raw)
-        print('>>>>> RECV: ', data)
+        consolePrint.status(f'>>>>> RECV: {data}')
         match data.data_type:
             case 'disconnect':
                 room = self._getRoomById(data.room_data.get('id'))
@@ -73,7 +75,6 @@ class RoomManager:
                 player_id = data.user_data.get('id')
                 room.setReady(player_id)
                 if room.room_stage == 1:
-                    print('Enviar as cartas da mão para cada jogador da sala:')
                     for player in room.connected_players:
                         await WS.sendToPlayer(
                             {

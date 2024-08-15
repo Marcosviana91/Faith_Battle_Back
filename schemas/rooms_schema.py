@@ -7,6 +7,8 @@ from pydantic import BaseModel
 from schemas.cards_schema import CardSchema
 from schemas.players_schema import PlayersSchema
 
+from utils.console import consolePrint
+
 MINIMUM_DECK_CARDS = 10
 MAXIMUM_CARDS_REPEATS = 2
 INITIAL_CARDS = 5
@@ -43,15 +45,15 @@ class RoomSchema(BaseModel):
     __pydantic_post_init__ = 'model_post_init'
 
     def model_post_init(self, *args, **kwargs):
+        self.id = generate(size=12)
         self.connect(self.created_by, self.password)
-        if not self.id:
-            self.id = generate(size=12)
+        consolePrint.info(f'Room {self.id} created by {self.created_by.id}')
 
     def _getPlayerById(self, player_id: int):
         for player in self.connected_players:
             if player_id == player.id:
                 return player
-        raise IndexError(f'Player with id {player_id} not found')
+        consolePrint.danger(f'Player with id {player_id} not found')
 
     def allPlayersIsReady(self) -> bool:
         count = 0
@@ -98,11 +100,16 @@ class RoomSchema(BaseModel):
             if (self.password != password):
                 raise Exception("password not match")
         self.connected_players.append(player)
+        consolePrint.info(
+            f'Player {player.id} has connected in room {self.id}')
         return self.getRoomStats
 
     def disconnect(self, player_id: int):
         player = self._getPlayerById(player_id)
-        self.connected_players.remove(player)
+        if player:
+            self.connected_players.remove(player)
+            consolePrint.info(
+                f'Player {player.id} has disconnected from room {self.id}')
         return self.getRoomStats
 
     def setReady(self, player_id: int):
@@ -150,7 +157,7 @@ class RoomSchema(BaseModel):
     def retryCard(self, player_id: int, cards: list[CardSchema]):
         player = self._getPlayerById(player_id)
         if player.deck_try >= MAXIMUM_DECK_TRIES:
-            print(f"Player {player.id} reaches maximum retries")
+            consolePrint.status(f"Player {player.id} reaches maximum retries")
         else:
             for card in cards:
                 __card2remove = CardSchema(**card)

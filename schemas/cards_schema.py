@@ -1,5 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 
+from utils.console import consolePrint
+
 
 class PlayersInMatchSchema:
     id: int
@@ -114,7 +116,7 @@ class CardSchema(BaseModel):
         player_target: PlayersInMatchSchema | None = None,
         match: MatchSchema | None = None,
     ):
-        print(f'Adcionou skill de {self.in_game_id}')
+        consolePrint.info(f'CARD: Adcionou skill de {self.in_game_id}')
 
     async def rmvSkill(
         self,
@@ -123,7 +125,7 @@ class CardSchema(BaseModel):
         player_target: PlayersInMatchSchema | None = None,
         match: MatchSchema | None = None,
     ):
-        print(f'Removeu skill de {self.in_game_id}')
+        consolePrint.info(f'CARD: Removeu skill de {self.in_game_id}')
 
     async def onAttach(self):
         ...
@@ -134,16 +136,16 @@ class CardSchema(BaseModel):
     async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
         player.card_hand.remove(self)
         player.card_prepare_camp.append(self)
-        print(f'invocou: {self}')
+        consolePrint.info(f'CARD: invocou: {self}')
+        self.status = "used"
         if self.card_type == 'hero':
-            print('é heroi')
+            # A passiva de Abraão é verificada para todos os heróis
             if getCardInListBySlugId('abraao', player.card_battle_camp):
-                print('tem abraao')
-                print(f"player {player.id} ativou abraão")
+                consolePrint.info(f'CARD: {player.id} ativou abraão')
                 player.faith_points += 1
 
     async def onDestroy(self, player: PlayersInMatchSchema, match: MatchSchema):
-        print(f'destruiu: {self.in_game_id}')
+        consolePrint.info(f'CARD: destruiu: {self.in_game_id}')
 
     async def onAttack(
         self,
@@ -152,7 +154,7 @@ class CardSchema(BaseModel):
         player_target: PlayersInMatchSchema | None = None,
         match: MatchSchema | None = None,
     ):
-        print(f'{self.in_game_id} está atacando')
+        consolePrint.info(f'CARD: {self.in_game_id} está atacando')
 
     async def onDefense(
         self,
@@ -161,7 +163,7 @@ class CardSchema(BaseModel):
         player_target: PlayersInMatchSchema | None = None,
         match: MatchSchema | None = None,
     ):
-        print(f'{self.in_game_id} está defendendo')
+        consolePrint.info(f'CARD: {self.in_game_id} está defendendo')
 
     async def hasSuccessfullyAttacked(
         self,
@@ -171,7 +173,7 @@ class CardSchema(BaseModel):
         defense_cards: list['CardSchema'] | None = None,
         match: MatchSchema | None = None,
     ):
-        print(f'{self.in_game_id} atacou com sucesso na sala {match.id}!')
+        consolePrint.info(f'CARD: {self.in_game_id} atacou com sucesso na sala {match.id}!')
         
     async def hasNotSuccessfullyAttacked(
         self,
@@ -181,7 +183,7 @@ class CardSchema(BaseModel):
         defense_cards: list['CardSchema'] | None = None,
         match: MatchSchema | None = None,
     ):
-        print(f'{self.in_game_id} foi defendido na sala {match.id}!')
+        consolePrint.info(f'CARD: {self.in_game_id} foi defendido na sala {match.id}!')
 
 def getCardInListBySlugId(card_slug: str, card_list: list[CardSchema]) -> CardSchema | None:
     for card in card_list:
