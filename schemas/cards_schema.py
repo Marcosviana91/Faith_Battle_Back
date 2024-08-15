@@ -88,9 +88,9 @@ class CardSchema(BaseModel):
 
     increase_attack: int | None = 0
     increase_defense: int | None = 0
-    skill_focus_player_id: int | None = None 
+    skill_focus_player_id: int | None = None
     skill_focus_player2_id: int | None = None
-    skill_focus_card_id: int | None = None
+    skill_focus_card_id: str | None = None
 
     # attachable: bool
 
@@ -117,6 +117,8 @@ class CardSchema(BaseModel):
         match: MatchSchema | None = None,
     ):
         consolePrint.info(f'CARD: Adcionou skill de {self.in_game_id}')
+        if self.card_type == 'miracle':
+            await match.moveCard(player, self.in_game_id, "prepare", "forgotten")
 
     async def rmvSkill(
         self,
@@ -143,6 +145,16 @@ class CardSchema(BaseModel):
             if getCardInListBySlugId('abraao', player.card_battle_camp):
                 consolePrint.info(f'CARD: {player.id} ativou abraão')
                 player.faith_points += 1
+        if self.card_type == 'miracle':
+            await match.sendToPlayer(
+                data={
+                    "data_type": "card_skill",
+                    "card_data": {
+                        "slug": self.slug,
+                    }
+                },
+                player_id=player.id
+            )
 
     async def onDestroy(self, player: PlayersInMatchSchema, match: MatchSchema):
         consolePrint.info(f'CARD: destruiu: {self.in_game_id}')
@@ -173,8 +185,9 @@ class CardSchema(BaseModel):
         defense_cards: list['CardSchema'] | None = None,
         match: MatchSchema | None = None,
     ):
-        consolePrint.info(f'CARD: {self.in_game_id} atacou com sucesso na sala {match.id}!')
-        
+        consolePrint.info(
+            f'CARD: {self.in_game_id} atacou com sucesso na sala {match.id}!')
+
     async def hasNotSuccessfullyAttacked(
         self,
         player: PlayersInMatchSchema | None = None,
@@ -183,7 +196,9 @@ class CardSchema(BaseModel):
         defense_cards: list['CardSchema'] | None = None,
         match: MatchSchema | None = None,
     ):
-        consolePrint.info(f'CARD: {self.in_game_id} foi defendido na sala {match.id}!')
+        consolePrint.info(
+            f'CARD: {self.in_game_id} foi defendido na sala {match.id}!')
+
 
 def getCardInListBySlugId(card_slug: str, card_list: list[CardSchema]) -> CardSchema | None:
     for card in card_list:
