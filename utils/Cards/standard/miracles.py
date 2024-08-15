@@ -1,5 +1,6 @@
 from schemas.cards_schema import CardSchema, MatchSchema, PlayersInMatchSchema, getCardInListBySlugId
 
+from utils.console import consolePrint
 
 class MoveSchema:
     match_id: str
@@ -17,9 +18,6 @@ class MoveSchema:
 class C_CordeiroDeDeus(CardSchema):
     async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
         await super().addSkill(player, attack_cards, player_target, match)
-
-    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
-        await super().onInvoke(player, match)
         # Até seu próximo turno, o jogador alvo não perde pontos de fé, pecados não o afetam e suas cartas são indestritívies
 
 
@@ -34,9 +32,6 @@ CordeiroDeDeus = C_CordeiroDeDeus(
 class C_Diluvio(CardSchema):
     async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
         await super().addSkill(player, attack_cards, player_target, match)
-
-    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
-        await super().onInvoke(player, match)
         # Destrói todos os heróis e artefatos da zona de batalha. Noé e a Arca sobrevivem
 
 
@@ -51,10 +46,11 @@ Diluvio = C_Diluvio(
 class C_FogoDoCeu(CardSchema):
     async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
         await super().addSkill(player, attack_cards, player_target, match)
-
-    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
-        await super().onInvoke(player, match)
         # Destroi uma carta da zona de batalha
+        # Mesma habilidade de Elias
+        player_target = match._getPlayerById(match.move_now.player_target)
+        await match.moveCard(player_target, match.move_now.card_target, "battle", "forgotten")
+        consolePrint.status(f'A carta {match.move_now.card_target} foi destruída')
 
 
 FogoDoCeu = C_FogoDoCeu(
@@ -68,9 +64,6 @@ FogoDoCeu = C_FogoDoCeu(
 class C_ForcaDeSansao(CardSchema):
     async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
         await super().addSkill(player, attack_cards, player_target, match)
-
-    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
-        await super().onInvoke(player, match)
         # O herói alvo ganha 3/3 até o final do turno. Se o alvo é Sansão, ele se torna indestrutível até o final do turno.
 
 
@@ -85,9 +78,6 @@ ForcaDeSansao = C_ForcaDeSansao(
 class C_LiberacaoCelestial(CardSchema):
     async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
         await super().addSkill(player, attack_cards, player_target, match)
-
-    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
-        await super().onInvoke(player, match)
         # Anula qualquer efeito de milagre ou pecado nesse instante.
 
 
@@ -102,9 +92,6 @@ LiberacaoCelestial = C_LiberacaoCelestial(
 class C_NoCeuTemPao(CardSchema):
     async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
         await super().addSkill(player, attack_cards, player_target, match)
-
-    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
-        await super().onInvoke(player, match)
         # O jogador alvo compra 3 cartas, se voce tem moisés em sua zona de batalha, compre 5.
 
 
@@ -119,9 +106,6 @@ NoCeuTemPao = C_NoCeuTemPao(
 class C_PassagemSegura(CardSchema):
     async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
         await super().addSkill(player, attack_cards, player_target, match)
-
-    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
-        await super().onInvoke(player, match)
         # Os heróis do jogador alvo são imbloqueáveis neste turno
 
 
@@ -136,9 +120,6 @@ PassagemSegura = C_PassagemSegura(
 class C_ProtecaoDivina(CardSchema):
     async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
         await super().addSkill(player, attack_cards, player_target, match)
-
-    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
-        await super().onInvoke(player, match)
         # O jogador alvo não sofre dano de efeitos ou ataque de Heróis neste turno
 
 
@@ -153,9 +134,6 @@ ProtecaoDivina = C_ProtecaoDivina(
 class C_Ressurreicao(CardSchema):
     async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
         await super().addSkill(player, attack_cards, player_target, match)
-
-    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
-        await super().onInvoke(player, match)
         # Retorna um herói de qualquer mar do esquecimento ao jogo sob seu controle. Voce escolhe em qual zona ele voltará.
 
 
@@ -170,9 +148,6 @@ Ressurreicao = C_Ressurreicao(
 class C_RestauracaoDeFe(CardSchema):
     async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
         await super().addSkill(player, attack_cards, player_target, match)
-
-    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
-        await super().onInvoke(player, match)
         # O jogador alvo não sofre dano de efeitos ou ataque de Heróis neste turno
 
 
@@ -187,10 +162,7 @@ RestauracaoDeFe = C_RestauracaoDeFe(
 class C_SabedoriaDeSalomao(CardSchema):
     async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
         await super().addSkill(player, attack_cards, player_target, match)
-
-    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
-        await super().onInvoke(player, match)
-        # O jogador alvo não sofre dano de efeitos ou ataque de Heróis neste turno
+        # O jogador alvo reativa 3 cartas de sabedoria. Se Salomão está em jogo, compre uma carta.
 
 
 SabedoriaDeSalomao = C_SabedoriaDeSalomao(
@@ -204,9 +176,7 @@ SabedoriaDeSalomao = C_SabedoriaDeSalomao(
 class C_SarcaArdente(CardSchema):
     async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
         await super().addSkill(player, attack_cards, player_target, match)
-
-    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
-        await super().onInvoke(player, match)
+        # O jogador alva ganha 2 pontos de fé e o oponente alvo perde 2 pontos de fé
 
 
 SarcaArdente = C_SarcaArdente(
