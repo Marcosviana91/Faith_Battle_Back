@@ -148,7 +148,14 @@ Ressurreicao = C_Ressurreicao(
 class C_RestauracaoDeFe(CardSchema):
     async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
         await super().addSkill(player, attack_cards, player_target, match)
-        # O jogador alvo não sofre dano de efeitos ou ataque de Heróis neste turno
+        # O jogador alvo ganha um ponto de fé por cada herói no campo de batlaha dele.
+        player_target = match._getPlayerById(match.move_now.player_target)
+        faith_count = 0
+        for _card in player_target.card_battle_camp:
+            if _card.card_type == "hero":
+                faith_count += 1
+        player_target.faith_points += faith_count
+        consolePrint.info(f'O jogador {player_target.id} ganhou {faith_count} pontos de fé.')
 
 
 RestauracaoDeFe = C_RestauracaoDeFe(
