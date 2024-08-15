@@ -312,7 +312,6 @@ class C_Maria(CardSchema):
                     }
                 )
         sorted_cards = sorted(__heros_in_deck, key=lambda card: card["slug"])
-        print(__heros_in_deck)
         await match.sendToPlayer(
             data={
                 "data_type": "card_skill",
@@ -335,8 +334,43 @@ Maria = C_Maria(
     in_game_id=None
 )
 
+class C_Moise(CardSchema):
+    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
+        await super().onInvoke(player, match)
+        __miracles_in_deck = []
+        for __card in player.card_deck:
+            if __card.card_type == 'miracle':
+                __miracles_in_deck.append(
+                    {
+                        "slug": __card.slug,
+                        "in_game_id": __card.in_game_id
+                    }
+                )
+        sorted_miracles_in_deck = sorted(__miracles_in_deck, key=lambda card: card["slug"])
+        
+        __miracles_in_forgoten_sea = []
+        for __card_forgotten in player.card_in_forgotten_sea:
+            if __card_forgotten.card_type == 'miracle':
+                __miracles_in_forgoten_sea.append(
+                    {
+                        "slug": __card_forgotten.slug,
+                        "in_game_id": __card_forgotten.in_game_id
+                    }
+                )
+        sorted_miracles_in_forgoten_sea = sorted(__miracles_in_forgoten_sea, key=lambda card: card["slug"])
+        await match.sendToPlayer(
+            data={
+                "data_type": "card_skill",
+                "card_data": {
+                    "slug": self.slug,
+                    "deck": sorted_miracles_in_deck,
+                    "forgotten_sea":sorted_miracles_in_forgoten_sea,
+                }
+            },
+            player_id=player.id
+        )
 
-Moises = CardSchema(
+Moises = C_Moise(
     slug="moises",
     wisdom_cost=3,
     attack_point=2,
