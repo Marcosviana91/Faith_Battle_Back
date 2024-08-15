@@ -52,8 +52,8 @@ class FightSchema(BaseModel):
             __temp_cards_attack.append(cardObj_atk)
         self.attack_cards = __temp_cards_attack
         del __temp_cards_attack
-        consolePrint.status(msg=f"Criado fight_camp para sala {self.match_room.id}")
-        
+        consolePrint.status(msg=f"Criado fight_camp para sala {
+                            self.match_room.id}")
 
     async def attack(self) -> None:
         for card in self.attack_cards:
@@ -264,32 +264,32 @@ class MatchSchema(BaseModel):
 
     async def moveCard(self, player: PlayersInMatchSchema, card_id: str, move_from: str, move_to: str):
         move_stop: bool = False
-        print(f"Player {player.id} is moving the card {
+        print(f"Player {player.id} is trying moving the card {
               card_id}: {move_from} => {move_to}")
         if (move_from == "hand"):
             card = getCardInListBySlugId(card_id, player.card_hand)
+            print(card)
             if (move_to == "prepare" and (card.wisdom_cost <= player.wisdom_available)):
                 __card_cost = 1
                 __card_cost = card.wisdom_cost
                 # card.status = "used"  # Precisa ficar antes do card.onInvoke - Sansão
                 move_stop = await card.onInvoke(player, self)
                 player.wisdom_available -= __card_cost
-            elif (move_to == 'forgotten'):
-                player.card_hand.remove(card)
-                player.card_in_forgotten_sea.append(card)
+            # elif (move_to == 'forgotten'):
+            #     player.card_hand.remove(card)
+            #     player.card_in_forgotten_sea.append(card)
         if (move_from == "prepare"):
             card = getCardInListBySlugId(card_id, player.card_prepare_camp)
             card.status = "used"
             player.card_prepare_camp.remove(card)
             player.card_battle_camp.append(card)
         if (move_from == "battle"):
+            card = getCardInListBySlugId(card_id, player.card_battle_camp)
             if (move_to == "forgotten"):
-                card = getCardInListBySlugId(card_id, player.card_battle_camp)
                 # card.onDestroy()  # PENDENTE
                 player.card_battle_camp.remove(card)
                 player.card_in_forgotten_sea.append(card)
             if (move_to == "prepare"):
-                card = getCardInListBySlugId(card_id, player.card_battle_camp)
                 player.card_battle_camp.remove(card)
                 player.card_prepare_camp.append(card)
                 card.status = "used"
@@ -380,8 +380,9 @@ class MatchSchema(BaseModel):
         if move.move_type == 'change_deck':
             self._reorderPlayerDeck(player, new_deck=move.card_list)
         if move.move_type == 'card_skill':
-            card = getCardInListBySlugId(card_slug=move.card_id, card_list=player.card_prepare_camp)
-            await card.addSkill(match=self)
+            card = getCardInListBySlugId(
+                card_slug=move.card_id, card_list=player.card_prepare_camp)
+            await card.addSkill(player=player, match=self)
         self.move_now = None
         print("Move Stop? ", move_stop)
         if move_stop == False:
