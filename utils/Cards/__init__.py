@@ -1,6 +1,6 @@
 from secrets import token_hex
 
-from schemas.cards_schema import CardSchema
+from schemas.cards_schema import CardSchema, getCardInListBySlugId
 
 from .standard import heros, miracles, STANDARD_CARDS
 
@@ -59,12 +59,3 @@ def cardListToDict(card_list: list[CardSchema]):
         else:
             __list.append({"slug": "not-defense"})
     return __list
-
-
-def getCardInListBySlugId(card_slug: str, card_list: list[CardSchema]) -> CardSchema | None:
-    if card_slug != None:
-        for card in card_list:
-            if card != None:
-                if card.in_game_id.find(card_slug) >= 0:
-                    return card
-    return None

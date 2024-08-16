@@ -201,7 +201,9 @@ class CardSchema(BaseModel):
 
 
 def getCardInListBySlugId(card_slug: str, card_list: list[CardSchema]) -> CardSchema | None:
-    for card in card_list:
-        if card.in_game_id.find(card_slug) >= 0:
-            return card
+    if card_slug != None:
+        for card in card_list:
+            if card != None:
+                if card.in_game_id.find(card_slug) >= 0:
+                    return card
     return None
