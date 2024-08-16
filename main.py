@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
 from routers import auth, room, users, websocket
@@ -26,7 +25,6 @@ app.add_middleware(
     allow_headers=HEADERS,
     # exposed_headers= HEADERS,
 )
-app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 def handleRoot():
