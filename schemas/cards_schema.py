@@ -66,6 +66,7 @@ class MoveSchema(BaseModel):
     move_type: str  # move_to_prepare, move_to_battle, attack, defense, attach, dettach, active, passive, done
     card_id: str | None = None
     player_target: int | None = None
+    player_target2: int | None = None
     card_target: str | None = None
     card_list: list['CardSchema'] | None = []
 
@@ -114,6 +115,7 @@ class CardSchema(BaseModel):
         player: PlayersInMatchSchema | None = None,
         attack_cards: list['CardSchema'] | None = None,
         player_target: PlayersInMatchSchema | None = None,
+        player_target2: PlayersInMatchSchema | None = None,
         match: MatchSchema | None = None,
     ):
         consolePrint.info(f'CARD: Adcionou skill de {self.in_game_id}')

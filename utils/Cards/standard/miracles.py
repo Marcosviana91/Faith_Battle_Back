@@ -29,7 +29,7 @@ STANDARD_CARDS_MIRACLES = [
     # 'ressurreicao',
     'restauracao-de-fe',
     'sabedoria-de-salomao',
-    # 'sarca-ardente',
+    'sarca-ardente',
 ]
 
 
@@ -56,12 +56,11 @@ class C_Diluvio(CardSchema):
         _card_list_whitout_noe = list(
             filter(lambda _card: _card.slug != 'noe', player_target.card_battle_camp))
         tasks = [await match.moveCard(player=player_target, card_id=_card.in_game_id,
-                                move_from='battle', move_to='forgotten') for _card in _card_list_whitout_noe]
+                                      move_from='battle', move_to='forgotten') for _card in _card_list_whitout_noe]
         try:
             await asyncio.wait(tasks)
         except AttributeError as e:
             consolePrint.danger(f'MIRACLE: AttributeError {e}')
-
 
 
 Diluvio = C_Diluvio(
@@ -199,17 +198,17 @@ class C_SabedoriaDeSalomao(CardSchema):
     async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
         await super().addSkill(player, attack_cards, player_target, match)
         # O jogador alvo reativa 3 cartas de sabedoria.
-        player_target.wisdom_available +=3
+        player_target.wisdom_available += 3
         if player_target.wisdom_available > player_target.wisdom_points:
             player_target.wisdom_available = player_target.wisdom_points
         # Se Salomão está em jogo, compre uma carta.
-        salomao_in_prepare = getCardInListBySlugId('salomao',player_target.card_prepare_camp)
-        salomao_in_battle = getCardInListBySlugId('salomao',player_target.card_battle_camp)
+        salomao_in_prepare = getCardInListBySlugId(
+            'salomao', player_target.card_prepare_camp)
+        salomao_in_battle = getCardInListBySlugId(
+            'salomao', player_target.card_battle_camp)
         if salomao_in_battle or salomao_in_prepare:
             consolePrint.info('MIRACLE: Compra 1 carta')
             match.giveCard(player=player_target)
-            
-        
 
 
 SabedoriaDeSalomao = C_SabedoriaDeSalomao(
@@ -221,9 +220,11 @@ SabedoriaDeSalomao = C_SabedoriaDeSalomao(
 
 
 class C_SarcaArdente(CardSchema):
-    async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
-        await super().addSkill(player, attack_cards, player_target, match)
+    async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, player_target2: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
+        await super().addSkill(player, attack_cards, player_target, player_target2, match)
         # O jogador alva ganha 2 pontos de fé e o oponente alvo perde 2 pontos de fé
+        player_target.faith_points +=2
+        match.takeDamage(player_target2, 2)
 
 
 SarcaArdente = C_SarcaArdente(

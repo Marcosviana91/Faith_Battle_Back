@@ -24,6 +24,7 @@ class MoveSchema(BaseModel):
     move_type: str  # move_to_prepare, move_to_battle, retreat_to_prepare, attack, defense, attach, dettach, card_skill, done, change_deck
     card_id: str | None = None
     player_target: int | None = None
+    player_target2: int | None = None
     card_target: str | None = None
     card_list: list[CardSchema] | None = []
 
@@ -385,9 +386,10 @@ class MatchSchema(BaseModel):
             self._reorderPlayerDeck(player, new_deck=move.card_list)
         if move.move_type == 'card_skill':
             player_target = self._getPlayerById(move.player_target)
+            player_target2 = self._getPlayerById(move.player_target2)
             card = getCardInListBySlugId(
                 card_slug=move.card_id, card_list=player.card_prepare_camp)
-            await card.addSkill(player=player, match=self, player_target=player_target)
+            await card.addSkill(player=player, match=self, player_target=player_target, player_target2=player_target2)
         self.move_now = None
         await self.updatePlayers()
 
