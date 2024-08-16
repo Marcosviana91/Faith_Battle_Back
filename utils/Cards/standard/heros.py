@@ -34,7 +34,10 @@ STANDARD_CARDS_HEROS = [
     'sansao',
 ]
 
-Abraao = CardSchema(
+class C_Abraao(CardSchema):
+    ...
+
+Abraao = C_Abraao(
     slug='abraao',
     wisdom_cost=2,
     attack_point=1,
@@ -431,8 +434,10 @@ Moises = C_Moise(
     in_game_id=None
 )
 
+class C_Noe(CardSchema):
+    ...
 
-Noe = CardSchema(
+Noe = C_Noe(
     slug='noe',
     wisdom_cost=1,
     attack_point=2,
