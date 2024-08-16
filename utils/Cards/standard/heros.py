@@ -16,13 +16,30 @@ class MoveSchema:
 
 ##################################################################
 
+STANDARD_CARDS_HEROS = [
+    'abraao',
+    'adao',
+    'daniel',
+    'davi',
+    'elias',
+    'ester',
+    'eva',
+    'jaco',
+    'jose-do-egito',
+    'josue',
+    'maria',
+    'moises',
+    'noe',
+    'salomao',
+    'sansao',
+]
 
 Abraao = CardSchema(
-    slug="abraao",
+    slug='abraao',
     wisdom_cost=2,
     attack_point=1,
     defense_points=2,
-    card_type="hero",
+    card_type='hero',
     in_game_id=None
 )
 
@@ -45,7 +62,7 @@ class C_Adao(CardSchema):
     async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
         await super().onInvoke(player, match)
         # Procurar por Eva no campo de preparação e no campo de batalha
-        if getCardInListBySlugId("eva", player.card_prepare_camp) or getCardInListBySlugId("eva", player.card_battle_camp):
+        if getCardInListBySlugId('eva', player.card_prepare_camp) or getCardInListBySlugId('eva', player.card_battle_camp):
             await self.addSkill()
 
     async def onDestroy(self, player: PlayersInMatchSchema, match: MatchSchema):
@@ -54,11 +71,11 @@ class C_Adao(CardSchema):
 
 
 Adao = C_Adao(
-    slug="adao",
+    slug='adao',
     wisdom_cost=1,
     attack_point=1,
     defense_points=1,
-    card_type="hero",
+    card_type='hero',
     in_game_id=None
 )
 
@@ -85,11 +102,11 @@ class C_Daniel(CardSchema):
 
 
 Daniel = C_Daniel(
-    slug="daniel",
+    slug='daniel',
     wisdom_cost=2,
     attack_point=1,
     defense_points=2,
-    card_type="hero",
+    card_type='hero',
     in_game_id=None
 )
 
@@ -104,11 +121,11 @@ class C_Davi(CardSchema):
 
 
 Davi = C_Davi(
-    slug="davi",
+    slug='davi',
     wisdom_cost=3,
     attack_point=3,
     defense_points=2,
-    card_type="hero",
+    card_type='hero',
     in_game_id=None
 )
 
@@ -118,9 +135,9 @@ class C_Elias(CardSchema):
         await super().onInvoke(player, match)
         await match.sendToPlayer(
             data={
-                "data_type": "card_skill",
-                "card_data": {
-                    "slug": self.slug,
+                'data_type': 'card_skill',
+                'card_data': {
+                    'slug': self.slug,
                 }
             },
             player_id=player.id
@@ -128,18 +145,17 @@ class C_Elias(CardSchema):
 
     async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
         await super().addSkill(player, attack_cards, player_target, match)
-        player_target = match._getPlayerById(match.move_now.player_target)
-        await match.moveCard(player_target, match.move_now.card_target, "battle", "forgotten")
+        await match.moveCard(player_target, match.move_now.card_target, 'battle', 'forgotten')
         consolePrint.status(
             f'A carta {match.move_now.card_target} foi destruída')
 
 
 Elias = C_Elias(
-    slug="elias",
+    slug='elias',
     wisdom_cost=4,
     attack_point=3,
     defense_points=1,
-    card_type="hero",
+    card_type='hero',
     in_game_id=None
 )
 
@@ -151,16 +167,16 @@ class C_Ester(CardSchema):
         for __card in player.card_deck[:3]:
             __card_deck.append(
                 {
-                    "slug": __card.slug,
-                    "in_game_id": __card.in_game_id
+                    'slug': __card.slug,
+                    'in_game_id': __card.in_game_id
                 }
             )
         await match.sendToPlayer(
             data={
-                "data_type": "card_skill",
-                "card_data": {
-                    "slug": self.slug,
-                    "deck": __card_deck
+                'data_type': 'card_skill',
+                'card_data': {
+                    'slug': self.slug,
+                    'deck': __card_deck
                 }
             },
             player_id=player.id
@@ -169,11 +185,11 @@ class C_Ester(CardSchema):
 
 
 Ester = C_Ester(
-    slug="ester",
+    slug='ester',
     wisdom_cost=1,
     attack_point=0,
     defense_points=2,
-    card_type="hero",
+    card_type='hero',
     in_game_id=None,
 )
 
@@ -183,31 +199,50 @@ class C_Eva(CardSchema):
         await super().onInvoke(player, match)
         match.giveCard(player, 1)
         # Procurar por Adão no campo de preparação
-        card = getCardInListBySlugId("adao", player.card_prepare_camp)
+        card = getCardInListBySlugId('adao', player.card_prepare_camp)
         if card:
             await card.addSkill()
         # Procurar por Adão no campo de batalha
-        card = getCardInListBySlugId("adao", player.card_battle_camp)
+        card = getCardInListBySlugId('adao', player.card_battle_camp)
         if card:
             await card.addSkill()
 
 
 Eva = C_Eva(
-    slug="eva",
+    slug='eva',
     wisdom_cost=1,
     attack_point=1,
     defense_points=1,
-    card_type="hero",
+    card_type='hero',
     in_game_id=None
 )
 
 
-Jaco = CardSchema(
-    slug="jaco",
+class C_Jaco(CardSchema):
+    async def onAttack(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
+        await super().onAttack(player, attack_cards, player_target, match)
+        if len(player_target.card_hand) > 0:
+            card_to_show = choice(player_target.card_hand)
+            if card_to_show.card_type == 'miracle':
+                match.giveCard(player, 1)
+            await match.sendToPlayer(
+                data={
+                    'data_type': 'card_skill',
+                    'card_data': {
+                        'slug': self.slug,
+                        'deck': [{'slug':card_to_show.slug, 'card_type': card_to_show.card_type}]
+                    }
+                },
+                player_id=player.id
+            )
+
+
+Jaco = C_Jaco(
+    slug='jaco',
     wisdom_cost=2,
     attack_point=2,
     defense_points=2,
-    card_type="hero",
+    card_type='hero',
     in_game_id=None
 )
 
@@ -253,11 +288,11 @@ class C_JoseDoEgito(CardSchema):
 
 
 JoseDoEgito = C_JoseDoEgito(
-    slug="jose-do-egito",
+    slug='jose-do-egito',
     wisdom_cost=2,
     attack_point=2,
     defense_points=1,
-    card_type="hero",
+    card_type='hero',
     in_game_id=None
 )
 
@@ -288,11 +323,11 @@ class C_Josue(CardSchema):
 
 
 Josue = C_Josue(
-    slug="josue",
+    slug='josue',
     wisdom_cost=3,
     attack_point=3,
     defense_points=1,
-    card_type="hero",
+    card_type='hero',
     in_game_id=None
 )
 
@@ -305,17 +340,17 @@ class C_Maria(CardSchema):
             if __card.card_type == 'hero':
                 __heros_in_deck.append(
                     {
-                        "slug": __card.slug,
-                        "in_game_id": __card.in_game_id
+                        'slug': __card.slug,
+                        'in_game_id': __card.in_game_id
                     }
                 )
-        sorted_cards = sorted(__heros_in_deck, key=lambda card: card["slug"])
+        sorted_cards = sorted(__heros_in_deck, key=lambda card: card['slug'])
         await match.sendToPlayer(
             data={
-                "data_type": "card_skill",
-                "card_data": {
-                    "slug": self.slug,
-                    "deck": sorted_cards
+                'data_type': 'card_skill',
+                'card_data': {
+                    'slug': self.slug,
+                    'deck': sorted_cards
                 }
             },
             player_id=player.id
@@ -323,11 +358,11 @@ class C_Maria(CardSchema):
 
 
 Maria = C_Maria(
-    slug="maria",
+    slug='maria',
     wisdom_cost=2,
     attack_point=1,
     defense_points=2,
-    card_type="hero",
+    card_type='hero',
     in_game_id=None
 )
 
@@ -340,31 +375,31 @@ class C_Moise(CardSchema):
             if __card.card_type == 'miracle':
                 __miracles_in_deck.append(
                     {
-                        "slug": __card.slug,
-                        "in_game_id": __card.in_game_id
+                        'slug': __card.slug,
+                        'in_game_id': __card.in_game_id
                     }
                 )
         sorted_miracles_in_deck = sorted(
-            __miracles_in_deck, key=lambda card: card["slug"])
+            __miracles_in_deck, key=lambda card: card['slug'])
 
         __miracles_in_forgoten_sea = []
         for __card_forgotten in player.card_in_forgotten_sea:
             if __card_forgotten.card_type == 'miracle':
                 __miracles_in_forgoten_sea.append(
                     {
-                        "slug": __card_forgotten.slug,
-                        "in_game_id": __card_forgotten.in_game_id
+                        'slug': __card_forgotten.slug,
+                        'in_game_id': __card_forgotten.in_game_id
                     }
                 )
         sorted_miracles_in_forgoten_sea = sorted(
-            __miracles_in_forgoten_sea, key=lambda card: card["slug"])
+            __miracles_in_forgoten_sea, key=lambda card: card['slug'])
         await match.sendToPlayer(
             data={
-                "data_type": "card_skill",
-                "card_data": {
-                    "slug": self.slug,
-                    "deck": sorted_miracles_in_deck,
-                    "forgotten_sea": sorted_miracles_in_forgoten_sea,
+                'data_type': 'card_skill',
+                'card_data': {
+                    'slug': self.slug,
+                    'deck': sorted_miracles_in_deck,
+                    'forgotten_sea': sorted_miracles_in_forgoten_sea,
                 }
             },
             player_id=player.id
@@ -384,26 +419,25 @@ class C_Moise(CardSchema):
         elif card_in_sea is not None:
             player.card_in_forgotten_sea.remove(card_in_sea)
             player.card_hand.append(card_in_sea)
-            card_in_sea.status = "ready"
-        
+            card_in_sea.status = 'ready'
 
 
 Moises = C_Moise(
-    slug="moises",
+    slug='moises',
     wisdom_cost=3,
     attack_point=2,
     defense_points=2,
-    card_type="hero",
+    card_type='hero',
     in_game_id=None
 )
 
 
 Noe = CardSchema(
-    slug="noe",
+    slug='noe',
     wisdom_cost=1,
     attack_point=2,
     defense_points=1,
-    card_type="hero",
+    card_type='hero',
     in_game_id=None
 )
 
@@ -422,11 +456,11 @@ class C_Salomao(CardSchema):
 
 
 Salomao = C_Salomao(
-    slug="salomao",
+    slug='salomao',
     wisdom_cost=4,
     attack_point=2,
     defense_points=2,
-    card_type="hero",
+    card_type='hero',
     in_game_id=None
 )
 
@@ -434,15 +468,15 @@ Salomao = C_Salomao(
 class C_Sansao(CardSchema):
     async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
         await super().onInvoke(player, match)
-        await match.moveCard(player, self.in_game_id, "prepare", "battle")
-        self.status = "ready"
+        await match.moveCard(player, self.in_game_id, 'prepare', 'battle')
+        self.status = 'ready'
 
 
 Sansao = C_Sansao(
-    slug="sansao",
+    slug='sansao',
     wisdom_cost=6,
     attack_point=5,
     defense_points=5,
-    card_type="hero",
+    card_type='hero',
     in_game_id=None
 )

@@ -2,6 +2,7 @@ from schemas.cards_schema import CardSchema, MatchSchema, PlayersInMatchSchema, 
 
 from utils.console import consolePrint
 
+
 class MoveSchema:
     match_id: str
     round_match: int
@@ -14,6 +15,20 @@ class MoveSchema:
 
 ##################################################################
 
+STANDARD_CARDS_MIRACLES = [
+    # 'cordeiro-de-deus',
+    'diluvio',
+    'fogo-do-ceu',
+    'forca-de-sansao',
+    'liberacao-celestial',
+    'no-ceu-tem-pao',
+    'passagem-segura',
+    'protecao-divina',
+    'ressurreicao',
+    'restauracao-de-fe',
+    'sabedoria-de-salomao',
+    'sarca-ardente',
+]
 
 class C_CordeiroDeDeus(CardSchema):
     async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
@@ -22,9 +37,9 @@ class C_CordeiroDeDeus(CardSchema):
 
 
 CordeiroDeDeus = C_CordeiroDeDeus(
-    slug="cordeiro-de-deus",
+    slug='cordeiro-de-deus',
     wisdom_cost=4,
-    card_type="miracle",
+    card_type='miracle',
     in_game_id=None,
 )
 
@@ -33,12 +48,18 @@ class C_Diluvio(CardSchema):
     async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
         await super().addSkill(player, attack_cards, player_target, match)
         # Destrói todos os heróis e artefatos da zona de batalha. Noé e a Arca sobrevivem
+        for _card in player_target.card_battle_camp:
+            # Verificar Arca de Noé dentre as cartas acopladas ao heróis
+            if (_card.slug != 'noe'):
+                # Não está eliminando todos herois
+                await match.moveCard(player=player_target, card_id=_card.in_game_id,
+                            move_from='battle', move_to='forgotten')
 
 
 Diluvio = C_Diluvio(
-    slug="diluvio",
+    slug='diluvio',
     wisdom_cost=6,
-    card_type="miracle",
+    card_type='miracle',
     in_game_id=None,
 )
 
@@ -48,15 +69,15 @@ class C_FogoDoCeu(CardSchema):
         await super().addSkill(player, attack_cards, player_target, match)
         # Destrói uma carta da zona de batalha
         # Mesma habilidade de Elias
-        player_target = match._getPlayerById(match.move_now.player_target)
-        await match.moveCard(player_target, match.move_now.card_target, "battle", "forgotten")
-        consolePrint.status(f'A carta {match.move_now.card_target} foi destruída')
+        await match.moveCard(player_target, match.move_now.card_target, 'battle', 'forgotten')
+        consolePrint.status(
+            f'A carta {match.move_now.card_target} foi destruída')
 
 
 FogoDoCeu = C_FogoDoCeu(
-    slug="fogo-do-ceu",
+    slug='fogo-do-ceu',
     wisdom_cost=3,
-    card_type="miracle",
+    card_type='miracle',
     in_game_id=None,
 )
 
@@ -68,9 +89,9 @@ class C_ForcaDeSansao(CardSchema):
 
 
 ForcaDeSansao = C_ForcaDeSansao(
-    slug="forca-de-sansao",
+    slug='forca-de-sansao',
     wisdom_cost=2,
-    card_type="miracle",
+    card_type='miracle',
     in_game_id=None,
 )
 
@@ -82,9 +103,9 @@ class C_LiberacaoCelestial(CardSchema):
 
 
 LiberacaoCelestial = C_LiberacaoCelestial(
-    slug="liberacao-celestial",
+    slug='liberacao-celestial',
     wisdom_cost=2,
-    card_type="miracle",
+    card_type='miracle',
     in_game_id=None,
 )
 
@@ -96,9 +117,9 @@ class C_NoCeuTemPao(CardSchema):
 
 
 NoCeuTemPao = C_NoCeuTemPao(
-    slug="no-ceu-tem-pao",
+    slug='no-ceu-tem-pao',
     wisdom_cost=3,
-    card_type="miracle",
+    card_type='miracle',
     in_game_id=None,
 )
 
@@ -110,9 +131,9 @@ class C_PassagemSegura(CardSchema):
 
 
 PassagemSegura = C_PassagemSegura(
-    slug="passagem-segura",
+    slug='passagem-segura',
     wisdom_cost=4,
-    card_type="miracle",
+    card_type='miracle',
     in_game_id=None,
 )
 
@@ -124,9 +145,9 @@ class C_ProtecaoDivina(CardSchema):
 
 
 ProtecaoDivina = C_ProtecaoDivina(
-    slug="protecao-divina",
+    slug='protecao-divina',
     wisdom_cost=1,
-    card_type="miracle",
+    card_type='miracle',
     in_game_id=None,
 )
 
@@ -138,9 +159,9 @@ class C_Ressurreicao(CardSchema):
 
 
 Ressurreicao = C_Ressurreicao(
-    slug="ressurreicao",
+    slug='ressurreicao',
     wisdom_cost=3,
-    card_type="miracle",
+    card_type='miracle',
     in_game_id=None,
 )
 
@@ -149,19 +170,19 @@ class C_RestauracaoDeFe(CardSchema):
     async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
         await super().addSkill(player, attack_cards, player_target, match)
         # O jogador alvo ganha um ponto de fé por cada herói no campo de batlaha dele.
-        player_target = match._getPlayerById(match.move_now.player_target)
         faith_count = 0
         for _card in player_target.card_battle_camp:
-            if _card.card_type == "hero":
+            if _card.card_type == 'hero':
                 faith_count += 1
         player_target.faith_points += faith_count
-        consolePrint.info(f'O jogador {player_target.id} ganhou {faith_count} pontos de fé.')
+        consolePrint.info(f'O jogador {player_target.id} ganhou {
+                          faith_count} pontos de fé.')
 
 
 RestauracaoDeFe = C_RestauracaoDeFe(
-    slug="restauracao-de-fe",
+    slug='restauracao-de-fe',
     wisdom_cost=2,
-    card_type="miracle",
+    card_type='miracle',
     in_game_id=None,
 )
 
@@ -173,9 +194,9 @@ class C_SabedoriaDeSalomao(CardSchema):
 
 
 SabedoriaDeSalomao = C_SabedoriaDeSalomao(
-    slug="sabedoria-de-salomao",
+    slug='sabedoria-de-salomao',
     wisdom_cost=1,
-    card_type="miracle",
+    card_type='miracle',
     in_game_id=None,
 )
 
@@ -187,8 +208,8 @@ class C_SarcaArdente(CardSchema):
 
 
 SarcaArdente = C_SarcaArdente(
-    slug="sarca-ardente",
+    slug='sarca-ardente',
     wisdom_cost=2,
-    card_type="miracle",
+    card_type='miracle',
     in_game_id=None,
 )

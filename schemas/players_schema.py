@@ -1,24 +1,7 @@
 from pydantic import BaseModel
 
 from schemas.cards_schema import CardSchema
-from utils.Cards import cardListToDict
-
-STANDARD_CARDS_HEROS = [
-    'abraao', 'adao', 'daniel',
-    'davi', 'elias', 'ester',
-    'eva', 'jaco', "jose-do-egito",
-    "josue", "maria", "moises",
-    "noe", "salomao", "sansao",
-]
-STANDARD_CARDS_MIRACLES = [
-    'cordeiro-de-deus', 'diluvio', 'fogo-do-ceu',
-    'forca-de-sansao', 'liberacao-celestial', 'no-ceu-tem-pao',
-    'passagem-segura', 'protecao-divina', 'ressurreicao',
-    'restauracao-de-fe', 'sabedoria-de-salomao', 'sarca-ardente',
-]
-
-STANDARD_CARDS = [*STANDARD_CARDS_HEROS, *STANDARD_CARDS_MIRACLES]
-# STANDARD_CARDS = [*STANDARD_CARDS_HEROS]
+from utils.Cards import cardListToDict, ALL_CARDS
 
 
 class PlayersTinyDBSchema(BaseModel):
@@ -27,7 +10,7 @@ class PlayersTinyDBSchema(BaseModel):
     Dados do usuário, relativos ao jogo (como jogador)
     '''
     id: int
-    available_cards: list[str] = STANDARD_CARDS
+    available_cards: list[str] = ALL_CARDS
     xp_points: int = 0
     room_or_match_id: str = ""
 
