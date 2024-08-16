@@ -52,7 +52,14 @@ class C_Adao(CardSchema):
         self.attack_point = 1,
         self.defense_points = 1
 
-    async def addSkill(self):
+    async def addSkill(
+        self,
+        player: PlayersInMatchSchema | None = None,
+        attack_cards: list['CardSchema'] | None = None,
+        player_target: PlayersInMatchSchema | None = None,
+        player_target2: PlayersInMatchSchema | None = None,
+        match: MatchSchema | None = None,
+    ):
         await super().addSkill()
         self.attack_point += 2
         self.defense_points += 2
@@ -146,7 +153,14 @@ class C_Elias(CardSchema):
             player_id=player.id
         )
 
-    async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
+    async def addSkill(
+        self,
+        player: PlayersInMatchSchema | None = None,
+        attack_cards: list['CardSchema'] | None = None,
+        player_target: PlayersInMatchSchema | None = None,
+        player_target2: PlayersInMatchSchema | None = None,
+        match: MatchSchema | None = None,
+    ):
         await super().addSkill(player, attack_cards, player_target, match)
         await match.moveCard(player_target, match.move_now.card_target, 'battle', 'forgotten')
         consolePrint.status(
@@ -259,9 +273,10 @@ class C_JoseDoEgito(CardSchema):
     async def addSkill(
         self,
         player: PlayersInMatchSchema | None = None,
-        attack_cards: list[CardSchema] | None = None,
+        attack_cards: list['CardSchema'] | None = None,
         player_target: PlayersInMatchSchema | None = None,
-        match: MatchSchema | None = None
+        player_target2: PlayersInMatchSchema | None = None,
+        match: MatchSchema | None = None,
     ):
         await super().addSkill()
         if len(player_target.card_hand) < 1:
@@ -306,7 +321,14 @@ class C_Josue(CardSchema):
         self.attack_point = 3
         self.defense_points = 1
 
-    async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
+    async def addSkill(
+        self,
+        player: PlayersInMatchSchema | None = None,
+        attack_cards: list['CardSchema'] | None = None,
+        player_target: PlayersInMatchSchema | None = None,
+        player_target2: PlayersInMatchSchema | None = None,
+        match: MatchSchema | None = None,
+    ):
         await super().addSkill()
         for card in attack_cards:
             if card.in_game_id != self.in_game_id:
@@ -408,7 +430,14 @@ class C_Moise(CardSchema):
             player_id=player.id
         )
 
-    async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
+    async def addSkill(
+        self,
+        player: PlayersInMatchSchema | None = None,
+        attack_cards: list['CardSchema'] | None = None,
+        player_target: PlayersInMatchSchema | None = None,
+        player_target2: PlayersInMatchSchema | None = None,
+        match: MatchSchema | None = None,
+    ):
         await super().addSkill(player, attack_cards, player_target, match)
         card_id = match.move_now.card_list[0].in_game_id
         card_in_deck = getCardInListBySlugId(card_id, player.card_deck)
