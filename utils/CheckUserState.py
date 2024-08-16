@@ -51,4 +51,13 @@ async def checkUserStats(player_id):
                     }
                     await WS.sendToPlayer(data=player_to_send, user_id=player_id)
                     await WS.sendToPlayer(data=match_to_send, user_id=player_id)
+                    for _card in player.card_prepare_camp:
+                        if _card.card_type == "miracle":
+                            await WS.sendToPlayer(data={
+                                "data_type": "card_skill",
+                                "card_data": {
+                                    "slug": _card.slug,
+                                }
+                            },
+                                player_id=player.id)
     return None
