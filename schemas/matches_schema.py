@@ -352,7 +352,7 @@ class MatchSchema(BaseModel):
     # Durante o jogo a comunicação será (em maior parte) para movimentação
 
     async def incoming(self, data: dict):
-        print('>>>>> RECV: ', data)
+        consolePrint.info(f'MATCH >>> {data}')
         move = MoveSchema(**data)
         assert self.id == move.match_id
         assert self.round_match == move.round_match
