@@ -28,7 +28,7 @@ STANDARD_CARDS_MIRACLES = [
     # 'protecao-divina',
     # 'ressurreicao',
     'restauracao-de-fe',
-    # 'sabedoria-de-salomao',
+    'sabedoria-de-salomao',
     # 'sarca-ardente',
 ]
 
@@ -198,7 +198,18 @@ RestauracaoDeFe = C_RestauracaoDeFe(
 class C_SabedoriaDeSalomao(CardSchema):
     async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
         await super().addSkill(player, attack_cards, player_target, match)
-        # O jogador alvo reativa 3 cartas de sabedoria. Se Salomão está em jogo, compre uma carta.
+        # O jogador alvo reativa 3 cartas de sabedoria.
+        player_target.wisdom_available +=3
+        if player_target.wisdom_available > player_target.wisdom_points:
+            player_target.wisdom_available = player_target.wisdom_points
+        # Se Salomão está em jogo, compre uma carta.
+        salomao_in_prepare = getCardInListBySlugId('salomao',player_target.card_prepare_camp)
+        salomao_in_battle = getCardInListBySlugId('salomao',player_target.card_battle_camp)
+        if salomao_in_battle or salomao_in_prepare:
+            consolePrint.info('MIRACLE: Compra 1 carta')
+            match.giveCard(player=player_target)
+            
+        
 
 
 SabedoriaDeSalomao = C_SabedoriaDeSalomao(
