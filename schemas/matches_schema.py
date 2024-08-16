@@ -263,7 +263,7 @@ class MatchSchema(BaseModel):
             player.card_deck.remove(card_selected)
 
     async def moveCard(self, player: PlayersInMatchSchema, card_id: str, move_from: str, move_to: str):
-        move_stop: bool = False
+        move_done: bool = True
         print(f"Player {player.id} is trying moving the card {
               card_id}: {move_from} => {move_to}")
         if (move_from == "hand"):
@@ -273,7 +273,7 @@ class MatchSchema(BaseModel):
                 __card_cost = 1
                 __card_cost = card.wisdom_cost
                 # card.status = "used"  # Precisa ficar antes do card.onInvoke - Sansão
-                move_stop = await card.onInvoke(player, self)
+                await card.onInvoke(player, self)
                 player.wisdom_available -= __card_cost
             elif (move_to == 'forgotten'):
                 player.card_hand.remove(card)
@@ -297,8 +297,9 @@ class MatchSchema(BaseModel):
                 player.card_battle_camp.remove(card)
                 player.card_prepare_camp.append(card)
                 card.status = "used"
-        print("moveCard Stop? ", bool(move_stop))
-        return bool(move_stop)
+        if bool(move_done):
+            print("moveCard Done ")
+        return bool(move_done)
 
     async def beginAttack(self, move: MoveSchema):
         if ((not move.player_target) or (move.player_move == move.player_target)):
@@ -356,11 +357,10 @@ class MatchSchema(BaseModel):
         assert self.id == move.match_id
         assert self.round_match == move.round_match
         self.move_now = move
-        move_stop = False
         player = self._getPlayerById(move.player_move)
         if move.move_type == 'move_to_prepare':
-            move_stop = await self.moveCard(player, card_id=move.card_id,
-                                            move_from="hand", move_to="prepare")
+            await self.moveCard(player, card_id=move.card_id,
+                                move_from="hand", move_to="prepare")
         if move.move_type == 'done':
             await self.finishTurn()
         if move.move_type == 'move_to_battle':
@@ -384,13 +384,12 @@ class MatchSchema(BaseModel):
         if move.move_type == 'change_deck':
             self._reorderPlayerDeck(player, new_deck=move.card_list)
         if move.move_type == 'card_skill':
+            player_target = self._getPlayerById(move.player_target)
             card = getCardInListBySlugId(
                 card_slug=move.card_id, card_list=player.card_prepare_camp)
-            await card.addSkill(player=player, match=self)
+            await card.addSkill(player=player, match=self, player_target=player_target)
         self.move_now = None
-        print("Move Stop? ", move_stop)
-        if move_stop == False:
-            await self.updatePlayers()
+        await self.updatePlayers()
 
     def _reorderPlayerDeck(self, player: PlayersInMatchSchema, new_deck: list[CardSchema]):
         for card in new_deck[::-1]:

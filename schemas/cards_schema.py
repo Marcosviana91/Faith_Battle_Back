@@ -52,7 +52,7 @@ class MatchSchema:
     def giveCard(self, player: PlayersInMatchSchema, number_of_cards: int = 1):
         ...
 
-    async def moveCard(self, player: PlayersInMatchSchema, card_id: str, move_from: str, move_to: str):
+    async def moveCard(self, player: PlayersInMatchSchema, card_id: str, move_from: str, move_to: str) -> bool:
         ...
 
     def takeDamage(self, player: PlayersInMatchSchema, damage: int):
