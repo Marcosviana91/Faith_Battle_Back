@@ -1,3 +1,4 @@
+import asyncio  # Usado por Diluvio
 from schemas.cards_schema import CardSchema, MatchSchema, PlayersInMatchSchema, getCardInListBySlugId
 
 from utils.console import consolePrint
@@ -15,20 +16,22 @@ class MoveSchema:
 
 ##################################################################
 
+
 STANDARD_CARDS_MIRACLES = [
     # 'cordeiro-de-deus',
     'diluvio',
     'fogo-do-ceu',
-    'forca-de-sansao',
-    'liberacao-celestial',
-    'no-ceu-tem-pao',
-    'passagem-segura',
-    'protecao-divina',
-    'ressurreicao',
+    # 'forca-de-sansao',
+    # 'liberacao-celestial',
+    # 'no-ceu-tem-pao',
+    # 'passagem-segura',
+    # 'protecao-divina',
+    # 'ressurreicao',
     'restauracao-de-fe',
-    'sabedoria-de-salomao',
-    'sarca-ardente',
+    # 'sabedoria-de-salomao',
+    # 'sarca-ardente',
 ]
+
 
 class C_CordeiroDeDeus(CardSchema):
     async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
@@ -45,15 +48,20 @@ CordeiroDeDeus = C_CordeiroDeDeus(
 
 
 class C_Diluvio(CardSchema):
+
     async def addSkill(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, match: MatchSchema | None = None):
         await super().addSkill(player, attack_cards, player_target, match)
         # Destrói todos os heróis e artefatos da zona de batalha. Noé e a Arca sobrevivem
-        for _card in player_target.card_battle_camp:
-            # Verificar Arca de Noé dentre as cartas acopladas ao heróis
-            if (_card.slug != 'noe'):
-                # Não está eliminando todos herois
-                await match.moveCard(player=player_target, card_id=_card.in_game_id,
-                            move_from='battle', move_to='forgotten')
+        # Verificar Arca de Noé dentre as cartas acopladas aos heróis - FALTA
+        _card_list_whitout_noe = list(
+            filter(lambda _card: _card.slug != 'noe', player_target.card_battle_camp))
+        tasks = [await match.moveCard(player=player_target, card_id=_card.in_game_id,
+                                move_from='battle', move_to='forgotten') for _card in _card_list_whitout_noe]
+        try:
+            await asyncio.wait(tasks)
+        except AttributeError as e:
+            consolePrint.danger(f'MIRACLE: AttributeError {e}')
+
 
 
 Diluvio = C_Diluvio(
