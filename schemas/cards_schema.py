@@ -110,34 +110,23 @@ class CardSchema(BaseModel):
     def resetCardStats(self):
         print(f'Resetou {self.in_game_id}')
 
-    async def addSkill(
-        self,
-        player: PlayersInMatchSchema | None = None,
-        attack_cards: list['CardSchema'] | None = None,
-        player_target: PlayersInMatchSchema | None = None,
-        player_target2: PlayersInMatchSchema | None = None,
-        match: MatchSchema | None = None,
-    ):
+    async def addSkill(self, match: MatchSchema | None = None):
         consolePrint.info(f'CARD: Adcionou skill de {self.in_game_id}')
+        player = match._getPlayerById(match.move_now.player_move)
         if self.card_type == 'miracle':
             await match.moveCard(player, self.in_game_id, "prepare", "forgotten")
 
-    async def rmvSkill(
-        self,
-        player: PlayersInMatchSchema | None = None,
-        attack_cards: list['CardSchema'] | None = None,
-        player_target: PlayersInMatchSchema | None = None,
-        match: MatchSchema | None = None,
-    ):
+    async def rmvSkill(self, match: MatchSchema | None = None):
         consolePrint.info(f'CARD: Removeu skill de {self.in_game_id}')
 
-    async def onAttach(self):
+    async def onAttach(self, match: MatchSchema | None = None):
         ...
 
-    async def onDettach(self):
+    async def onDettach(self, match: MatchSchema | None = None):
         ...
 
-    async def onInvoke(self, player: PlayersInMatchSchema, match: MatchSchema):
+    async def onInvoke(self, match: MatchSchema | None = None):
+        player = match._getPlayerById(match.move_now.player_move)
         player.card_hand.remove(self)
         player.card_prepare_camp.append(self)
         consolePrint.info(f'CARD: invocou: {self}')
@@ -158,25 +147,13 @@ class CardSchema(BaseModel):
                 player_id=player.id
             )
 
-    async def onDestroy(self, player: PlayersInMatchSchema, match: MatchSchema):
+    async def onDestroy(self, match: MatchSchema | None = None):
         consolePrint.info(f'CARD: destruiu: {self.in_game_id}')
 
-    async def onAttack(
-        self,
-        player: PlayersInMatchSchema | None = None,
-        attack_cards: list['CardSchema'] | None = None,
-        player_target: PlayersInMatchSchema | None = None,
-        match: MatchSchema | None = None,
-    ):
+    async def onAttack(self, match: MatchSchema | None = None):
         consolePrint.info(f'CARD: {self.in_game_id} está atacando')
 
-    async def onDefense(
-        self,
-        player: PlayersInMatchSchema | None = None,
-        attack_cards: list['CardSchema'] | None = None,
-        player_target: PlayersInMatchSchema | None = None,
-        match: MatchSchema | None = None,
-    ):
+    async def onDefense(self, match: MatchSchema | None = None):
         consolePrint.info(f'CARD: {self.in_game_id} está defendendo')
 
     async def hasSuccessfullyAttacked(

@@ -58,12 +58,7 @@ class FightSchema(BaseModel):
 
     async def attack(self) -> None:
         for card in self.attack_cards:
-            await card.onAttack(
-                player=self.player_attack,
-                attack_cards=self.attack_cards,
-                match=self.match_room,
-                player_target=self.player_defense
-            )
+            await card.onAttack(match=self.match_room)
 
     async def defense(self, card_list: list[CardSchema]) -> None:
         __temp_cards_defense = []
@@ -73,11 +68,7 @@ class FightSchema(BaseModel):
                     card.in_game_id, self.player_defense.card_battle_camp)
                 __temp_cards_defense.append(cardObj_def)
                 if cardObj_def != None:
-                    await cardObj_def.onDefense(
-                        player=self.player_defense,
-                        match=self.match_room,
-                        player_target=self.player_attack
-                    )
+                    await cardObj_def.onDefense(match=self.match_room)
             else:
                 __temp_cards_defense.append(None)
             self.defense_cards = __temp_cards_defense
@@ -122,7 +113,7 @@ class FightSchema(BaseModel):
                         await self.match_room.moveCard(
                             self.player_attack, card_atk.in_game_id, "battle", "forgotten")
                 if card_atk.slug in ['josue']:
-                    card_atk.rmvSkill(attack_cards=self.attack_cards)
+                    card_atk.rmvSkill(match=self.match_room)
                 index += 1
         return total_damage
 
@@ -274,7 +265,7 @@ class MatchSchema(BaseModel):
                 __card_cost = 1
                 __card_cost = card.wisdom_cost
                 # card.status = "used"  # Precisa ficar antes do card.onInvoke - Sansão
-                await card.onInvoke(player, self)
+                await card.onInvoke(self)
                 player.wisdom_available -= __card_cost
             elif (move_to == 'forgotten'):
                 player.card_hand.remove(card)
@@ -389,7 +380,7 @@ class MatchSchema(BaseModel):
             player_target2 = self._getPlayerById(move.player_target2)
             card = getCardInListBySlugId(
                 card_slug=move.card_id, card_list=player.card_prepare_camp)
-            await card.addSkill(player=player, match=self, player_target=player_target, player_target2=player_target2)
+            await card.addSkill(match=self)
         self.move_now = None
         await self.updatePlayers()
 

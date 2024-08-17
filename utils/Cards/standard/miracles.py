@@ -34,15 +34,8 @@ STANDARD_CARDS_MIRACLES = [
 
 
 class C_CordeiroDeDeus(CardSchema):
-    async def addSkill(
-        self,
-        player: PlayersInMatchSchema | None = None,
-        attack_cards: list['CardSchema'] | None = None,
-        player_target: PlayersInMatchSchema | None = None,
-        player_target2: PlayersInMatchSchema | None = None,
-        match: MatchSchema | None = None,
-    ):
-        await super().addSkill(player, attack_cards, player_target, match)
+    async def addSkill(self, match: MatchSchema | None = None):
+        await super().addSkill(match)
         # Até seu próximo turno, o jogador alvo não perde pontos de fé, pecados não o afetam e suas cartas são indestritívies
 
 
@@ -56,15 +49,9 @@ CordeiroDeDeus = C_CordeiroDeDeus(
 
 class C_Diluvio(CardSchema):
 
-    async def addSkill(
-        self,
-        player: PlayersInMatchSchema | None = None,
-        attack_cards: list['CardSchema'] | None = None,
-        player_target: PlayersInMatchSchema | None = None,
-        player_target2: PlayersInMatchSchema | None = None,
-        match: MatchSchema | None = None,
-    ):
-        await super().addSkill(player, attack_cards, player_target, match)
+    async def addSkill(self, match: MatchSchema | None = None):
+        player_target = match._getPlayerById(match.move_now.player_target)
+        await super().addSkill(match)
         # Destrói todos os heróis e artefatos da zona de batalha. Noé e a Arca sobrevivem
         # Verificar Arca de Noé dentre as cartas acopladas aos heróis - FALTA
         _card_list_whitout_noe = list(
@@ -86,15 +73,9 @@ Diluvio = C_Diluvio(
 
 
 class C_FogoDoCeu(CardSchema):
-    async def addSkill(
-        self,
-        player: PlayersInMatchSchema | None = None,
-        attack_cards: list['CardSchema'] | None = None,
-        player_target: PlayersInMatchSchema | None = None,
-        player_target2: PlayersInMatchSchema | None = None,
-        match: MatchSchema | None = None,
-    ):
-        await super().addSkill(player, attack_cards, player_target, match)
+    async def addSkill(self, match: MatchSchema | None = None):
+        player_target = match._getPlayerById(match.move_now.player_target)
+        await super().addSkill(match)
         # Destrói uma carta da zona de batalha
         # Mesma habilidade de Elias
         await match.moveCard(player_target, match.move_now.card_target, 'battle', 'forgotten')
@@ -111,15 +92,8 @@ FogoDoCeu = C_FogoDoCeu(
 
 
 class C_ForcaDeSansao(CardSchema):
-    async def addSkill(
-        self,
-        player: PlayersInMatchSchema | None = None,
-        attack_cards: list['CardSchema'] | None = None,
-        player_target: PlayersInMatchSchema | None = None,
-        player_target2: PlayersInMatchSchema | None = None,
-        match: MatchSchema | None = None,
-    ):
-        await super().addSkill(player, attack_cards, player_target, match)
+    async def addSkill(self, match: MatchSchema | None = None):
+        await super().addSkill(match)
         # O herói alvo ganha 3/3 até o final do turno. Se o alvo é Sansão, ele se torna indestrutível até o final do turno.
 
 
@@ -132,15 +106,8 @@ ForcaDeSansao = C_ForcaDeSansao(
 
 
 class C_LiberacaoCelestial(CardSchema):
-    async def addSkill(
-        self,
-        player: PlayersInMatchSchema | None = None,
-        attack_cards: list['CardSchema'] | None = None,
-        player_target: PlayersInMatchSchema | None = None,
-        player_target2: PlayersInMatchSchema | None = None,
-        match: MatchSchema | None = None,
-    ):
-        await super().addSkill(player, attack_cards, player_target, match)
+    async def addSkill(self, match: MatchSchema | None = None):
+        await super().addSkill(match)
         # Anula qualquer efeito de milagre ou pecado nesse instante.
 
 
@@ -153,15 +120,8 @@ LiberacaoCelestial = C_LiberacaoCelestial(
 
 
 class C_NoCeuTemPao(CardSchema):
-    async def addSkill(
-        self,
-        player: PlayersInMatchSchema | None = None,
-        attack_cards: list['CardSchema'] | None = None,
-        player_target: PlayersInMatchSchema | None = None,
-        player_target2: PlayersInMatchSchema | None = None,
-        match: MatchSchema | None = None,
-    ):
-        await super().addSkill(player, attack_cards, player_target, match)
+    async def addSkill(self, match: MatchSchema | None = None):
+        await super().addSkill(match)
         # O jogador alvo compra 3 cartas, se voce tem moisés em sua zona de batalha, compre 5.
 
 
@@ -174,15 +134,8 @@ NoCeuTemPao = C_NoCeuTemPao(
 
 
 class C_PassagemSegura(CardSchema):
-    async def addSkill(
-        self,
-        player: PlayersInMatchSchema | None = None,
-        attack_cards: list['CardSchema'] | None = None,
-        player_target: PlayersInMatchSchema | None = None,
-        player_target2: PlayersInMatchSchema | None = None,
-        match: MatchSchema | None = None,
-    ):
-        await super().addSkill(player, attack_cards, player_target, match)
+    async def addSkill(self, match: MatchSchema | None = None):
+        await super().addSkill(match)
         # Os heróis do jogador alvo são imbloqueáveis neste turno
 
 
@@ -195,15 +148,8 @@ PassagemSegura = C_PassagemSegura(
 
 
 class C_ProtecaoDivina(CardSchema):
-    async def addSkill(
-        self,
-        player: PlayersInMatchSchema | None = None,
-        attack_cards: list['CardSchema'] | None = None,
-        player_target: PlayersInMatchSchema | None = None,
-        player_target2: PlayersInMatchSchema | None = None,
-        match: MatchSchema | None = None,
-    ):
-        await super().addSkill(player, attack_cards, player_target, match)
+    async def addSkill(self, match: MatchSchema | None = None):
+        await super().addSkill(match)
         # O jogador alvo não sofre dano de efeitos ou ataque de Heróis neste turno
 
 
@@ -216,15 +162,8 @@ ProtecaoDivina = C_ProtecaoDivina(
 
 
 class C_Ressurreicao(CardSchema):
-    async def addSkill(
-        self,
-        player: PlayersInMatchSchema | None = None,
-        attack_cards: list['CardSchema'] | None = None,
-        player_target: PlayersInMatchSchema | None = None,
-        player_target2: PlayersInMatchSchema | None = None,
-        match: MatchSchema | None = None,
-    ):
-        await super().addSkill(player, attack_cards, player_target, match)
+    async def addSkill(self, match: MatchSchema | None = None):
+        await super().addSkill(match)
         # Retorna um herói de qualquer mar do esquecimento ao jogo sob seu controle. Voce escolhe em qual zona ele voltará.
 
 
@@ -237,15 +176,9 @@ Ressurreicao = C_Ressurreicao(
 
 
 class C_RestauracaoDeFe(CardSchema):
-    async def addSkill(
-        self,
-        player: PlayersInMatchSchema | None = None,
-        attack_cards: list['CardSchema'] | None = None,
-        player_target: PlayersInMatchSchema | None = None,
-        player_target2: PlayersInMatchSchema | None = None,
-        match: MatchSchema | None = None,
-    ):
-        await super().addSkill(player, attack_cards, player_target, match)
+    async def addSkill(self, match: MatchSchema | None = None):
+        player_target = match._getPlayerById(match.move_now.player_target)
+        await super().addSkill(match)
         # O jogador alvo ganha um ponto de fé por cada herói no campo de batlaha dele.
         faith_count = 0
         for _card in player_target.card_battle_camp:
@@ -265,15 +198,9 @@ RestauracaoDeFe = C_RestauracaoDeFe(
 
 
 class C_SabedoriaDeSalomao(CardSchema):
-    async def addSkill(
-        self,
-        player: PlayersInMatchSchema | None = None,
-        attack_cards: list['CardSchema'] | None = None,
-        player_target: PlayersInMatchSchema | None = None,
-        player_target2: PlayersInMatchSchema | None = None,
-        match: MatchSchema | None = None,
-    ):
-        await super().addSkill(player, attack_cards, player_target, match)
+    async def addSkill(self, match: MatchSchema | None = None):
+        player_target = match._getPlayerById(match.move_now.player_target)
+        await super().addSkill(match)
         # O jogador alvo reativa 3 cartas de sabedoria.
         player_target.wisdom_available += 3
         if player_target.wisdom_available > player_target.wisdom_points:
@@ -297,17 +224,12 @@ SabedoriaDeSalomao = C_SabedoriaDeSalomao(
 
 
 class C_SarcaArdente(CardSchema):
-    async def addSkill(
-        self,
-        player: PlayersInMatchSchema | None = None,
-        attack_cards: list['CardSchema'] | None = None,
-        player_target: PlayersInMatchSchema | None = None,
-        player_target2: PlayersInMatchSchema | None = None,
-        match: MatchSchema | None = None,
-    ):
-        await super().addSkill(player, attack_cards, player_target, player_target2, match)
+    async def addSkill(self, match: MatchSchema | None = None):
+        player_target = match._getPlayerById(match.move_now.player_target)
+        player_target2 = match._getPlayerById(match.move_now.player_target2)
+        await super().addSkill(match)
         # O jogador alva ganha 2 pontos de fé e o oponente alvo perde 2 pontos de fé
-        player_target.faith_points +=2
+        player_target.faith_points += 2
         match.takeDamage(player_target2, 2)
 
 
