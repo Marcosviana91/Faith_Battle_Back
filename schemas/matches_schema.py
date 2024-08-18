@@ -113,7 +113,7 @@ class FightSchema(BaseModel):
                         await self.match_room.moveCard(
                             self.player_attack, card_atk.in_game_id, "battle", "forgotten")
                 if card_atk.slug in ['josue']:
-                    card_atk.rmvSkill(match=self.match_room)
+                    await card_atk.rmvSkill(match=self.match_room)
                 index += 1
         return total_damage
 
@@ -379,8 +379,6 @@ class MatchSchema(BaseModel):
         if move.move_type == 'change_deck':
             self._reorderPlayerDeck(player, new_deck=move.card_list)
         if move.move_type == 'card_skill':
-            player_target = self._getPlayerById(move.player_target)
-            player_target2 = self._getPlayerById(move.player_target2)
             card = getCardInListBySlugId(
                 card_slug=move.card_id, card_list=player.card_prepare_camp)
             await card.addSkill(match=self)
