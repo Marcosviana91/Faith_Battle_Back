@@ -267,7 +267,7 @@ class C_JoseDoEgito(CardSchema):
         self.defense_points = 1
 
     async def addSkill(self, match: MatchSchema | None = None):
-        player_target = match._getPlayerById(match.move_now.player_target)
+        player_target = match.fight_camp.player_defense
         await super().addSkill(match)
         if len(player_target.card_hand) < 1:
             print('Não tem cartas para descartar')
