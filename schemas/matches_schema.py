@@ -229,7 +229,10 @@ class MatchSchema(BaseModel):
             await self.finishTurn()
         self.player_focus_id = self.players_in_match[self.player_turn].id
         player.wisdom_available = player.wisdom_points
-        self.giveCard(player)
+        if (self.round_match == 1 and self.player_turn == 0):
+            ...
+        else:
+            self.giveCard(player)
         for card in player.card_prepare_camp:
             card.status = "ready"
         for card in player.card_battle_camp:
