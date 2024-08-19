@@ -14,7 +14,7 @@ from utils.Cards import (
 from utils.ConnectionManager import WS
 from utils.DataBaseManager import DB
 
-from utils.console import consolePrint
+from utils.LoggerManager import Logger
 
 
 class MoveSchema(BaseModel):
@@ -53,8 +53,6 @@ class FightSchema(BaseModel):
             __temp_cards_attack.append(cardObj_atk)
         self.attack_cards = __temp_cards_attack
         del __temp_cards_attack
-        consolePrint.status(msg=f"Criado fight_camp para sala {
-                            self.match_room.id}")
 
     async def attack(self) -> None:
         for card in self.attack_cards:
@@ -347,7 +345,7 @@ class MatchSchema(BaseModel):
     # Durante o jogo a comunicação será (em maior parte) para movimentação
 
     async def incoming(self, data: dict):
-        consolePrint.info(f'MATCH >>> {data}')
+        Logger.info(f'>>> {data}', 'MATCH')
         move = MoveSchema(**data)
         assert self.id == move.match_id
         assert self.round_match == move.round_match

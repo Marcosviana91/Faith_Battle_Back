@@ -32,6 +32,6 @@ def handleAuth(form_data: AuthSchema):
         id=db_response.user_data.get("id"),
         token=access_token
     )
-    Logger.info(f'user id {db_response.user_data.get("id")} authenticated successfully')
+    Logger.info(f'user id {db_response.user_data.get("id")} authenticated successfully', 'AUTH')
     WS.login(authenticated_user)
     return res
