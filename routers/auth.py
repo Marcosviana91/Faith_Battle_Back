@@ -7,6 +7,7 @@ from schemas.users_schema import AuthSchema, UserWs
 from utils.ConnectionManager import WS
 from utils.DataBaseManager import DB
 from utils.security import createAccessToken
+from utils.LoggerManager import Logger
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -31,5 +32,6 @@ def handleAuth(form_data: AuthSchema):
         id=db_response.user_data.get("id"),
         token=access_token
     )
+    Logger.info(f'user id {db_response.user_data.get("id")} authenticated successfully')
     WS.login(authenticated_user)
     return res
