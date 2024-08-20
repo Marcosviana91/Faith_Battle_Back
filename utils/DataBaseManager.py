@@ -9,6 +9,8 @@ from schemas.players_schema import PlayersTinyDBSchema
 from schemas.users_schema import NewUserSchema, UserPublic
 from settings import env_settings
 from utils import security
+
+from utils.LoggerManager import Logger
 from utils.console import consolePrint
 
 
@@ -82,7 +84,7 @@ class DB_Manager:
                 response.data_type = "user_created"
                 response.message = "user successful created"
                 response.user_data = UserPublic(**newUser.model_dump())
-                consolePrint.info(f'DB: Novo usuário criado - ID: {newUser.id} - Username: {newUser.username}')
+                Logger.info(f'New user created {newUser.id}: {newUser.username}.', 'DB')
 
         return response
 
