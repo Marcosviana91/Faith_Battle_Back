@@ -8,6 +8,7 @@ from utils.DataBaseManager import DB
 from utils.MatchManager import MATCHES
 
 from utils.console import consolePrint
+from utils.LoggerManager import Logger
 
 
 class RoomManager:
@@ -39,11 +40,13 @@ class RoomManager:
         self.ROOMS.append(room)
         DB.setPlayerInRoom(
             player_id=room.connected_players[0].id, room_id=room.id)
+        Logger.info(f'Room {room.id} created', 'ROOMS')
         return room.getRoomStats
 
     def endRoom(self, room:RoomSchema):
         self.ROOMS.remove(room)
         consolePrint.info(f'Room {room.id} finished')
+        Logger.info(f'Room {room.id} finished', 'ROOMS')
         del room
 
     async def enterRoom(self, room_id: str, player: PlayersSchema, password: str):
@@ -55,6 +58,7 @@ class RoomManager:
         return room_stats
 
     async def handleRoom(self, data_raw):
+        Logger.info(f'>>>: {data_raw}', 'ROOMS')
         data = ClientRequestSchema(**data_raw)
         consolePrint.status(f'>>>>> RECV: {data}')
         match data.data_type:
