@@ -235,6 +235,13 @@ class MatchSchema(BaseModel):
             card.status = "ready"
         for card in player.card_battle_camp:
             card.status = "ready"
+        await self.sendToPlayer(data={
+            "data_type": "notification",
+            "notification": {
+                "message": "Sua vez de jogar!"
+            }
+        },
+            player_id=player.id)
         # O jogador prepara suas jogadas
 
     # setar a disponibilidade de uso das cartas de cada jogador
