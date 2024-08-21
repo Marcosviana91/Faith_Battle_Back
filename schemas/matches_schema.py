@@ -253,7 +253,7 @@ class MatchSchema(BaseModel):
 
     def giveCard(self, player: PlayersInMatchSchema, number_of_cards: int = 1):
         if (len(player.card_deck) == 0):
-            return
+            return None
         count = 0
         while count < number_of_cards:
             card_selected = player.card_deck[0]
@@ -261,6 +261,7 @@ class MatchSchema(BaseModel):
             player.card_hand.append(card_selected)
             count += 1
             player.card_deck.remove(card_selected)
+        return card_selected
 
     async def moveCard(self, player: PlayersInMatchSchema, card_id: str, move_from: str, move_to: str):
         move_done: bool = True
