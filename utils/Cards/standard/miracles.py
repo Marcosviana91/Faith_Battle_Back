@@ -1,5 +1,5 @@
 import asyncio  # Usado por Diluvio
-from schemas.cards_schema import CardSchema, MatchSchema, PlayersInMatchSchema, getCardInListBySlugId
+from schemas.cards_schema import CardSchema, MatchSchema, getCardInListBySlugId
 
 from utils.console import consolePrint
 
@@ -23,7 +23,7 @@ STANDARD_CARDS_MIRACLES = [
     'fogo-do-ceu',
     # 'forca-de-sansao',
     # 'liberacao-celestial',
-    # 'no-ceu-tem-pao',
+    'no-ceu-tem-pao',
     # 'passagem-segura',
     # 'protecao-divina',
     # 'ressurreicao',
@@ -74,13 +74,13 @@ class C_Diluvio(CardSchema):
         except AttributeError as e:
             consolePrint.danger(f'MIRACLE: AttributeError {e}')
         await match.sendToPlayer(data={
-                'data_type': 'notification',
-                'notification': {
-                    "title": "Gênesis: 7:23",
-                    "message": f"O dilúvio destruiu todo ser vivo da face da Terra, homens e animais foram exterminados. Só restaram Noé e aqueles que com ele estavam na Arca.",
-                    "stillUntilDismiss": True
-                }
-            }, player_id=player_target.id)
+            'data_type': 'notification',
+            'notification': {
+                "title": "Gênesis: 7:23",
+                "message": f"O dilúvio destruiu todo ser vivo da face da Terra, homens e animais foram exterminados. Só restaram Noé e aqueles que com ele estavam na Arca.",
+                "stillUntilDismiss": True
+            }
+        }, player_id=player_target.id)
 
 
 Diluvio = C_Diluvio(
@@ -99,7 +99,7 @@ class C_FogoDoCeu(CardSchema):
                 'data_type': 'notification',
                 'notification': {
                     "title": "Fogo do Céu",
-                    "message": f"O dia está mais claro? Ou é impressão minha?"
+                    "message": f"O que é aquilo brilhando no céu?"
                 }
             }, player_id=_player.id)
 
@@ -112,16 +112,16 @@ class C_FogoDoCeu(CardSchema):
         await match.sendToPlayer(data={
             'data_type': 'notification',
             'notification': {
-                "title": "2 Reis 1:12",
-                "message": f"Respondeu Elias: Se sou homem de Deus, que desça fogo do céu e consuma você e seus cinquenta soldados!... De novo fogo de Deus desceu e consumiu o oficial e seus soldados.",
-                "stillUntilDismiss": True
+                "title": "Fogo do Céu",
+                "message": f"A carta {match.move_now.card_target.split('_')[1]} foi destruída"
             }
         }, player_id=player_target.id)
         await match.sendToPlayer(data={
             'data_type': 'notification',
             'notification': {
-                "title": "Fogo do Céu",
-                "message": f"A carta {match.move_now.card_target.split('_')[1]} foi destruída"
+                "title": "2 Reis 1:12",
+                "message": f"Respondeu Elias: Se sou homem de Deus, que desça fogo do céu e consuma você e seus cinquenta soldados!... De novo fogo de Deus desceu e consumiu o oficial e seus soldados.",
+                "stillUntilDismiss": True
             }
         }, player_id=player_target.id)
         consolePrint.status(
@@ -167,7 +167,12 @@ LiberacaoCelestial = C_LiberacaoCelestial(
 class C_NoCeuTemPao(CardSchema):
     async def addSkill(self, match: MatchSchema | None = None):
         await super().addSkill(match)
+        player_target = match._getPlayerById(match.move_now.player_target)
         # O jogador alvo compra 3 cartas, se voce tem moisés em sua zona de batalha, compre 5.
+        match.giveCard(player_target, 3)
+        card = getCardInListBySlugId('moises', player_target.card_battle_camp)
+        if card:
+            match.giveCard(player_target, 2)
 
 
 NoCeuTemPao = C_NoCeuTemPao(

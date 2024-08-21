@@ -279,25 +279,29 @@ class MatchSchema(BaseModel):
             elif (move_to == 'forgotten'):
                 player.card_hand.remove(card)
                 player.card_in_forgotten_sea.append(card)
+                await card.onDestroy(self)
         if (move_from == "prepare"):
             card = getCardInListBySlugId(card_id, player.card_prepare_camp)
             card.status = "used"
             if (move_to == 'forgotten'):
                 player.card_prepare_camp.remove(card)
                 player.card_in_forgotten_sea.append(card)
+                await card.onDestroy(self)
             elif (move_to == 'battle'):
                 player.card_prepare_camp.remove(card)
                 player.card_battle_camp.append(card)
+                await card.onMoveToAttackZone(self)
         if (move_from == "battle"):
             card = getCardInListBySlugId(card_id, player.card_battle_camp)
             if (move_to == "forgotten"):
-                # card.onDestroy()  # PENDENTE
+                await card.onDestroy(self)
                 player.card_battle_camp.remove(card)
                 player.card_in_forgotten_sea.append(card)
             if (move_to == "prepare"):
                 player.card_battle_camp.remove(card)
                 player.card_prepare_camp.append(card)
                 card.status = "used"
+                await card.onRetreatToPrepareZone(self)
         if bool(move_done):
             print("moveCard Done ")
         return bool(move_done)

@@ -110,20 +110,7 @@ class CardSchema(BaseModel):
     def resetCardStats(self):
         print(f'Resetou {self.in_game_id}')
 
-    async def addSkill(self, match: MatchSchema | None = None):
-        consolePrint.info(f'CARD: Adcionou skill de {self.in_game_id}')
-        player = match._getPlayerById(match.move_now.player_move)
-        if self.card_type == 'miracle':
-            await match.moveCard(player, self.in_game_id, "prepare", "forgotten")
-
-    async def rmvSkill(self, match: MatchSchema | None = None):
-        consolePrint.info(f'CARD: Removeu skill de {self.in_game_id}')
-
-    async def onAttach(self, match: MatchSchema | None = None):
-        ...
-
-    async def onDettach(self, match: MatchSchema | None = None):
-        ...
+# Movimentação
 
     async def onInvoke(self, match: MatchSchema | None = None):
         player = match._getPlayerById(match.move_now.player_move)
@@ -146,6 +133,50 @@ class CardSchema(BaseModel):
                 },
                 player_id=player.id
             )
+
+    async def onMoveToAttackZone(self, match: MatchSchema | None):
+        player = match._getPlayerById(match.move_now.player_move)
+        consolePrint.info(f'Jogador {player.id} moveu a carta {self.in_game_id} para ZB.')
+        if self.card_type == 'hero':
+            # A passiva de Arca da Aliança é verificada para todos os heróis
+            if getCardInListBySlugId('arca-da-alianca', player.card_battle_camp):
+                consolePrint.info(f'CARD: {player.id} ativou Arca da Aliança')
+                self.attack_point += 1
+                self.defense_points += 1
+
+    async def onRetreatToPrepareZone(self, match: MatchSchema | None):
+        player = match._getPlayerById(match.move_now.player_move)
+        consolePrint.info(f'Jogador {player.id} recuou a carta {self.in_game_id} para ZP.')
+        if self.card_type == 'hero':
+            # A passiva de Arca da Aliança é verificada para todos os heróis
+            if getCardInListBySlugId('arca-da-alianca', player.card_battle_camp):
+                consolePrint.info(f'CARD: {player.id} removeu o efeito Arca da Aliança')
+                self.attack_point -= 1
+                self.defense_points -= 1
+
+
+# Habilidades
+
+    async def addSkill(self, match: MatchSchema | None = None):
+        consolePrint.info(f'CARD: Adcionou skill de {self.in_game_id}')
+        player = match._getPlayerById(match.move_now.player_move)
+        if self.card_type == 'miracle':
+            await match.moveCard(player, self.in_game_id, "prepare", "forgotten")
+
+    async def rmvSkill(self, match: MatchSchema | None = None):
+        consolePrint.info(f'CARD: Removeu skill de {self.in_game_id}')
+
+
+# Itemização
+
+    async def onAttach(self, match: MatchSchema | None = None):
+        ...
+
+    async def onDettach(self, match: MatchSchema | None = None):
+        ...
+
+
+# Batalha
 
     async def onDestroy(self, match: MatchSchema | None = None):
         consolePrint.info(f'CARD: destruiu: {self.in_game_id}')
@@ -178,6 +209,7 @@ class CardSchema(BaseModel):
         consolePrint.info(
             f'CARD: {self.in_game_id} foi defendido na sala {match.id}!')
 
+# Utilidade
 
 def getCardInListBySlugId(card_slug: str, card_list: list[CardSchema]) -> CardSchema | None:
     if card_slug != None:
