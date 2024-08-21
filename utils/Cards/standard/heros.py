@@ -102,10 +102,7 @@ class C_Daniel(CardSchema):
     async def onAttack(self, match: MatchSchema | None = None):
         player_target = match._getPlayerById(match.move_now.player_target)
         await super().onAttack(match)
-        print('Habilidade de Daniel')
         self.increase_attack = len(player_target.card_battle_camp)
-        print(f'{self.increase_attack} cartas no campo de batalha do jogador {
-              player_target.id}')
         self.attack_point += self.increase_attack
 
 
@@ -123,6 +120,8 @@ class C_Davi(CardSchema):
     async def onAttack(self, match: MatchSchema | None = None):
         await super().onAttack(match)
         print(f'Tirar um ponto de fé do jogador {self.skill_focus_player_id}')
+        await match.sendToPlayer(data={'data_type': 'notification', 'notification': {
+            "title": "Habilidade de Davi", "message": "Você perdeu um ponto de fé"}}, player_id=self.skill_focus_player_id)
         skill_player_target = match._getPlayerById(self.skill_focus_player_id)
         if skill_player_target is not None:
             match.takeDamage(skill_player_target, 1)
@@ -156,8 +155,13 @@ class C_Elias(CardSchema):
         player_target = match._getPlayerById(match.move_now.player_target)
         await super().addSkill(match)
         await match.moveCard(player_target, match.move_now.card_target, 'battle', 'forgotten')
-        consolePrint.status(
-            f'A carta {match.move_now.card_target} foi destruída')
+        await match.sendToPlayer(data={
+            'data_type': 'notification',
+            'notification': {
+                "title": "Habilidade de Elias",
+                "message": f"Sua carta foi destruída: {match.move_now.card_target.split('-')[1]}"
+            }
+        }, player_id=player_target.id)
 
 
 Elias = C_Elias(
@@ -270,7 +274,13 @@ class C_JoseDoEgito(CardSchema):
         player_target = match.fight_camp.player_defense
         await super().addSkill(match)
         if len(player_target.card_hand) < 1:
-            print('Não tem cartas para descartar')
+            await match.sendToPlayer(data={
+                'data_type': 'notification',
+                'notification': {
+                    "title": "Habilidade de José do Egito",
+                    "message": f"O oponente não tem cartas para descartar."
+                }
+            }, player_id=match.fight_camp.player_attack)
         else:
             __card_to_discart = choice(player_target.card_hand)
             await match.moveCard(
@@ -279,13 +289,41 @@ class C_JoseDoEgito(CardSchema):
                 move_from='hand',
                 move_to='forgotten'
             )
-            print(f'Descartou a carta {
-                  __card_to_discart.in_game_id} na sala {match.id}')
+            await match.sendToPlayer(data={
+                'data_type': 'notification',
+                'notification': {
+                    "title": "Habilidade de José do Egito",
+                    "message": f"A carta {__card_to_discart.in_game_id} foi descartada."
+                }
+            }, player_id=match.fight_camp.player_attack)
+            await match.sendToPlayer(data={
+                'data_type': 'notification',
+                'notification': {
+                    "title": "Habilidade de José do Egito",
+                    "message": f"A carta {__card_to_discart.in_game_id} foi descartada."
+                }
+            }, player_id=match.fight_camp.player_defense)
 
     async def rmvSkill(self, match: MatchSchema | None = None):
         player = match._getPlayerById(match.move_now.player_move)
         await super().rmvSkill(match)
-        match.giveCard(player, 1)
+        gived_card: CardSchema = match.giveCard(player, 1)
+        if gived_card:
+            await match.sendToPlayer(data={
+                'data_type': 'notification',
+                'notification': {
+                    "title": "Habilidade de José do Egito",
+                    "message": f'Você comprou a carta {gived_card.slug}.'
+                }
+            }, player_id=match.fight_camp.player_attack)
+        else:
+            await match.sendToPlayer(data={
+                'data_type': 'notification',
+                'notification': {
+                    "title": "Habilidade de José do Egito",
+                    "message": f"Não foi possível comprar uma carta."
+                }
+            }, player_id=match.fight_camp.player_attack)
 
     async def hasSuccessfullyAttacked(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, defense_cards: list[CardSchema] | None = None, match: MatchSchema | None = None):
         await super().hasSuccessfullyAttacked(player, attack_cards, player_target, defense_cards, match)
@@ -430,10 +468,30 @@ class C_Moise(CardSchema):
             player.card_deck.remove(card_in_deck)
             player.card_hand.append(card_in_deck)
             card_in_deck.status = 'ready'
+            for _player in match.players_in_match:
+                if _player.id == player.id:
+                    continue
+                await match.sendToPlayer(data={
+                    'data_type': 'notification',
+                    'notification': {
+                        "title": "Habilidade de Moisés",
+                        "message": f"Moisés solicitou a carta {card_in_deck.slug}."
+                    }
+                }, player_id=_player.id)
         elif card_in_sea is not None:
             player.card_in_forgotten_sea.remove(card_in_sea)
             player.card_hand.append(card_in_sea)
             card_in_sea.status = 'ready'
+            for _player in match.players_in_match:
+                if _player.id == player.id:
+                    continue
+                await match.sendToPlayer(data={
+                    'data_type': 'notification',
+                    'notification': {
+                        "title": "Habilidade de Moisés",
+                        "message": f"Moisés resgatou a carta {card_in_sea.slug}."
+                    }
+                }, player_id=_player.id)
 
 
 Moises = C_Moise(
@@ -467,6 +525,13 @@ class C_Salomao(CardSchema):
         if player.wisdom_points < 10:
             player.wisdom_available += 1
             player.wisdom_points += 1
+            await match.sendToPlayer(data={
+                'data_type': 'notification',
+                'notification': {
+                    "title": "Habilidade de Salomão",
+                    "message": f"Você ganhou 1 ponto de sabedoria."
+                }
+            }, player_id=player.id)
 
     async def onAttack(self, match: MatchSchema | None = None):
         player = match._getPlayerById(match.move_now.player_move)
@@ -491,6 +556,13 @@ class C_Sansao(CardSchema):
         await super().onInvoke(match)
         await match.moveCard(player, self.in_game_id, 'prepare', 'battle')
         self.status = 'ready'
+        await match.sendToPlayer(data={
+            'data_type': 'notification',
+            'notification': {
+                "title": "Habilidade de Sansão",
+                "message": f"Sansão está pronto para atacar."
+            }
+        }, player_id=player.id)
 
 
 Sansao = C_Sansao(
