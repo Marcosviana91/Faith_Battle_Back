@@ -2,7 +2,7 @@ from secrets import token_hex
 
 from schemas.cards_schema import CardSchema, getCardInListBySlugId
 
-from .standard import heros, miracles, STANDARD_CARDS
+from .standard import heros, miracles, artifacts, STANDARD_CARDS
 
 ALL_CARDS = [*STANDARD_CARDS]
 
@@ -34,6 +34,8 @@ STANDARD_CARDS_CLASSES = [
     miracles.RestauracaoDeFe,
     miracles.SabedoriaDeSalomao,
     miracles.SarcaArdente,
+    artifacts.ArcaDaAlianca,
+    artifacts.Os10Mandamentos,
 ]
 
 
