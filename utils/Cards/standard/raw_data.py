@@ -9,7 +9,7 @@ STANDARD_CARDS_RAW_DATA = {
     'jaco': ('Jaco', 2, 2, 2),
     'jose-do-egito': ('José do Egito', 2, 2, 1),
     'josue': ('Josué', 3, 3, 1),
-    'mari': ('Maria', 2, 1, 2),
+    'maria': ('Maria', 2, 1, 2),
     'moises': ('Moisés', 3, 2, 2),
     'noe': ('Noé', 1, 2, 1),
     'salomao': ('Salomão', 4, 2, 2),
