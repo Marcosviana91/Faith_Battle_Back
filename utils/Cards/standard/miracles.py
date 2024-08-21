@@ -104,28 +104,37 @@ class C_FogoDoCeu(CardSchema):
             }, player_id=_player.id)
 
     async def addSkill(self, match: MatchSchema | None = None):
-        player_target = match._getPlayerById(match.move_now.player_target)
         await super().addSkill(match)
-        # Destrói uma carta da zona de batalha
-        # Mesma habilidade de Elias
-        await match.moveCard(player_target, match.move_now.card_target, 'battle', 'forgotten')
-        await match.sendToPlayer(data={
+        if not match.move_now.player_target:
+            await match.sendToPlayer(data={
             'data_type': 'notification',
             'notification': {
-                "title": "Fogo do Céu",
-                "message": f"A carta {match.move_now.card_target.split('_')[1]} foi destruída"
+                "title": "Fogo no Céu",
+                "message": f"Faltou sabedoria..."
             }
-        }, player_id=player_target.id)
-        await match.sendToPlayer(data={
-            'data_type': 'notification',
-            'notification': {
-                "title": "2 Reis 1:12",
-                "message": f"Respondeu Elias: Se sou homem de Deus, que desça fogo do céu e consuma você e seus cinquenta soldados!... De novo fogo de Deus desceu e consumiu o oficial e seus soldados.",
-                "stillUntilDismiss": True
-            }
-        }, player_id=player_target.id)
-        consolePrint.status(
-            f'A carta {match.move_now.card_target} foi destruída')
+        }, player_id=match.move_now.player_move)
+        else:
+            player_target = match._getPlayerById(match.move_now.player_target)
+            # Destrói uma carta da zona de batalha
+            # Mesma habilidade de Elias
+            await match.moveCard(player_target, match.move_now.card_target, 'battle', 'forgotten')
+            await match.sendToPlayer(data={
+                'data_type': 'notification',
+                'notification': {
+                    "title": "Fogo do Céu",
+                    "message": f"A carta {match.move_now.card_target.split('_')[1]} foi destruída"
+                }
+            }, player_id=player_target.id)
+            await match.sendToPlayer(data={
+                'data_type': 'notification',
+                'notification': {
+                    "title": "2 Reis 1:12",
+                    "message": f"Respondeu Elias: Se sou homem de Deus, que desça fogo do céu e consuma você e seus cinquenta soldados!... De novo fogo de Deus desceu e consumiu o oficial e seus soldados.",
+                    "stillUntilDismiss": True
+                }
+            }, player_id=player_target.id)
+            consolePrint.status(
+                f'A carta {match.move_now.card_target} foi destruída')
 
 
 FogoDoCeu = C_FogoDoCeu(
