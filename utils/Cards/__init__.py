@@ -45,7 +45,7 @@ def createCardListObjectsByPlayer(player_id: int, card_list: list[CardSchema]) -
     for card in card_list:
         for hero in heroes:
             if card.slug == hero.slug:
-                __temp_id = f'{player_id}-{card.slug}-{token_hex(3)}'
+                __temp_id = f'{player_id}_{card.slug}_{token_hex(3)}'
                 newHero = hero.model_copy()
                 newHero.in_game_id = __temp_id
                 card_object.append(newHero)

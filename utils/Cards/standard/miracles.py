@@ -121,7 +121,7 @@ class C_FogoDoCeu(CardSchema):
             'data_type': 'notification',
             'notification': {
                 "title": "Fogo do Céu",
-                "message": f"A carta {match.move_now.card_target.split('-')[1]} foi destruída"
+                "message": f"A carta {match.move_now.card_target.split('_')[1]} foi destruída"
             }
         }, player_id=player_target.id)
         consolePrint.status(

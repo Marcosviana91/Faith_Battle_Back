@@ -159,7 +159,7 @@ class C_Elias(CardSchema):
             'data_type': 'notification',
             'notification': {
                 "title": "Habilidade de Elias",
-                "message": f"Sua carta foi destruída: {match.move_now.card_target.split('-')[1]}"
+                "message": f"Sua carta foi destruída: {match.move_now.card_target.split('_')[1]}"
             }
         }, player_id=player_target.id)
 
