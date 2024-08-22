@@ -13,6 +13,12 @@ class PlayersInMatchSchema:
     faith_points: int
     wisdom_points: int = 0
     wisdom_available: int = 0
+    
+    # 
+    nao_perde_fe: bool = False
+    nao_pode_ser_alvo_de_pecado: bool = False
+    nao_sofre_danos_de_efeitos: bool = False
+    nao_sofre_ataque_de_herois: bool = False
 
     def getPlayerStats(self, private: bool = False) -> dict:
         ...
@@ -86,18 +92,19 @@ class CardSchema(BaseModel):
     status: str | None = "ready"  # "ready" | "used" | "not-enough"
 
     card_type: str | None = None  # 'hero' | 'miracle' | 'sin' | 'artfacts' | 'legendary'
-
+    attachable: bool = False
+    attached_cards: list = []
     increase_attack: int | None = 0
     increase_defense: int | None = 0
-    skill_focus_player_id: int | None = None
-    skill_focus_player2_id: int | None = None
-    skill_focus_card_id: str | None = None
+    skill_focus_player_id: int | None = None # Usado por Davi
 
-    # attachable: bool
+    # 
+    imbloqueavel: bool = False
+    indestrutivel: bool = False
+    nao_pode_ser_alvo_de_pecado: bool = False
 
-    @property
     def getCardStats(self):
-        return {
+        _data = {
             "slug": self.slug,
             "in_game_id": self.in_game_id,
             "card_type": self.card_type,
@@ -105,7 +112,9 @@ class CardSchema(BaseModel):
             "attack_point": self.attack_point,
             "defense_points": self.defense_points,
             "status": self.status,
+            "attachable": self.attachable,
         }
+        return _data
 
     def resetCardStats(self):
         print(f'Resetou {self.in_game_id}')
@@ -170,10 +179,18 @@ class CardSchema(BaseModel):
 # Itemização
 
     async def onAttach(self, match: MatchSchema | None = None):
-        ...
+        player = match._getPlayerById(match.move_now.player_move)
+        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
+        player.card_prepare_camp.remove(self)
+        card_target.attached_cards.append(self)
+        consolePrint.info(f"O artefato {card_target.in_game_id} foi equipado ao Herói {self.in_game_id}")
 
     async def onDettach(self, match: MatchSchema | None = None):
-        ...
+        player = match._getPlayerById(match.move_now.player_move)
+        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
+        card_target.attached_cards.remove(self)
+        player.card_prepare_camp.append(self)
+        consolePrint.info(f"O artefato {card_target.in_game_id} foi removido do Herói {self.in_game_id}")
 
 
 # Batalha
