@@ -63,6 +63,13 @@ class PlayersInMatchSchema(BaseModel):
     faith_points: int
     wisdom_points: int = 0
     wisdom_available: int = 0
+    
+    # 
+    nao_perde_fe: bool = False
+    nao_pode_ser_alvo_de_pecado: bool = False
+    nao_sofre_danos_de_efeitos: bool = False
+    nao_sofre_ataque_de_herois: bool = False
+    
 
     def getPlayerStats(self, private: bool = False) -> dict:
         if private:
