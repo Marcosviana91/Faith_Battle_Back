@@ -1,4 +1,4 @@
-from schemas.cards_schema import CardSchema, MatchSchema, PlayersInMatchSchema, getCardInListBySlugId
+from schemas.cards_schema import CardSchema, MatchSchema, getCardInListBySlugId
 
 from utils.Cards.standard.raw_data import STANDARD_CARDS_RAW_DATA
 
@@ -68,7 +68,7 @@ class C_ArcaDaAlianca(CardSchema):
     async def onDestroy(self, match: MatchSchema | None = None):
         await super().onDestroy(match)
         await self.rmvSkill(match)
-    
+
 
 ArcaDaAlianca = C_ArcaDaAlianca(
     slug='arca-da-alianca',
@@ -77,17 +77,23 @@ ArcaDaAlianca = C_ArcaDaAlianca(
     in_game_id=None,
 )
 
+
 class C_ArcaDeNoe(CardSchema):
     async def onAttach(self, match: MatchSchema | None = None):
         await super().onAttach(match)
         player = match._getPlayerById(match.move_now.player_move)
-        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
-        
+        card_target = getCardInListBySlugId(
+            match.move_now.card_target, player.card_prepare_camp)
+        card_target.indestrutivel = True
+
     async def onDettach(self, match: MatchSchema | None = None):
         await super().onDettach(match)
         player = match._getPlayerById(match.move_now.player_move)
-        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
-    
+        card_target = getCardInListBySlugId(
+            match.move_now.card_target, player.card_prepare_camp)
+        card_target.indestrutivel = False
+
+
 ArcaDeNoe = C_ArcaDeNoe(
     slug='arca-de-noe',
     wisdom_cost=5,
@@ -98,16 +104,10 @@ ArcaDeNoe = C_ArcaDeNoe(
 
 
 class C_BotasDoEvangelho(CardSchema):
-    async def onAttach(self, match: MatchSchema | None = None):
-        await super().onAttach(match)
-        player = match._getPlayerById(match.move_now.player_move)
-        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
-        
-    async def onDettach(self, match: MatchSchema | None = None):
-        await super().onDettach(match)
-        player = match._getPlayerById(match.move_now.player_move)
-        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
-    
+    # A passiva da Botas do Evangelho é verificada para todos os heróis na classe heros
+    ...
+
+
 BotasDoEvangelho = C_BotasDoEvangelho(
     slug='botas-do-evangelho',
     wisdom_cost=2,
@@ -121,13 +121,34 @@ class C_CajadoDeMoises(CardSchema):
     async def onAttach(self, match: MatchSchema | None = None):
         await super().onAttach(match)
         player = match._getPlayerById(match.move_now.player_move)
-        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
-        
+        card_target = getCardInListBySlugId(
+            match.move_now.card_target, player.card_prepare_camp)
+        card_target.attack_point += 1
+        if card_target.slug == 'moises':
+            consolePrint.status('O cajado foi equipado a Moisés')
+            for _card in [*player.card_hand, *player.card_deck, *player.card_in_forgotten_sea]:
+                if _card.card_type == "miracle":
+                    if _card.wisdom_cost > 1:
+                        _card.wisdom_cost -= 1
+
     async def onDettach(self, match: MatchSchema | None = None):
         await super().onDettach(match)
         player = match._getPlayerById(match.move_now.player_move)
-        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
-    
+        card_target = getCardInListBySlugId(
+            match.move_now.card_target, player.card_prepare_camp)
+        card_target.attack_point -= 1
+        if card_target.slug == 'moises':
+            consolePrint.status('O cajado foi removido de Moisés')
+            all_cards = [*player.card_battle_camp, *player.card_prepare_camp,
+                         *player.card_hand, *player.card_deck, *player.card_in_forgotten_sea]
+            for card in all_cards:
+                card.wisdom_cost = STANDARD_CARDS_RAW_DATA[card.slug][1]
+            card_os_10_mandamentos = getCardInListBySlugId(
+                'os-10-mandamentos', player.card_battle_camp)
+            if card_os_10_mandamentos:
+                await card_os_10_mandamentos.addSkill(match)
+
+
 CajadoDeMoises = C_CajadoDeMoises(
     slug='cajado-de-moises',
     wisdom_cost=2,
@@ -141,13 +162,20 @@ class C_CapaceteDaSalvacao(CardSchema):
     async def onAttach(self, match: MatchSchema | None = None):
         await super().onAttach(match)
         player = match._getPlayerById(match.move_now.player_move)
-        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
-        
+        card_target = getCardInListBySlugId(
+            match.move_now.card_target, player.card_prepare_camp)
+        card_target.attack_point += 1
+        card_target.nao_pode_ser_alvo_de_pecado = True
+
     async def onDettach(self, match: MatchSchema | None = None):
         await super().onDettach(match)
         player = match._getPlayerById(match.move_now.player_move)
-        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
-    
+        card_target = getCardInListBySlugId(
+            match.move_now.card_target, player.card_prepare_camp)
+        card_target.attack_point -= 1
+        card_target.nao_pode_ser_alvo_de_pecado = False
+
+
 CapaceteDaSalvacao = C_CapaceteDaSalvacao(
     slug='capacete-da-salvacao',
     wisdom_cost=1,
@@ -161,13 +189,16 @@ class C_CinturaoDaVerdade(CardSchema):
     async def onAttach(self, match: MatchSchema | None = None):
         await super().onAttach(match)
         player = match._getPlayerById(match.move_now.player_move)
-        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
-        
+        card_target = getCardInListBySlugId(
+            match.move_now.card_target, player.card_prepare_camp)
+
     async def onDettach(self, match: MatchSchema | None = None):
         await super().onDettach(match)
         player = match._getPlayerById(match.move_now.player_move)
-        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
-    
+        card_target = getCardInListBySlugId(
+            match.move_now.card_target, player.card_prepare_camp)
+
+
 CinturaoDaVerdade = C_CinturaoDaVerdade(
     slug='cinturao-da-verdade',
     wisdom_cost=4,
@@ -181,13 +212,20 @@ class C_CouracaDaJustica(CardSchema):
     async def onAttach(self, match: MatchSchema | None = None):
         await super().onAttach(match)
         player = match._getPlayerById(match.move_now.player_move)
-        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
-        
+        card_target = getCardInListBySlugId(
+            match.move_now.card_target, player.card_prepare_camp)
+        card_target.attack_point += 2
+        card_target.defense_points += 2
+
     async def onDettach(self, match: MatchSchema | None = None):
         await super().onDettach(match)
         player = match._getPlayerById(match.move_now.player_move)
-        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
-    
+        card_target = getCardInListBySlugId(
+            match.move_now.card_target, player.card_prepare_camp)
+        card_target.attack_point -= 2
+        card_target.defense_points -= 2
+
+
 CouracaDaJustica = C_CouracaDaJustica(
     slug='couraca-da-justica',
     wisdom_cost=3,
@@ -201,13 +239,17 @@ class C_EscudoDaFe(CardSchema):
     async def onAttach(self, match: MatchSchema | None = None):
         await super().onAttach(match)
         player = match._getPlayerById(match.move_now.player_move)
-        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
-        
+        card_target = getCardInListBySlugId(
+            match.move_now.card_target, player.card_prepare_camp)
+        card_target.defense_points += 2
+
     async def onDettach(self, match: MatchSchema | None = None):
         await super().onDettach(match)
         player = match._getPlayerById(match.move_now.player_move)
-        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
-    
+        card_target = getCardInListBySlugId(
+            match.move_now.card_target, player.card_prepare_camp)
+        card_target.defense_points -= 2
+
 EscudoDaFe = C_EscudoDaFe(
     slug='escudo-da-fe',
     wisdom_cost=1,
@@ -221,13 +263,18 @@ class C_EspadaDoEspirito(CardSchema):
     async def onAttach(self, match: MatchSchema | None = None):
         await super().onAttach(match)
         player = match._getPlayerById(match.move_now.player_move)
-        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
-        
+        card_target = getCardInListBySlugId(
+            match.move_now.card_target, player.card_prepare_camp)
+        card_target.imbloqueavel = True
+
     async def onDettach(self, match: MatchSchema | None = None):
         await super().onDettach(match)
         player = match._getPlayerById(match.move_now.player_move)
-        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
-    
+        card_target = getCardInListBySlugId(
+            match.move_now.card_target, player.card_prepare_camp)
+        card_target.imbloqueavel = False
+
+
 EspadaDoEspirito = C_EspadaDoEspirito(
     slug='espada-do-espirito',
     wisdom_cost=3,

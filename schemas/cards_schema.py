@@ -13,8 +13,8 @@ class PlayersInMatchSchema:
     faith_points: int
     wisdom_points: int = 0
     wisdom_available: int = 0
-    
-    # 
+
+    #
     nao_perde_fe: bool = False
     nao_pode_ser_alvo_de_pecado: bool = False
     nao_sofre_danos_de_efeitos: bool = False
@@ -96,9 +96,9 @@ class CardSchema(BaseModel):
     attached_cards: list = []
     increase_attack: int | None = 0
     increase_defense: int | None = 0
-    skill_focus_player_id: int | None = None # Usado por Davi
+    skill_focus_player_id: int | None = None  # Usado por Davi
 
-    # 
+    #
     imbloqueavel: bool = False
     indestrutivel: bool = False
     nao_pode_ser_alvo_de_pecado: bool = False
@@ -127,11 +127,6 @@ class CardSchema(BaseModel):
         player.card_prepare_camp.append(self)
         consolePrint.info(f'CARD: invocou: {self}')
         self.status = "used"
-        if self.card_type == 'hero':
-            # A passiva de Abraão é verificada para todos os heróis
-            if getCardInListBySlugId('abraao', player.card_battle_camp):
-                consolePrint.info(f'CARD: {player.id} ativou abraão')
-                player.faith_points += 1
         if self.card_type == 'miracle':
             await match.sendToPlayer(
                 data={
@@ -145,26 +140,17 @@ class CardSchema(BaseModel):
 
     async def onMoveToAttackZone(self, match: MatchSchema | None):
         player = match._getPlayerById(match.move_now.player_move)
-        consolePrint.info(f'Jogador {player.id} moveu a carta {self.in_game_id} para ZB.')
-        if self.card_type == 'hero':
-            # A passiva de Arca da Aliança é verificada para todos os heróis
-            if getCardInListBySlugId('arca-da-alianca', player.card_battle_camp):
-                consolePrint.info(f'CARD: {player.id} ativou Arca da Aliança')
-                self.attack_point += 1
-                self.defense_points += 1
+        consolePrint.info(f'Jogador {player.id} moveu a carta {
+                          self.in_game_id} para ZB.')
 
     async def onRetreatToPrepareZone(self, match: MatchSchema | None):
         player = match._getPlayerById(match.move_now.player_move)
-        consolePrint.info(f'Jogador {player.id} recuou a carta {self.in_game_id} para ZP.')
-        if self.card_type == 'hero':
-            # A passiva de Arca da Aliança é verificada para todos os heróis
-            if getCardInListBySlugId('arca-da-alianca', player.card_battle_camp):
-                consolePrint.info(f'CARD: {player.id} removeu o efeito Arca da Aliança')
-                self.attack_point -= 1
-                self.defense_points -= 1
+        consolePrint.info(f'Jogador {player.id} recuou a carta {
+                          self.in_game_id} para ZP.')
 
 
 # Habilidades
+
 
     async def addSkill(self, match: MatchSchema | None = None):
         consolePrint.info(f'CARD: Adcionou skill de {self.in_game_id}')
@@ -178,22 +164,28 @@ class CardSchema(BaseModel):
 
 # Itemização
 
+
     async def onAttach(self, match: MatchSchema | None = None):
         player = match._getPlayerById(match.move_now.player_move)
-        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
+        card_target = getCardInListBySlugId(
+            match.move_now.card_target, player.card_prepare_camp)
         player.card_prepare_camp.remove(self)
         card_target.attached_cards.append(self)
-        consolePrint.info(f"O artefato {card_target.in_game_id} foi equipado ao Herói {self.in_game_id}")
+        consolePrint.info(f"O artefato {card_target.in_game_id} foi equipado ao Herói {
+                          self.in_game_id}")
 
     async def onDettach(self, match: MatchSchema | None = None):
         player = match._getPlayerById(match.move_now.player_move)
-        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
+        card_target = getCardInListBySlugId(
+            match.move_now.card_target, player.card_prepare_camp)
         card_target.attached_cards.remove(self)
         player.card_prepare_camp.append(self)
-        consolePrint.info(f"O artefato {card_target.in_game_id} foi removido do Herói {self.in_game_id}")
+        consolePrint.info(f"O artefato {card_target.in_game_id} foi removido do Herói {
+                          self.in_game_id}")
 
 
 # Batalha
+
 
     async def onDestroy(self, match: MatchSchema | None = None):
         consolePrint.info(f'CARD: destruiu: {self.in_game_id}')
@@ -227,6 +219,7 @@ class CardSchema(BaseModel):
             f'CARD: {self.in_game_id} foi defendido na sala {match.id}!')
 
 # Utilidade
+
 
 def getCardInListBySlugId(card_slug: str, card_list: list[CardSchema]) -> CardSchema | None:
     if card_slug != None:

@@ -2,6 +2,7 @@ from random import choice
 from schemas.cards_schema import CardSchema,  MatchSchema, PlayersInMatchSchema, getCardInListBySlugId
 
 from utils.console import consolePrint
+from utils.Cards.standard.raw_data import STANDARD_CARDS_RAW_DATA
 
 
 STANDARD_CARDS_HEROS = [
@@ -22,10 +23,11 @@ STANDARD_CARDS_HEROS = [
     'sansao',
 ]
 
+
 class Heros(CardSchema):
     attached_cards: list[CardSchema] = []
-    card_type:str='hero'
-    
+    card_type: str = 'hero'
+
     def getCardStats(self):
         data = super().getCardStats()
         _attached_cards = []
@@ -33,6 +35,59 @@ class Heros(CardSchema):
             _attached_cards.append(card.getCardStats())
         data["attached_cards"] = self.card_type
         return data
+
+    async def onAttack(self, match: MatchSchema | None = None):
+        await super().onAttack(match)
+        # A passiva da Botas do Evangelho é verificada para todos os heróis
+        if getCardInListBySlugId('botas-do-evangelho', self.attached_cards):
+            player = match._getPlayerById(match.move_now.player_move)
+            match.giveCard(player)
+        # A passiva do Cinturao da Verdade é verificada para todos os heróis
+        if getCardInListBySlugId('cinturao-da-verdade', self.attached_cards):
+            player = match._getPlayerById(match.move_now.player_move)
+            player_target = match._getPlayerById(match.move_now.player_target)
+            if len(player_target.card_deck) > 0:
+                reveled_card = player_target.card_deck[0]
+                reveled_card_wisdom_cost = STANDARD_CARDS_RAW_DATA[reveled_card.slug][1]
+                consolePrint.info(f'Jogador {player_target.id} revelou a carta {STANDARD_CARDS_RAW_DATA[reveled_card.slug][0]}')
+                match.takeDamage(player_target, reveled_card_wisdom_cost)
+                await match.sendToPlayer(data={
+                'data_type': 'notification',
+                'notification': {
+                    "title": "Fogo do Céu",
+                    "message": f'Jogador {player_target.id} revelou a carta {STANDARD_CARDS_RAW_DATA[reveled_card.slug][0]} com {reveled_card_wisdom_cost} de custo.'
+                }
+            }, player_id=player.id)
+            else:
+                consolePrint.info('Não há carta para revelar')
+
+    async def onInvoke(self, match: MatchSchema | None = None):
+        await super().onInvoke(match)
+        player = match._getPlayerById(match.move_now.player_move)
+        # A passiva de Abraão é verificada para todos os heróis
+        if getCardInListBySlugId('abraao', player.card_battle_camp):
+            consolePrint.info(f'CARD: {player.id} ativou abraão')
+            player.faith_points += 1
+
+    async def onMoveToAttackZone(self, match: MatchSchema | None):
+        player = match._getPlayerById(match.move_now.player_move)
+        await super().onMoveToAttackZone(match)
+        # A passiva de Arca da Aliança é verificada para todos os heróis
+        if getCardInListBySlugId('arca-da-alianca', player.card_battle_camp):
+            consolePrint.info(f'CARD: {player.id} ativou Arca da Aliança')
+            self.attack_point += 1
+            self.defense_points += 1
+
+    async def onRetreatToPrepareZone(self, match: MatchSchema | None):
+        player = match._getPlayerById(match.move_now.player_move)
+        await super().onRetreatToPrepareZone(match)
+        # A passiva de Arca da Aliança é verificada para todos os heróis
+        if getCardInListBySlugId('arca-da-alianca', player.card_battle_camp):
+            consolePrint.info(
+                f'CARD: {player.id} removeu o efeito Arca da Aliança')
+            self.attack_point -= 1
+            self.defense_points -= 1
+
 
 class C_Abraao(Heros):
     ...
