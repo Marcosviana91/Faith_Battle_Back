@@ -63,22 +63,29 @@ class PlayersInMatchSchema(BaseModel):
     faith_points: int
     wisdom_points: int = 0
     wisdom_available: int = 0
-    
-    # 
+
+    #
+    # lista com id de jogadores q o jogador atual já atacou
+    ja_atacou: list[int] = []
     nao_perde_fe: bool = False
     nao_pode_ser_alvo_de_pecado: bool = False
     nao_sofre_danos_de_efeitos: bool = False
     nao_sofre_ataque_de_herois: bool = False
-    
 
     def getPlayerStats(self, private: bool = False) -> dict:
+        # private são os dados que só o jogador precisa saber
         if private:
             return {
                 "id": self.id,
                 "card_hand": cardListToDict(self.card_hand),
                 "faith_points": self.faith_points,
                 "wisdom_points": self.wisdom_points,
-                "wisdom_available":  self.wisdom_available
+                "wisdom_available":  self.wisdom_available,
+                "ja_atacou": self.ja_atacou,
+                "nao_perde_fe": self.nao_perde_fe,
+                "nao_pode_ser_alvo_de_pecado": self.nao_pode_ser_alvo_de_pecado,
+                "nao_sofre_danos_de_efeitos": self.nao_sofre_danos_de_efeitos,
+                "nao_sofre_ataque_de_herois": self.nao_sofre_ataque_de_herois,
             }
         return {
             "id": self.id,
@@ -88,5 +95,9 @@ class PlayersInMatchSchema(BaseModel):
             "card_in_forgotten_sea": cardListToDict(self.card_in_forgotten_sea),
             "faith_points": self.faith_points,
             "wisdom_points": self.wisdom_points,
-            "wisdom_available":  self.wisdom_available
+            "wisdom_available":  self.wisdom_available,
+            "nao_perde_fe": self.nao_perde_fe,
+            "nao_pode_ser_alvo_de_pecado": self.nao_pode_ser_alvo_de_pecado,
+            "nao_sofre_danos_de_efeitos": self.nao_sofre_danos_de_efeitos,
+            "nao_sofre_ataque_de_herois": self.nao_sofre_ataque_de_herois,
         }

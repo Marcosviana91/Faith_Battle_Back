@@ -227,6 +227,7 @@ class MatchSchema(BaseModel):
             await self.finishTurn()
         self.player_focus_id = self.players_in_match[self.player_turn].id
         player.wisdom_available = player.wisdom_points
+        player.ja_atacou = []
         if (self.round_match == 1 and self.player_turn == 0):
             ...
         else:

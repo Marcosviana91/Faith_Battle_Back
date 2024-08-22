@@ -113,6 +113,9 @@ class CardSchema(BaseModel):
             "defense_points": self.defense_points,
             "status": self.status,
             "attachable": self.attachable,
+            "imbloqueavel": self.imbloqueavel,
+            "indestrutivel": self.indestrutivel,
+            "nao_pode_ser_alvo_de_pecado": self.nao_pode_ser_alvo_de_pecado,
         }
         return _data
 
