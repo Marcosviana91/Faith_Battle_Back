@@ -9,7 +9,7 @@ class MoveSchema:
     match_id: str
     round_match: int
     player_move: int
-    move_type: str  # move_to_prepare, move_to_battle, attack, defense, attach, dettach, active, passive, done
+    move_type: str  # move_to_prepare, move_to_battle, retreat_to_prepare, attack, defense, attach, dettach, active, passive, done, fight, surrender, change_deck, card_skill
     card_id: str | None = None
     player_target: int | None = None
     card_target: str | None = None
@@ -20,6 +20,14 @@ class MoveSchema:
 
 STANDARD_CARDS_ARTIFACTS = [
     'arca-da-alianca',
+    'arca-de-noe',
+    'botas-do-evangelho',
+    'cajado-de-moises',
+    'capacete-da-salvacao',
+    'cinturao-da-verdade',
+    'couraca-da-justica',
+    'escudo-da-fe',
+    'espada-do-espirito',
     'os-10-mandamentos',
 ]
 
@@ -60,12 +68,171 @@ class C_ArcaDaAlianca(CardSchema):
     async def onDestroy(self, match: MatchSchema | None = None):
         await super().onDestroy(match)
         await self.rmvSkill(match)
-
+    
 
 ArcaDaAlianca = C_ArcaDaAlianca(
     slug='arca-da-alianca',
     wisdom_cost=5,
     card_type='artifact',
+    in_game_id=None,
+)
+
+class C_ArcaDeNoe(CardSchema):
+    async def onAttach(self, match: MatchSchema | None = None):
+        await super().onAttach(match)
+        player = match._getPlayerById(match.move_now.player_move)
+        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
+        
+    async def onDettach(self, match: MatchSchema | None = None):
+        await super().onDettach(match)
+        player = match._getPlayerById(match.move_now.player_move)
+        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
+    
+ArcaDeNoe = C_ArcaDeNoe(
+    slug='arca-de-noe',
+    wisdom_cost=5,
+    card_type='artifact',
+    attachable=True,
+    in_game_id=None,
+)
+
+
+class C_BotasDoEvangelho(CardSchema):
+    async def onAttach(self, match: MatchSchema | None = None):
+        await super().onAttach(match)
+        player = match._getPlayerById(match.move_now.player_move)
+        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
+        
+    async def onDettach(self, match: MatchSchema | None = None):
+        await super().onDettach(match)
+        player = match._getPlayerById(match.move_now.player_move)
+        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
+    
+BotasDoEvangelho = C_BotasDoEvangelho(
+    slug='botas-do-evangelho',
+    wisdom_cost=2,
+    card_type='artifact',
+    attachable=True,
+    in_game_id=None,
+)
+
+
+class C_CajadoDeMoises(CardSchema):
+    async def onAttach(self, match: MatchSchema | None = None):
+        await super().onAttach(match)
+        player = match._getPlayerById(match.move_now.player_move)
+        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
+        
+    async def onDettach(self, match: MatchSchema | None = None):
+        await super().onDettach(match)
+        player = match._getPlayerById(match.move_now.player_move)
+        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
+    
+CajadoDeMoises = C_CajadoDeMoises(
+    slug='cajado-de-moises',
+    wisdom_cost=2,
+    card_type='artifact',
+    attachable=True,
+    in_game_id=None,
+)
+
+
+class C_CapaceteDaSalvacao(CardSchema):
+    async def onAttach(self, match: MatchSchema | None = None):
+        await super().onAttach(match)
+        player = match._getPlayerById(match.move_now.player_move)
+        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
+        
+    async def onDettach(self, match: MatchSchema | None = None):
+        await super().onDettach(match)
+        player = match._getPlayerById(match.move_now.player_move)
+        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
+    
+CapaceteDaSalvacao = C_CapaceteDaSalvacao(
+    slug='capacete-da-salvacao',
+    wisdom_cost=1,
+    card_type='artifact',
+    attachable=True,
+    in_game_id=None,
+)
+
+
+class C_CinturaoDaVerdade(CardSchema):
+    async def onAttach(self, match: MatchSchema | None = None):
+        await super().onAttach(match)
+        player = match._getPlayerById(match.move_now.player_move)
+        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
+        
+    async def onDettach(self, match: MatchSchema | None = None):
+        await super().onDettach(match)
+        player = match._getPlayerById(match.move_now.player_move)
+        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
+    
+CinturaoDaVerdade = C_CinturaoDaVerdade(
+    slug='cinturao-da-verdade',
+    wisdom_cost=4,
+    card_type='artifact',
+    attachable=True,
+    in_game_id=None,
+)
+
+
+class C_CouracaDaJustica(CardSchema):
+    async def onAttach(self, match: MatchSchema | None = None):
+        await super().onAttach(match)
+        player = match._getPlayerById(match.move_now.player_move)
+        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
+        
+    async def onDettach(self, match: MatchSchema | None = None):
+        await super().onDettach(match)
+        player = match._getPlayerById(match.move_now.player_move)
+        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
+    
+CouracaDaJustica = C_CouracaDaJustica(
+    slug='couraca-da-justica',
+    wisdom_cost=3,
+    card_type='artifact',
+    attachable=True,
+    in_game_id=None,
+)
+
+
+class C_EscudoDaFe(CardSchema):
+    async def onAttach(self, match: MatchSchema | None = None):
+        await super().onAttach(match)
+        player = match._getPlayerById(match.move_now.player_move)
+        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
+        
+    async def onDettach(self, match: MatchSchema | None = None):
+        await super().onDettach(match)
+        player = match._getPlayerById(match.move_now.player_move)
+        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
+    
+EscudoDaFe = C_EscudoDaFe(
+    slug='escudo-da-fe',
+    wisdom_cost=1,
+    card_type='artifact',
+    attachable=True,
+    in_game_id=None,
+)
+
+
+class C_EspadaDoEspirito(CardSchema):
+    async def onAttach(self, match: MatchSchema | None = None):
+        await super().onAttach(match)
+        player = match._getPlayerById(match.move_now.player_move)
+        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
+        
+    async def onDettach(self, match: MatchSchema | None = None):
+        await super().onDettach(match)
+        player = match._getPlayerById(match.move_now.player_move)
+        card_target = getCardInListBySlugId(match.move_now.card_target, player.card_prepare_camp)
+    
+EspadaDoEspirito = C_EspadaDoEspirito(
+    slug='espada-do-espirito',
+    wisdom_cost=3,
+    card_type='artifact',
+    attachable=True,
     in_game_id=None,
 )
 

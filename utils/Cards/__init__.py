@@ -35,6 +35,14 @@ STANDARD_CARDS_CLASSES = [
     miracles.SabedoriaDeSalomao,
     miracles.SarcaArdente,
     artifacts.ArcaDaAlianca,
+    artifacts.ArcaDeNoe,
+    artifacts.BotasDoEvangelho,
+    artifacts.CajadoDeMoises,
+    artifacts.CapaceteDaSalvacao,
+    artifacts.CinturaoDaVerdade,
+    artifacts.CouracaDaJustica,
+    artifacts.EscudoDaFe,
+    artifacts.EspadaDoEspirito,
     artifacts.Os10Mandamentos,
 ]
 
@@ -57,7 +65,7 @@ def cardListToDict(card_list: list[CardSchema]):
     __list = []
     for card in card_list:
         if card:
-            __list.append(card.getCardStats)
+            __list.append(card.getCardStats())
         else:
             __list.append({"slug": "not-defense"})
     return __list
