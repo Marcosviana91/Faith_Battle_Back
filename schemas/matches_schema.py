@@ -392,6 +392,14 @@ class MatchSchema(BaseModel):
             card = getCardInListBySlugId(
                 card_slug=move.card_id, card_list=player.card_prepare_camp)
             await card.addSkill(match=self)
+        if move.move_type == 'attach':
+            card = getCardInListBySlugId(
+                card_slug=move.card_id, card_list=player.card_prepare_camp)
+            await card.onAttach(match=self)
+        if move.move_type == 'dettach':
+            card = getCardInListBySlugId(
+                card_slug=move.card_id, card_list=player.card_prepare_camp)
+            await card.onDettach(match=self)
         self.move_now = None
         await self.updatePlayers()
 
