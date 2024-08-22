@@ -4,19 +4,6 @@ from schemas.cards_schema import CardSchema,  MatchSchema, PlayersInMatchSchema,
 from utils.console import consolePrint
 
 
-class MoveSchema:
-    match_id: str
-    round_match: int
-    player_move: int
-    move_type: str  # move_to_prepare, move_to_battle, attack, defense, attach, dettach, active, passive, done
-    card_id: str | None = None
-    player_target: int | None = None
-    card_target: str | None = None
-    card_list: list[CardSchema] | None = []
-
-##################################################################
-
-
 STANDARD_CARDS_HEROS = [
     'abraao',
     'adao',
@@ -35,8 +22,19 @@ STANDARD_CARDS_HEROS = [
     'sansao',
 ]
 
+class Heros(CardSchema):
+    attached_cards: list[CardSchema] = []
+    card_type:str='hero'
+    
+    def getCardStats(self):
+        data = super().getCardStats()
+        _attached_cards = []
+        for card in self.attached_cards:
+            _attached_cards.append(card.getCardStats())
+        data["attached_cards"] = self.card_type
+        return data
 
-class C_Abraao(CardSchema):
+class C_Abraao(Heros):
     ...
 
 
@@ -45,12 +43,11 @@ Abraao = C_Abraao(
     wisdom_cost=2,
     attack_point=1,
     defense_points=2,
-    card_type='hero',
-    in_game_id=None
+    in_game_id=None,
 )
 
 
-class C_Adao(CardSchema):
+class C_Adao(Heros):
     def resetCardStats(self):
         self.attack_point = 1,
         self.defense_points = 1
@@ -82,12 +79,11 @@ Adao = C_Adao(
     wisdom_cost=1,
     attack_point=1,
     defense_points=1,
-    card_type='hero',
     in_game_id=None
 )
 
 
-class C_Daniel(CardSchema):
+class C_Daniel(Heros):
 
     def resetCardStats(self):
         super().resetCardStats()
@@ -111,12 +107,11 @@ Daniel = C_Daniel(
     wisdom_cost=2,
     attack_point=1,
     defense_points=2,
-    card_type='hero',
     in_game_id=None
 )
 
 
-class C_Davi(CardSchema):
+class C_Davi(Heros):
     async def onAttack(self, match: MatchSchema | None = None):
         await super().onAttack(match)
         print(f'Tirar um ponto de fé do jogador {self.skill_focus_player_id}')
@@ -132,12 +127,11 @@ Davi = C_Davi(
     wisdom_cost=3,
     attack_point=3,
     defense_points=2,
-    card_type='hero',
     in_game_id=None
 )
 
 
-class C_Elias(CardSchema):
+class C_Elias(Heros):
     async def onInvoke(self, match: MatchSchema | None = None):
         player = match._getPlayerById(match.move_now.player_move)
         await super().onInvoke(match)
@@ -164,12 +158,12 @@ class C_Elias(CardSchema):
         await super().addSkill(match)
         if not match.move_now.player_target:
             await match.sendToPlayer(data={
-            'data_type': 'notification',
-            'notification': {
-                "title": "Habilidade de Elias",
-                "message": f"Faltou sabedoria..."
-            }
-        }, player_id=match.move_now.player_move)
+                'data_type': 'notification',
+                'notification': {
+                    "title": "Habilidade de Elias",
+                    "message": f"Faltou sabedoria..."
+                }
+            }, player_id=match.move_now.player_move)
         else:
             player_target = match._getPlayerById(match.move_now.player_target)
             await match.moveCard(player_target, match.move_now.card_target, 'battle', 'forgotten')
@@ -195,12 +189,11 @@ Elias = C_Elias(
     wisdom_cost=4,
     attack_point=3,
     defense_points=1,
-    card_type='hero',
     in_game_id=None
 )
 
 
-class C_Ester(CardSchema):
+class C_Ester(Heros):
     async def onInvoke(self, match: MatchSchema | None = None):
         player = match._getPlayerById(match.move_now.player_move)
         await super().onInvoke(match)
@@ -229,12 +222,11 @@ Ester = C_Ester(
     wisdom_cost=1,
     attack_point=0,
     defense_points=2,
-    card_type='hero',
     in_game_id=None,
 )
 
 
-class C_Eva(CardSchema):
+class C_Eva(Heros):
     async def onInvoke(self, match: MatchSchema | None = None):
         player = match._getPlayerById(match.move_now.player_move)
         await super().onInvoke(match)
@@ -254,12 +246,11 @@ Eva = C_Eva(
     wisdom_cost=1,
     attack_point=1,
     defense_points=1,
-    card_type='hero',
     in_game_id=None
 )
 
 
-class C_Jaco(CardSchema):
+class C_Jaco(Heros):
     async def onAttack(self, match: MatchSchema | None = None):
         player = match._getPlayerById(match.move_now.player_move)
         player_target = match._getPlayerById(match.move_now.player_target)
@@ -285,12 +276,11 @@ Jaco = C_Jaco(
     wisdom_cost=2,
     attack_point=2,
     defense_points=2,
-    card_type='hero',
     in_game_id=None
 )
 
 
-class C_JoseDoEgito(CardSchema):
+class C_JoseDoEgito(Heros):
     def resetCardStats(self):
         super().resetCardStats()
         self.attack_point = 2,
@@ -365,12 +355,11 @@ JoseDoEgito = C_JoseDoEgito(
     wisdom_cost=2,
     attack_point=2,
     defense_points=1,
-    card_type='hero',
     in_game_id=None
 )
 
 
-class C_Josue(CardSchema):
+class C_Josue(Heros):
     def resetCardStats(self):
         super().resetCardStats()
         self.attack_point = 3
@@ -402,12 +391,11 @@ Josue = C_Josue(
     wisdom_cost=3,
     attack_point=3,
     defense_points=1,
-    card_type='hero',
     in_game_id=None
 )
 
 
-class C_Maria(CardSchema):
+class C_Maria(Heros):
     async def onInvoke(self, match: MatchSchema | None = None):
         player = match._getPlayerById(match.move_now.player_move)
         await super().onInvoke(match)
@@ -438,12 +426,11 @@ Maria = C_Maria(
     wisdom_cost=2,
     attack_point=1,
     defense_points=2,
-    card_type='hero',
     in_game_id=None
 )
 
 
-class C_Moise(CardSchema):
+class C_Moise(Heros):
     async def onInvoke(self, match: MatchSchema | None = None):
         player = match._getPlayerById(match.move_now.player_move)
         await super().onInvoke(match)
@@ -525,12 +512,11 @@ Moises = C_Moise(
     wisdom_cost=3,
     attack_point=2,
     defense_points=2,
-    card_type='hero',
     in_game_id=None
 )
 
 
-class C_Noe(CardSchema):
+class C_Noe(Heros):
     ...
 
 
@@ -539,12 +525,11 @@ Noe = C_Noe(
     wisdom_cost=1,
     attack_point=2,
     defense_points=1,
-    card_type='hero',
     in_game_id=None
 )
 
 
-class C_Salomao(CardSchema):
+class C_Salomao(Heros):
     async def onInvoke(self, match: MatchSchema | None = None):
         player = match._getPlayerById(match.move_now.player_move)
         await super().onInvoke(match)
@@ -571,12 +556,11 @@ Salomao = C_Salomao(
     wisdom_cost=4,
     attack_point=2,
     defense_points=2,
-    card_type='hero',
     in_game_id=None
 )
 
 
-class C_Sansao(CardSchema):
+class C_Sansao(Heros):
     async def onInvoke(self, match: MatchSchema | None = None):
         player = match._getPlayerById(match.move_now.player_move)
         await super().onInvoke(match)
@@ -596,6 +580,5 @@ Sansao = C_Sansao(
     wisdom_cost=6,
     attack_point=5,
     defense_points=5,
-    card_type='hero',
     in_game_id=None
 )
