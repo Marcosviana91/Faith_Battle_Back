@@ -176,8 +176,8 @@ class CardSchema(BaseModel):
             match.move_now.card_target, player.card_prepare_camp)
         player.card_prepare_camp.remove(self)
         card_target.attached_cards.append(self)
-        consolePrint.info(f"O artefato {card_target.in_game_id} foi equipado ao Herói {
-                          self.in_game_id}")
+        consolePrint.info(f"O artefato {self.in_game_id} foi equipado ao Herói {
+                          card_target.in_game_id}")
 
     async def onDettach(self, match: MatchSchema | None = None):
         player = match._getPlayerById(match.move_now.player_move)
@@ -185,8 +185,8 @@ class CardSchema(BaseModel):
             match.move_now.card_target, player.card_prepare_camp)
         card_target.attached_cards.remove(self)
         player.card_prepare_camp.append(self)
-        consolePrint.info(f"O artefato {card_target.in_game_id} foi removido do Herói {
-                          self.in_game_id}")
+        consolePrint.info(f"O artefato {self.in_game_id} foi removido do Herói {
+                          card_target.in_game_id}")
 
 
 # Batalha
