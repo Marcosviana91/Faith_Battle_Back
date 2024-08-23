@@ -41,23 +41,28 @@ class C_ArcaDaAlianca(CardSchema):
             if card.card_type == "hero":
                 card.attack_point += 1
                 card.defense_points += 1
+        await match.sendToPlayer(data={
+            'data_type': 'notification',
+            'notification': {
+                "title": "Arca da Aliança",
+                "message": f"Seus heróis ganham 1/1 no ZB."
+            }
+        }, player_id=player.id)
 
     async def rmvSkill(self, match: MatchSchema | None = None):
         await super().rmvSkill(match)
-        player = match._getPlayerById(match.move_now.player_target)
-        for card in player.card_battle_camp:
+        player_target = match._getPlayerById(match.move_now.player_target)
+        for card in player_target.card_battle_camp:
             if card.card_type == "hero":
                 card.attack_point -= 1
                 card.defense_points -= 1
-        for _player in match.players_in_match:
-            # if _player.id == player.id: continue
-            await match.sendToPlayer(data={
-                'data_type': 'notification',
-                'notification': {
-                    "title": "Arca da Aliança",
-                    "message": f"Sua arca foi destruída..."
-                }
-            }, player_id=_player.id)
+        await match.sendToPlayer(data={
+            'data_type': 'notification',
+            'notification': {
+                "title": "Arca da Aliança",
+                "message": f"Sua arca foi destruída..."
+            }
+        }, player_id=player_target.id)
 
     async def onInvoke(self, match: MatchSchema | None = None):
         await super().onInvoke(match)
@@ -86,6 +91,13 @@ class C_ArcaDeNoe(CardSchema):
         card_target = getCardInListBySlugId(
             match.move_now.card_target, player.card_prepare_camp)
         card_target.indestrutivel = True
+        await match.sendToPlayer(data={
+            'data_type': 'notification',
+            'notification': {
+                "title": "Arca de Noé",
+                "message": f"{card_target.slug} é indestrutível agora."
+            }
+        }, player_id=player.id)
 
     async def onDettach(self, match: MatchSchema | None = None):
         await super().onDettach(match)
@@ -126,11 +138,18 @@ class C_CajadoDeMoises(CardSchema):
             match.move_now.card_target, player.card_prepare_camp)
         card_target.attack_point += 1
         if card_target.slug == 'moises':
-            consolePrint.status('O cajado foi equipado a Moisés')
             for _card in [*player.card_hand, *player.card_deck, *player.card_in_forgotten_sea]:
                 if _card.card_type == "miracle":
                     if _card.wisdom_cost > 1:
                         _card.wisdom_cost -= 1
+            consolePrint.status('O cajado foi equipado a Moisés')
+            await match.sendToPlayer(data={
+                'data_type': 'notification',
+                'notification': {
+                    "title": "Moisés está com seu cajado",
+                    "message": f"Seus milagres agora custam -1 de sabedoria."
+                }
+            }, player_id=player.id)
 
     async def onDettach(self, match: MatchSchema | None = None):
         await super().onDettach(match)
@@ -167,6 +186,13 @@ class C_CapaceteDaSalvacao(CardSchema):
             match.move_now.card_target, player.card_prepare_camp)
         card_target.attack_point += 1
         card_target.incorruptivel = True
+        await match.sendToPlayer(data={
+            'data_type': 'notification',
+            'notification': {
+                "title": "Capacete da Salvação",
+                "message": f"{card_target.slug} é incorruptível agora."
+            }
+        }, player_id=player.id)
 
     async def onDettach(self, match: MatchSchema | None = None):
         await super().onDettach(match)
@@ -187,17 +213,8 @@ CapaceteDaSalvacao = C_CapaceteDaSalvacao(
 
 
 class C_CinturaoDaVerdade(CardSchema):
-    async def onAttach(self, match: MatchSchema | None = None):
-        await super().onAttach(match)
-        player = match._getPlayerById(match.move_now.player_move)
-        card_target = getCardInListBySlugId(
-            match.move_now.card_target, player.card_prepare_camp)
+    ...
 
-    async def onDettach(self, match: MatchSchema | None = None):
-        await super().onDettach(match)
-        player = match._getPlayerById(match.move_now.player_move)
-        card_target = getCardInListBySlugId(
-            match.move_now.card_target, player.card_prepare_camp)
 
 
 CinturaoDaVerdade = C_CinturaoDaVerdade(
@@ -251,6 +268,7 @@ class C_EscudoDaFe(CardSchema):
             match.move_now.card_target, player.card_prepare_camp)
         card_target.defense_points -= 2
 
+
 EscudoDaFe = C_EscudoDaFe(
     slug='escudo-da-fe',
     wisdom_cost=1,
@@ -268,6 +286,13 @@ class C_EspadaDoEspirito(CardSchema):
             match.move_now.card_target, player.card_prepare_camp)
         card_target.attack_point += 1
         card_target.imbloqueavel = True
+        await match.sendToPlayer(data={
+            'data_type': 'notification',
+            'notification': {
+                "title": "Arca de Noé",
+                "message": f"{card_target.slug} é imbloqueável agora."
+            }
+        }, player_id=player.id)
 
     async def onDettach(self, match: MatchSchema | None = None):
         await super().onDettach(match)
@@ -297,6 +322,13 @@ class C_Os10Mandamentos(CardSchema):
         for card in all_cards:
             if card.wisdom_cost > 1:
                 card.wisdom_cost -= 1
+        await match.sendToPlayer(data={
+            'data_type': 'notification',
+            'notification': {
+                "title": "Arca de Noé",
+                "message": f"Suas cartas agora custam -1 de sabedoria."
+            }
+        }, player_id=player.id)
 
     async def rmvSkill(self, match: MatchSchema | None = None):
         await super().rmvSkill(match)

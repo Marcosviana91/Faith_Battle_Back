@@ -41,7 +41,16 @@ class Heros(CardSchema):
         # A passiva da Botas do Evangelho é verificada para todos os heróis
         if getCardInListBySlugId('botas-do-evangelho', self.attached_cards):
             player = match._getPlayerById(match.move_now.player_move)
-            match.giveCard(player)
+            new_card = match.giveCard(player)
+            if new_card:
+                await match.sendToPlayer(data={
+                    'data_type': 'notification',
+                    'notification': {
+                        "title": 'Botas do Evangelho',
+                        "message": f'Comprou a carta {new_card.slug}.',
+                        "stillUntilDismiss": True
+                    }
+                }, player_id=player.id)
         # A passiva do Cinturao da Verdade é verificada para todos os heróis
         if getCardInListBySlugId('cinturao-da-verdade', self.attached_cards):
             player = match._getPlayerById(match.move_now.player_move)
@@ -49,15 +58,17 @@ class Heros(CardSchema):
             if len(player_target.card_deck) > 0:
                 reveled_card = player_target.card_deck[0]
                 reveled_card_wisdom_cost = STANDARD_CARDS_RAW_DATA[reveled_card.slug][1]
-                consolePrint.info(f'Jogador {player_target.id} revelou a carta {STANDARD_CARDS_RAW_DATA[reveled_card.slug][0]}')
+                consolePrint.info(f'Jogador {player_target.id} revelou a carta {
+                                  STANDARD_CARDS_RAW_DATA[reveled_card.slug][0]}')
                 match.takeDamage(player_target, reveled_card_wisdom_cost)
                 await match.sendToPlayer(data={
-                'data_type': 'notification',
-                'notification': {
-                    "title": "Fogo do Céu",
-                    "message": f'Jogador {player_target.id} revelou a carta {STANDARD_CARDS_RAW_DATA[reveled_card.slug][0]} com {reveled_card_wisdom_cost} de custo.'
-                }
-            }, player_id=player.id)
+                    'data_type': 'notification',
+                    'notification': {
+                        "title": "Cinturão da Verdade",
+                        "message": f'Jogador {player_target.id} revelou a carta {STANDARD_CARDS_RAW_DATA[reveled_card.slug][0]} com {reveled_card_wisdom_cost} de custo.',
+                        'stillUntilDismiss': True
+                    }
+                }, player_id=player.id)
             else:
                 consolePrint.info('Não há carta para revelar')
 
@@ -170,8 +181,16 @@ class C_Davi(Heros):
     async def onAttack(self, match: MatchSchema | None = None):
         await super().onAttack(match)
         print(f'Tirar um ponto de fé do jogador {self.skill_focus_player_id}')
-        await match.sendToPlayer(data={'data_type': 'notification', 'notification': {
-            "title": "Habilidade de Davi", "message": "Você perdeu um ponto de fé"}}, player_id=self.skill_focus_player_id)
+        await match.sendToPlayer(
+            data={
+                'data_type': 'notification',
+                'notification': {
+                    "title": "Habilidade de Davi",
+                    "message": "Você perdeu um ponto de fé",
+                    'stillUntilDismiss': True
+                }},
+            player_id=self.skill_focus_player_id
+        )
         skill_player_target = match._getPlayerById(self.skill_focus_player_id)
         if skill_player_target is not None:
             match.takeDamage(skill_player_target, 1)
@@ -543,7 +562,7 @@ class C_Moise(Heros):
                     'data_type': 'notification',
                     'notification': {
                         "title": "Habilidade de Moisés",
-                        "message": f"Moisés solicitou a carta {card_in_deck.slug}."
+                        "message": f"Moisés antecipou a carta {card_in_deck.slug}."
                     }
                 }, player_id=_player.id)
         elif card_in_sea is not None:

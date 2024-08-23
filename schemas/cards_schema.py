@@ -178,6 +178,7 @@ class CardSchema(BaseModel):
         card_target.attached_cards.append(self)
         consolePrint.info(f"O artefato {self.in_game_id} foi equipado ao Herói {
                           card_target.in_game_id}")
+        # Verificar a armadura de Deus
 
     async def onDettach(self, match: MatchSchema | None = None):
         player = match._getPlayerById(match.move_now.player_move)
