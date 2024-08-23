@@ -266,6 +266,7 @@ class C_EspadaDoEspirito(CardSchema):
         player = match._getPlayerById(match.move_now.player_move)
         card_target = getCardInListBySlugId(
             match.move_now.card_target, player.card_prepare_camp)
+        card_target.attack_point += 1
         card_target.imbloqueavel = True
 
     async def onDettach(self, match: MatchSchema | None = None):
@@ -273,6 +274,7 @@ class C_EspadaDoEspirito(CardSchema):
         player = match._getPlayerById(match.move_now.player_move)
         card_target = getCardInListBySlugId(
             match.move_now.card_target, player.card_prepare_camp)
+        card_target.attack_point -= 1
         card_target.imbloqueavel = False
 
 
