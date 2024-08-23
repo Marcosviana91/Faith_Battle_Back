@@ -1,5 +1,5 @@
 import asyncio  # Usado por Diluvio
-from schemas.cards_schema import CardSchema, MatchSchema, PlayersInMatchSchema, getCardInListBySlugId
+from schemas.cards_schema import CardSchema, MatchSchema, getCardInListBySlugId
 
 from utils.console import consolePrint
 
@@ -23,7 +23,7 @@ STANDARD_CARDS_MIRACLES = [
     'fogo-do-ceu',
     # 'forca-de-sansao',
     # 'liberacao-celestial',
-    # 'no-ceu-tem-pao',
+    'no-ceu-tem-pao',
     # 'passagem-segura',
     # 'protecao-divina',
     # 'ressurreicao',
@@ -48,6 +48,17 @@ CordeiroDeDeus = C_CordeiroDeDeus(
 
 
 class C_Diluvio(CardSchema):
+    async def onInvoke(self, match: MatchSchema | None = None):
+        await super().onInvoke(match)
+        for _player in match.players_in_match:
+            # if _player.id == match.move_now.player_move: continue
+            await match.sendToPlayer(data={
+                'data_type': 'notification',
+                'notification': {
+                    "title": "Dilúvio",
+                    "message": f"Parece que vai chover..."
+                }
+            }, player_id=_player.id)
 
     async def addSkill(self, match: MatchSchema | None = None):
         player_target = match._getPlayerById(match.move_now.player_target)
@@ -62,6 +73,14 @@ class C_Diluvio(CardSchema):
             await asyncio.wait(tasks)
         except AttributeError as e:
             consolePrint.danger(f'MIRACLE: AttributeError {e}')
+        await match.sendToPlayer(data={
+            'data_type': 'notification',
+            'notification': {
+                "title": "Gênesis: 7:23",
+                "message": f"O dilúvio destruiu todo ser vivo da face da Terra, homens e animais foram exterminados. Só restaram Noé e aqueles que com ele estavam na Arca.",
+                "stillUntilDismiss": True
+            }
+        }, player_id=player_target.id)
 
 
 Diluvio = C_Diluvio(
@@ -73,14 +92,49 @@ Diluvio = C_Diluvio(
 
 
 class C_FogoDoCeu(CardSchema):
+    async def onInvoke(self, match: MatchSchema | None = None):
+        await super().onInvoke(match)
+        for _player in match.players_in_match:
+            await match.sendToPlayer(data={
+                'data_type': 'notification',
+                'notification': {
+                    "title": "Fogo do Céu",
+                    "message": f"O que é aquilo brilhando no céu?"
+                }
+            }, player_id=_player.id)
+
     async def addSkill(self, match: MatchSchema | None = None):
-        player_target = match._getPlayerById(match.move_now.player_target)
         await super().addSkill(match)
-        # Destrói uma carta da zona de batalha
-        # Mesma habilidade de Elias
-        await match.moveCard(player_target, match.move_now.card_target, 'battle', 'forgotten')
-        consolePrint.status(
-            f'A carta {match.move_now.card_target} foi destruída')
+        if not match.move_now.player_target:
+            await match.sendToPlayer(data={
+            'data_type': 'notification',
+            'notification': {
+                "title": "Fogo no Céu",
+                "message": f"Faltou sabedoria..."
+            }
+        }, player_id=match.move_now.player_move)
+        else:
+            player_target = match._getPlayerById(match.move_now.player_target)
+            # Destrói uma carta da zona de batalha
+            # Mesma habilidade de Elias
+            await match.moveCard(player_target, match.move_now.card_target, 'battle', 'forgotten')
+            await match.sendToPlayer(data={
+                'data_type': 'notification',
+                'notification': {
+                    "title": "Fogo do Céu",
+                    "message": f"A carta {match.move_now.card_target.split('_')[1]} foi destruída"
+                }
+            }, player_id=player_target.id)
+            await match.sendToPlayer(data={
+                'data_type': 'notification',
+                'notification': {
+                    "title": "2 Reis 1:12",
+                    "message": f"Respondeu Elias: Se sou homem de Deus, que desça fogo do céu e consuma você e seus cinquenta soldados!... De novo fogo de Deus desceu e consumiu o oficial e seus soldados.",
+                    "stillUntilDismiss": True
+                }
+            }, player_id=player_target.id)
+            consolePrint.status(
+                f'A carta {match.move_now.card_target} foi destruída')
 
 
 FogoDoCeu = C_FogoDoCeu(
@@ -122,7 +176,12 @@ LiberacaoCelestial = C_LiberacaoCelestial(
 class C_NoCeuTemPao(CardSchema):
     async def addSkill(self, match: MatchSchema | None = None):
         await super().addSkill(match)
+        player_target = match._getPlayerById(match.move_now.player_target)
         # O jogador alvo compra 3 cartas, se voce tem moisés em sua zona de batalha, compre 5.
+        match.giveCard(player_target, 3)
+        card = getCardInListBySlugId('moises', player_target.card_battle_camp)
+        if card:
+            match.giveCard(player_target, 2)
 
 
 NoCeuTemPao = C_NoCeuTemPao(
@@ -185,6 +244,13 @@ class C_RestauracaoDeFe(CardSchema):
             if _card.card_type == 'hero':
                 faith_count += 1
         player_target.faith_points += faith_count
+        await match.sendToPlayer(data={
+            'data_type': 'notification',
+            'notification': {
+                "title": "Restauração de Fé.",
+                "message": f'Você ganhou {faith_count} pontos de fé.'
+            }
+        }, player_id=player_target.id)
         consolePrint.info(f'O jogador {player_target.id} ganhou {
                           faith_count} pontos de fé.')
 
@@ -212,7 +278,14 @@ class C_SabedoriaDeSalomao(CardSchema):
             'salomao', player_target.card_battle_camp)
         if salomao_in_battle or salomao_in_prepare:
             consolePrint.info('MIRACLE: Compra 1 carta')
-            match.giveCard(player=player_target)
+            gived_card: CardSchema = match.giveCard(player=player_target)
+            await match.sendToPlayer(data={
+                'data_type': 'notification',
+                'notification': {
+                    "title": "Sabedoria de Salomão",
+                    "message": f'Você comprou a carta {gived_card.slug}.'
+                }
+            }, player_id=player_target.id)
 
 
 SabedoriaDeSalomao = C_SabedoriaDeSalomao(
@@ -231,6 +304,20 @@ class C_SarcaArdente(CardSchema):
         # O jogador alva ganha 2 pontos de fé e o oponente alvo perde 2 pontos de fé
         player_target.faith_points += 2
         match.takeDamage(player_target2, 2)
+        await match.sendToPlayer(data={
+            'data_type': 'notification',
+            'notification': {
+                "title": "Sarça Ardente",
+                "message": f'Você ganhou 2 pontos de Fé.'
+            }
+        }, player_id=player_target.id)
+        await match.sendToPlayer(data={
+            'data_type': 'notification',
+            'notification': {
+                "title": "Sarça Ardente",
+                "message": f'Você perdeu 2 pontos de Fé.'
+            }
+        }, player_id=player_target2.id)
 
 
 SarcaArdente = C_SarcaArdente(

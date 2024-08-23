@@ -2,7 +2,7 @@ from secrets import token_hex
 
 from schemas.cards_schema import CardSchema, getCardInListBySlugId
 
-from .standard import heros, miracles, STANDARD_CARDS
+from .standard import heros, miracles, artifacts, STANDARD_CARDS
 
 ALL_CARDS = [*STANDARD_CARDS]
 
@@ -34,6 +34,16 @@ STANDARD_CARDS_CLASSES = [
     miracles.RestauracaoDeFe,
     miracles.SabedoriaDeSalomao,
     miracles.SarcaArdente,
+    artifacts.ArcaDaAlianca,
+    artifacts.ArcaDeNoe,
+    artifacts.BotasDoEvangelho,
+    artifacts.CajadoDeMoises,
+    artifacts.CapaceteDaSalvacao,
+    artifacts.CinturaoDaVerdade,
+    artifacts.CouracaDaJustica,
+    artifacts.EscudoDaFe,
+    artifacts.EspadaDoEspirito,
+    artifacts.Os10Mandamentos,
 ]
 
 
@@ -43,7 +53,7 @@ def createCardListObjectsByPlayer(player_id: int, card_list: list[CardSchema]) -
     for card in card_list:
         for hero in heroes:
             if card.slug == hero.slug:
-                __temp_id = f'{player_id}-{card.slug}-{token_hex(3)}'
+                __temp_id = f'{player_id}_{card.slug}_{token_hex(3)}'
                 newHero = hero.model_copy()
                 newHero.in_game_id = __temp_id
                 card_object.append(newHero)
@@ -55,7 +65,7 @@ def cardListToDict(card_list: list[CardSchema]):
     __list = []
     for card in card_list:
         if card:
-            __list.append(card.getCardStats)
+            __list.append(card.getCardStats())
         else:
             __list.append({"slug": "not-defense"})
     return __list

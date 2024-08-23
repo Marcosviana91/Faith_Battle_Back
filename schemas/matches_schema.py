@@ -227,6 +227,7 @@ class MatchSchema(BaseModel):
             await self.finishTurn()
         self.player_focus_id = self.players_in_match[self.player_turn].id
         player.wisdom_available = player.wisdom_points
+        player.ja_atacou = []
         if (self.round_match == 1 and self.player_turn == 0):
             ...
         else:
@@ -235,6 +236,13 @@ class MatchSchema(BaseModel):
             card.status = "ready"
         for card in player.card_battle_camp:
             card.status = "ready"
+        await self.sendToPlayer(data={
+            "data_type": "notification",
+            "notification": {
+                "message": "Sua vez de jogar!"
+            }
+        },
+            player_id=player.id)
         # O jogador prepara suas jogadas
 
     # setar a disponibilidade de uso das cartas de cada jogador
@@ -246,7 +254,7 @@ class MatchSchema(BaseModel):
 
     def giveCard(self, player: PlayersInMatchSchema, number_of_cards: int = 1):
         if (len(player.card_deck) == 0):
-            return
+            return None
         count = 0
         while count < number_of_cards:
             card_selected = player.card_deck[0]
@@ -254,6 +262,7 @@ class MatchSchema(BaseModel):
             player.card_hand.append(card_selected)
             count += 1
             player.card_deck.remove(card_selected)
+        return card_selected
 
     async def moveCard(self, player: PlayersInMatchSchema, card_id: str, move_from: str, move_to: str):
         move_done: bool = True
@@ -271,25 +280,29 @@ class MatchSchema(BaseModel):
             elif (move_to == 'forgotten'):
                 player.card_hand.remove(card)
                 player.card_in_forgotten_sea.append(card)
+                await card.onDestroy(self)
         if (move_from == "prepare"):
             card = getCardInListBySlugId(card_id, player.card_prepare_camp)
             card.status = "used"
             if (move_to == 'forgotten'):
                 player.card_prepare_camp.remove(card)
                 player.card_in_forgotten_sea.append(card)
+                await card.onDestroy(self)
             elif (move_to == 'battle'):
                 player.card_prepare_camp.remove(card)
                 player.card_battle_camp.append(card)
+                await card.onMoveToAttackZone(self)
         if (move_from == "battle"):
             card = getCardInListBySlugId(card_id, player.card_battle_camp)
             if (move_to == "forgotten"):
-                # card.onDestroy()  # PENDENTE
+                await card.onDestroy(self)
                 player.card_battle_camp.remove(card)
                 player.card_in_forgotten_sea.append(card)
             if (move_to == "prepare"):
                 player.card_battle_camp.remove(card)
                 player.card_prepare_camp.append(card)
                 card.status = "used"
+                await card.onRetreatToPrepareZone(self)
         if bool(move_done):
             print("moveCard Done ")
         return bool(move_done)
@@ -380,6 +393,14 @@ class MatchSchema(BaseModel):
             card = getCardInListBySlugId(
                 card_slug=move.card_id, card_list=player.card_prepare_camp)
             await card.addSkill(match=self)
+        if move.move_type == 'attach':
+            card = getCardInListBySlugId(
+                card_slug=move.card_id, card_list=player.card_prepare_camp)
+            await card.onAttach(match=self)
+        if move.move_type == 'dettach':
+            card = getCardInListBySlugId(
+                card_slug=move.card_id, card_list=player.card_prepare_camp)
+            await card.onDettach(match=self)
         self.move_now = None
         await self.updatePlayers()
 

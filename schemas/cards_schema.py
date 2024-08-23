@@ -14,6 +14,12 @@ class PlayersInMatchSchema:
     wisdom_points: int = 0
     wisdom_available: int = 0
 
+    #
+    fe_inabalavel: bool = False
+    incorruptivel: bool = False
+    nao_sofre_danos_de_efeitos: bool = False
+    nao_sofre_ataque_de_herois: bool = False
+
     def getPlayerStats(self, private: bool = False) -> dict:
         ...
 
@@ -86,18 +92,19 @@ class CardSchema(BaseModel):
     status: str | None = "ready"  # "ready" | "used" | "not-enough"
 
     card_type: str | None = None  # 'hero' | 'miracle' | 'sin' | 'artfacts' | 'legendary'
-
+    attachable: bool = False
+    attached_cards: list = []
     increase_attack: int | None = 0
     increase_defense: int | None = 0
-    skill_focus_player_id: int | None = None
-    skill_focus_player2_id: int | None = None
-    skill_focus_card_id: str | None = None
+    skill_focus_player_id: int | None = None  # Usado por Davi
 
-    # attachable: bool
+    #
+    imbloqueavel: bool = False
+    indestrutivel: bool = False 
+    incorruptivel: bool = False # não é atingido por pecados
 
-    @property
     def getCardStats(self):
-        return {
+        _data = {
             "slug": self.slug,
             "in_game_id": self.in_game_id,
             "card_type": self.card_type,
@@ -105,25 +112,17 @@ class CardSchema(BaseModel):
             "attack_point": self.attack_point,
             "defense_points": self.defense_points,
             "status": self.status,
+            "attachable": self.attachable,
+            "imbloqueavel": self.imbloqueavel,
+            "indestrutivel": self.indestrutivel,
+            "incorruptivel": self.incorruptivel,
         }
+        return _data
 
     def resetCardStats(self):
         print(f'Resetou {self.in_game_id}')
 
-    async def addSkill(self, match: MatchSchema | None = None):
-        consolePrint.info(f'CARD: Adcionou skill de {self.in_game_id}')
-        player = match._getPlayerById(match.move_now.player_move)
-        if self.card_type == 'miracle':
-            await match.moveCard(player, self.in_game_id, "prepare", "forgotten")
-
-    async def rmvSkill(self, match: MatchSchema | None = None):
-        consolePrint.info(f'CARD: Removeu skill de {self.in_game_id}')
-
-    async def onAttach(self, match: MatchSchema | None = None):
-        ...
-
-    async def onDettach(self, match: MatchSchema | None = None):
-        ...
+# Movimentação
 
     async def onInvoke(self, match: MatchSchema | None = None):
         player = match._getPlayerById(match.move_now.player_move)
@@ -131,11 +130,6 @@ class CardSchema(BaseModel):
         player.card_prepare_camp.append(self)
         consolePrint.info(f'CARD: invocou: {self}')
         self.status = "used"
-        if self.card_type == 'hero':
-            # A passiva de Abraão é verificada para todos os heróis
-            if getCardInListBySlugId('abraao', player.card_battle_camp):
-                consolePrint.info(f'CARD: {player.id} ativou abraão')
-                player.faith_points += 1
         if self.card_type == 'miracle':
             await match.sendToPlayer(
                 data={
@@ -146,6 +140,58 @@ class CardSchema(BaseModel):
                 },
                 player_id=player.id
             )
+        if self.card_type == 'artifact':
+            self.status = 'ready'
+
+    async def onMoveToAttackZone(self, match: MatchSchema | None):
+        player = match._getPlayerById(match.move_now.player_move)
+        consolePrint.info(f'Jogador {player.id} moveu a carta {
+                          self.in_game_id} para ZB.')
+
+    async def onRetreatToPrepareZone(self, match: MatchSchema | None):
+        player = match._getPlayerById(match.move_now.player_move)
+        consolePrint.info(f'Jogador {player.id} recuou a carta {
+                          self.in_game_id} para ZP.')
+
+
+# Habilidades
+
+
+    async def addSkill(self, match: MatchSchema | None = None):
+        consolePrint.info(f'CARD: Adcionou skill de {self.in_game_id}')
+        player = match._getPlayerById(match.move_now.player_move)
+        if self.card_type == 'miracle':
+            await match.moveCard(player, self.in_game_id, "prepare", "forgotten")
+
+    async def rmvSkill(self, match: MatchSchema | None = None):
+        consolePrint.info(f'CARD: Removeu skill de {self.in_game_id}')
+
+
+# Itemização
+
+
+    async def onAttach(self, match: MatchSchema | None = None):
+        player = match._getPlayerById(match.move_now.player_move)
+        card_target = getCardInListBySlugId(
+            match.move_now.card_target, player.card_prepare_camp)
+        player.card_prepare_camp.remove(self)
+        card_target.attached_cards.append(self)
+        consolePrint.info(f"O artefato {self.in_game_id} foi equipado ao Herói {
+                          card_target.in_game_id}")
+        # Verificar a armadura de Deus
+
+    async def onDettach(self, match: MatchSchema | None = None):
+        player = match._getPlayerById(match.move_now.player_move)
+        card_target = getCardInListBySlugId(
+            match.move_now.card_target, player.card_prepare_camp)
+        card_target.attached_cards.remove(self)
+        player.card_prepare_camp.append(self)
+        consolePrint.info(f"O artefato {self.in_game_id} foi removido do Herói {
+                          card_target.in_game_id}")
+
+
+# Batalha
+
 
     async def onDestroy(self, match: MatchSchema | None = None):
         consolePrint.info(f'CARD: destruiu: {self.in_game_id}')
@@ -177,6 +223,8 @@ class CardSchema(BaseModel):
     ):
         consolePrint.info(
             f'CARD: {self.in_game_id} foi defendido na sala {match.id}!')
+
+# Utilidade
 
 
 def getCardInListBySlugId(card_slug: str, card_list: list[CardSchema]) -> CardSchema | None:
