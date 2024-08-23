@@ -165,7 +165,7 @@ class C_CapaceteDaSalvacao(CardSchema):
         card_target = getCardInListBySlugId(
             match.move_now.card_target, player.card_prepare_camp)
         card_target.attack_point += 1
-        card_target.nao_pode_ser_alvo_de_pecado = True
+        card_target.incorruptivel = True
 
     async def onDettach(self, match: MatchSchema | None = None):
         await super().onDettach(match)
@@ -173,7 +173,7 @@ class C_CapaceteDaSalvacao(CardSchema):
         card_target = getCardInListBySlugId(
             match.move_now.card_target, player.card_prepare_camp)
         card_target.attack_point -= 1
-        card_target.nao_pode_ser_alvo_de_pecado = False
+        card_target.incorruptivel = False
 
 
 CapaceteDaSalvacao = C_CapaceteDaSalvacao(

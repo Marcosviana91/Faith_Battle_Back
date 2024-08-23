@@ -67,8 +67,8 @@ class PlayersInMatchSchema(BaseModel):
     #
     # lista com id de jogadores q o jogador atual já atacou
     ja_atacou: list[int] = []
-    nao_perde_fe: bool = False
-    nao_pode_ser_alvo_de_pecado: bool = False
+    fe_inabalavel: bool = False
+    incorruptivel: bool = False
     nao_sofre_danos_de_efeitos: bool = False
     nao_sofre_ataque_de_herois: bool = False
 
@@ -82,8 +82,8 @@ class PlayersInMatchSchema(BaseModel):
                 "wisdom_points": self.wisdom_points,
                 "wisdom_available":  self.wisdom_available,
                 "ja_atacou": self.ja_atacou,
-                "nao_perde_fe": self.nao_perde_fe,
-                "nao_pode_ser_alvo_de_pecado": self.nao_pode_ser_alvo_de_pecado,
+                "fe_inabalavel": self.fe_inabalavel,
+                "incorruptivel": self.incorruptivel,
                 "nao_sofre_danos_de_efeitos": self.nao_sofre_danos_de_efeitos,
                 "nao_sofre_ataque_de_herois": self.nao_sofre_ataque_de_herois,
             }
@@ -96,8 +96,8 @@ class PlayersInMatchSchema(BaseModel):
             "faith_points": self.faith_points,
             "wisdom_points": self.wisdom_points,
             "wisdom_available":  self.wisdom_available,
-            "nao_perde_fe": self.nao_perde_fe,
-            "nao_pode_ser_alvo_de_pecado": self.nao_pode_ser_alvo_de_pecado,
+            "fe_inabalavel": self.fe_inabalavel,
+            "incorruptivel": self.incorruptivel,
             "nao_sofre_danos_de_efeitos": self.nao_sofre_danos_de_efeitos,
             "nao_sofre_ataque_de_herois": self.nao_sofre_ataque_de_herois,
         }

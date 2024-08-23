@@ -15,8 +15,8 @@ class PlayersInMatchSchema:
     wisdom_available: int = 0
 
     #
-    nao_perde_fe: bool = False
-    nao_pode_ser_alvo_de_pecado: bool = False
+    fe_inabalavel: bool = False
+    incorruptivel: bool = False
     nao_sofre_danos_de_efeitos: bool = False
     nao_sofre_ataque_de_herois: bool = False
 
@@ -100,8 +100,8 @@ class CardSchema(BaseModel):
 
     #
     imbloqueavel: bool = False
-    indestrutivel: bool = False
-    nao_pode_ser_alvo_de_pecado: bool = False
+    indestrutivel: bool = False 
+    incorruptivel: bool = False # não é atingido por pecados
 
     def getCardStats(self):
         _data = {
@@ -115,7 +115,7 @@ class CardSchema(BaseModel):
             "attachable": self.attachable,
             "imbloqueavel": self.imbloqueavel,
             "indestrutivel": self.indestrutivel,
-            "nao_pode_ser_alvo_de_pecado": self.nao_pode_ser_alvo_de_pecado,
+            "incorruptivel": self.incorruptivel,
         }
         return _data
 
@@ -140,6 +140,8 @@ class CardSchema(BaseModel):
                 },
                 player_id=player.id
             )
+        if self.card_type == 'artifact':
+            self.status = 'ready'
 
     async def onMoveToAttackZone(self, match: MatchSchema | None):
         player = match._getPlayerById(match.move_now.player_move)
