@@ -64,6 +64,7 @@ class C_ArcaDaAlianca(CardSchema):
         player = match._getPlayerById(match.move_now.player_move)
         await self.addSkill(match)
         await match.moveCard(player, self.in_game_id, 'prepare', 'battle')
+        self.status = 'ready'
 
     async def onDestroy(self, match: MatchSchema | None = None):
         await super().onDestroy(match)
@@ -308,6 +309,7 @@ class C_Os10Mandamentos(CardSchema):
         await super().onInvoke(match)
         await self.addSkill(match)
         await match.moveCard(player, self.in_game_id, 'prepare', 'battle')
+        self.status = 'ready'
 
     async def onDestroy(self, match: MatchSchema | None = None):
         await super().onDestroy(match)
