@@ -33,7 +33,7 @@ class Heros(CardSchema):
         _attached_cards = []
         for card in self.attached_cards:
             _attached_cards.append(card.getCardStats())
-        data["attached_cards"] = self.card_type
+        data["attached_cards"] = _attached_cards
         return data
 
     async def onAttack(self, match: MatchSchema | None = None):
