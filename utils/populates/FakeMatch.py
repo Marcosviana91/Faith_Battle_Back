@@ -3,7 +3,7 @@
 
 from schemas.players_schema import PlayersSchema
 from schemas.rooms_schema import RoomSchema
-from utils.RoomManager import ROOMS
+from utils.ROOM.RoomManager import ROOMS
 
 
 async def createFakeMatch():

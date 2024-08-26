@@ -19,6 +19,7 @@ class PlayersTinyDBSchema(BaseModel):
     ):
         ...
 
+# REMOVER DAQUI PRA BAIXO
 
 class PlayersSchema(BaseModel):
     __pydantic_post_init__ = "model_post_init"
@@ -48,7 +49,6 @@ class PlayersSchema(BaseModel):
             "card_hand": cardListToDict(self.card_hand),
         }
 
-# OK
 
 
 class PlayersInMatchSchema(BaseModel):

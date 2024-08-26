@@ -3,7 +3,7 @@ from utils.Cards import cardListToDict
 from utils.ConnectionManager import WS
 from utils.DataBaseManager import DB
 from utils.MatchManager import MATCHES
-from utils.RoomManager import ROOMS
+from utils.ROOM.RoomManager import ROOMS
 
 
 async def checkUserStats(player_id):

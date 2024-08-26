@@ -6,7 +6,7 @@ from schemas.users_schema import UserWs
 from utils.CheckUserState import checkUserStats
 from utils.ConnectionManager import WS
 from utils.MatchManager import MATCHES
-from utils.RoomManager import ROOMS
+from utils.ROOM.RoomManager import ROOMS
 
 # from utils.security import getCurrentUserAuthenticated
 

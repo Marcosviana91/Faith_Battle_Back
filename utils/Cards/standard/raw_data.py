@@ -1,3 +1,4 @@
+# name, wisdom cost, attack, defense
 STANDARD_CARDS_RAW_DATA = {
     'abraao': ('Abraão', 2, 1, 2),
     'adao': ('Adão', 1, 1, 1),
