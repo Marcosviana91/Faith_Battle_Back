@@ -20,14 +20,14 @@ class MoveSchema:
 
 STANDARD_CARDS_ARTIFACTS = [
     'arca-da-alianca',
-    'arca-de-noe',
-    'botas-do-evangelho',
-    'cajado-de-moises',
-    'capacete-da-salvacao',
-    'cinturao-da-verdade',
-    'couraca-da-justica',
-    'escudo-da-fe',
-    'espada-do-espirito',
+    # 'arca-de-noe',
+    # 'botas-do-evangelho',
+    # 'cajado-de-moises',
+    # 'capacete-da-salvacao',
+    # 'cinturao-da-verdade',
+    # 'couraca-da-justica',
+    # 'escudo-da-fe',
+    # 'espada-do-espirito',
     'os-10-mandamentos',
 ]
 
