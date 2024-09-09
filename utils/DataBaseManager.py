@@ -53,10 +53,9 @@ class DB_Manager:
     """
 
     def __init__(self):
-        # mongo_url = f'mongodb://faith_admin:faith_pass@192.168.1.32:27017/'
         client = AsyncIOMotorClient(
             host=env.DB_HOST,
-            port=27017,
+            port=int(env.DB_PORT),
             username=env.DB_USER,
             password=env.DB_PASSWORD,
             server_api=ServerApi('1')
