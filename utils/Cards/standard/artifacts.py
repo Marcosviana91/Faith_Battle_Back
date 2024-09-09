@@ -9,6 +9,20 @@ if TYPE_CHECKING:
     from utils.MATCHES.MatchClass import C_Match
 
 
+<<<<<<< HEAD
+STANDARD_CARDS_ARTIFACTS = [
+    'arca-da-alianca',
+    # 'arca-de-noe',
+    # 'botas-do-evangelho',
+    # 'cajado-de-moises',
+    # 'capacete-da-salvacao',
+    # 'cinturao-da-verdade',
+    # 'couraca-da-justica',
+    # 'escudo-da-fe',
+    # 'espada-do-espirito',
+    'os-10-mandamentos',
+]
+=======
 class C_Artifacts(C_Card_Match):
 
     def __init__(self, slug: str, in_game_id: str):
@@ -17,6 +31,7 @@ class C_Artifacts(C_Card_Match):
     async def onInvoke(self, match: 'C_Match'):
         await super().onInvoke(match)
         self.status = 'ready'
+>>>>>>> development
 
 
 class C_ArcaDaAlianca(C_Artifacts):

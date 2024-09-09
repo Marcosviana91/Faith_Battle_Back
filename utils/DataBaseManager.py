@@ -12,6 +12,15 @@ from settings import env_settings as env
 
 from schemas.users_schema import NewUserSchema
 from schemas.API_schemas import APIResponseSchema
+<<<<<<< HEAD
+from schemas.players_schema import PlayersTinyDBSchema
+from schemas.users_schema import NewUserSchema, UserPublic
+from settings import env_settings
+from utils import security
+
+from utils.LoggerManager import Logger
+from utils.console import consolePrint
+=======
 
 from utils.Cards.standard.raw_data import STANDARD_CARDS
 
@@ -45,6 +54,7 @@ class PlayerData(BaseModel):
     xp_points: int = Field(default=0)
     room_id: str | None = Field(default=None)
     match_id: str | None = Field(default=None)
+>>>>>>> development
 
 
 class DB_Manager:
@@ -111,12 +121,56 @@ class DB_Manager:
         )
 
     def createNewUser(self, data: NewUserSchema) -> APIResponseSchema:
+<<<<<<< HEAD
+        response = APIResponseSchema(message="User not created")
+        newUser = models.UserModel(**(data.model_dump()))
+        newUser.username = newUser.username.lower()
+        with Session(self.engine) as session:
+            query_username = select(models.UserModel).where(
+                models.UserModel.username == newUser.username
+            )
+            check_username = session.exec(query_username)
+            # query_email = select(models.UserModel).where(
+            #     models.UserModel.email == newUser.email
+            # )
+            # check_email = session.exec(query_email)
+
+            if len(check_username.all()) > 0:
+                # print("username already exists")
+                response.data_type = "error"
+                response.message = "username already exists"
+
+            # if len(check_email.all()) > 0:
+            #     # print("email already in use")
+            #     response.data_type = "error"
+            #     if response.message == "username already exists":
+            #         response.message = (
+            #             "username already exists\nemail already in use"
+            #         )
+            #     else:
+            #         response.message = "email already in use"
+
+            else:
+                # print("user successful created")
+                newUser.password = security.encrypt(data.password)
+                session.add(newUser)
+                session.commit()
+                session.refresh(newUser)
+
+                self.createDefaultPlayerStats(player_id=newUser.id)
+                response.data_type = "user_created"
+                response.message = "user successful created"
+                response.user_data = UserPublic(**newUser.model_dump())
+                Logger.info(f'New user created {newUser.id}: {newUser.username}.', 'DB')
+
+=======
         response = APIResponseSchema()
         newUser = requests.post(f'http://{env.DB_HOST}:3111/api/user',
                                 json={'username': data.username.lower(), 'password': data.password, 'first_name': data.first_name, 'avatar': data.avatar})
         if newUser.status_code == 200:
             response.data_type = 'user_data'
             response.user_data = newUser.json()
+>>>>>>> development
         return response
 
     # def updateUser(
