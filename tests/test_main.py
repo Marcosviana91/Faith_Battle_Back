@@ -27,7 +27,7 @@ def test_create_new_user_ok():
         json={
             "username": "usuario_de_test",
             "password": "123asd",
-            "real_name": "Eu Sou Um Test",
+            "first_name": "Eu Sou Um Test",
             "email": "usuario_test@email.co",
         },
     )
@@ -40,7 +40,7 @@ def test_create_new_user_error():
         json={
             "username": "usuario_de_test",
             "password": "123asd",
-            "real_name": "Eu Sou Um Test",
+            "first_name": "Eu Sou Um Test",
             "email": "usuario_test@email.co",
         },
     )
@@ -91,7 +91,7 @@ def test_user_update_ok():
         json={
             "username": "usuario_de_test",
             "password": "__not-change__",
-            "real_name": "Eu Sou Um Test Atualizado",
+            "first_name": "Eu Sou Um Test Atualizado",
             "email": "usuario_test_atualizado@email.co",
         },
     )
@@ -108,7 +108,7 @@ def test_user_update_error():
         json={
             "username": "usuario_de_test",
             "password": "__not-change__",
-            "real_name": "Eu Sou Um Test Atualizado",
+            "first_name": "Eu Sou Um Test Atualizado",
             "email": "usuario_test_atualizado@email.co",
         },
     )

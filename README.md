@@ -39,6 +39,12 @@ Currently, there are 15 basic hero cards available in the game. Each hero card f
 
 - Artifacts that works:
     1. [Arca da Aliança](https://www.faithbattle.com.br/c%C3%B3pia-her%C3%B3is?lightbox=dataItem-loor1vjm)
+    0. [Botas do Evangélho](https://www.faithbattle.com.br/c%C3%B3pia-her%C3%B3is?lightbox=dataItem-loor3ix8)
+    0. [Cajado de Moisés](https://www.faithbattle.com.br/c%C3%B3pia-her%C3%B3is?lightbox=dataItem-looqzyis)
+    0. [Capacete da Salvação](https://www.faithbattle.com.br/c%C3%B3pia-her%C3%B3is?lightbox=dataItem-loor598j) - Cannot be affected by sins - Not working
+    0. [Couraça da Justiça](https://www.faithbattle.com.br/c%C3%B3pia-her%C3%B3is?lightbox=dataItem-luq2mbyx) - "Exodia" - Not working
+    0. [Escudo da Fé](https://www.faithbattle.com.br/c%C3%B3pia-her%C3%B3is?lightbox=dataItem-looqykdj)
+    0. [Espada do Espírito](https://www.faithbattle.com.br/c%C3%B3pia-her%C3%B3is?lightbox=dataItem-looqx8ym)
     0. [Os 10 Mandamentos](https://www.faithbattle.com.br/c%C3%B3pia-her%C3%B3is?lightbox=dataItem-loor6hsp)
 
 ### Next Steps
@@ -51,3 +57,7 @@ The next update will introduce miracle cards, which will be listed alphabeticall
     0. Passagem Segura
     0. Proteção Divina
     0. Ressurreição
+
+- Artifacts cards that **DON’T** work:
+    1. [Arca de Noé](https://www.faithbattle.com.br/c%C3%B3pia-her%C3%B3is?lightbox=dataItem-looqutkv)
+    0. [Cinturão da Verdade](https://www.faithbattle.com.br/c%C3%B3pia-her%C3%B3is?lightbox=dataItem-loor8m7y)

@@ -1,5 +1,6 @@
 from schemas.users_schema import UserWs
 from utils.console import consolePrint
+from utils.security import getCurrentUserAuthenticated
 
 
 class WS_Manager:
@@ -12,32 +13,35 @@ class WS_Manager:
                 return user
         consolePrint.danger(msg=f'WS: User {user_id} not connected in WS')
         return None
+    
+    def getStats(self):
+        data = []
+        for user in self.all_users:
+            data.append(user.id)
+        return data
 
-    # Sem WS
-    def login(self, user_ws: UserWs):
+    async def connect(self, user_ws: UserWs):
+        authenticated_user_id = getCurrentUserAuthenticated(
+            user_ws.access_token)
+        if authenticated_user_id is None:
+            await user_ws.websocket.send_json({"data_type": "token_expired"})
+            user_ws.websocket.close()
+            return
+        if authenticated_user_id != user_ws.id:
+            consolePrint.danger(msg=f"Token não combina com o usuário.")
+            user_ws.websocket.close()
+            return
         user = self.__getUserWsById(user_ws.id)
         if user:
-            self.all_users.remove(user)
-        self.all_users.append(user_ws)
-        consolePrint.info(msg=f"WS: User {user_ws.id} has logged in.")
-
-    # Com WS
-    def connect(self, user_ws: UserWs):
-        # print(user_ws)
-        user = self.__getUserWsById(user_ws.id)
-        if user:
-            if user.token == user_ws.token:
-                user.websocket = user_ws.websocket
-                consolePrint.info(
-                    msg=f"WS: User {user_ws.id} has connected.")
-                consolePrint.info(
-                    msg=f"WS: Users connected in game: {
-                        self.all_users.__len__()}."
-                )
-            else:
-                user_ws.websocket.close()
-                consolePrint.danger("token not match")
-        # self.login(user_ws)
+            user.websocket = user_ws.websocket
+        else:
+            self.all_users.append(user_ws)
+        consolePrint.info(
+            msg=f"WS: User {user_ws.id} has connected.")
+        consolePrint.info(
+            msg=f"WS: Users connected in game: {
+                self.all_users.__len__()}."
+        )
 
     def disconnect(self, user_id: int = None):
         user = self.__getUserWsById(user_id)

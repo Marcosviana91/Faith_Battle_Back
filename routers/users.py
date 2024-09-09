@@ -22,23 +22,18 @@ def handleNewUser(user: NewUserSchema):
     db_response = DB.createNewUser(user)
     if db_response.data_type == "error":
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail=db_response.message
+            status_code=status.HTTP_409_CONFLICT, detail='username already in use'
         )
     return db_response
 
 
 @router.get(
     "/{user_id}",
-    response_model=APIResponseSchema,
 )
 async def getUserDataById(
     user_id: int,
 ):
-    db_response = DB.getUserDataById(user_id)
-    if db_response.data_type == "error":
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=db_response.message
-        )
+    db_response = await DB.getUserDataById(user_id)
     return db_response
 
 

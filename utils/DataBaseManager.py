@@ -1,10 +1,18 @@
-from sqlmodel import Session, SQLModel, create_engine, select
-from tinydb import TinyDB
-from tinydb.storages import MemoryStorage
+import asyncio
+import requests
 
-# from settings import Settings
-import models
+from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo.server_api import ServerApi
+from pymongo.errors import DuplicateKeyError
+from pydantic import BaseModel, Field
+
+from settings import env_settings as env
+
+# from utils.console import consolePrint
+
+from schemas.users_schema import NewUserSchema
 from schemas.API_schemas import APIResponseSchema
+<<<<<<< HEAD
 from schemas.players_schema import PlayersTinyDBSchema
 from schemas.users_schema import NewUserSchema, UserPublic
 from settings import env_settings
@@ -12,6 +20,41 @@ from utils import security
 
 from utils.LoggerManager import Logger
 from utils.console import consolePrint
+=======
+
+from utils.Cards.standard.raw_data import STANDARD_CARDS
+
+
+class Deck(BaseModel):
+    name: str = Field(alias='_id', default='standard')
+    cards: list[str] = Field(default=STANDARD_CARDS)
+
+
+STANDARD_DECK = Deck(**{
+    '_id': 'standard',
+    'cards': STANDARD_CARDS
+})
+UPPER_DECK = Deck(**{
+    '_id': 'upper',
+    'cards': STANDARD_CARDS[:12]
+})
+LOWER_DECK = Deck(**{
+    '_id': 'lower',
+    'cards': STANDARD_CARDS[12:]
+})
+
+
+class PlayerData(BaseModel):
+    id: int = Field(alias="_id")
+    avatar: int = Field(default=1)
+    available_cards: list[str] = Field(default=STANDARD_CARDS)
+    decks: list[Deck] | None = Field(
+        default=[STANDARD_DECK, UPPER_DECK, LOWER_DECK])
+    selected_deck: str | None = Field(default='standard')
+    xp_points: int = Field(default=0)
+    room_id: str | None = Field(default=None)
+    match_id: str | None = Field(default=None)
+>>>>>>> development
 
 
 class DB_Manager:
@@ -20,31 +63,65 @@ class DB_Manager:
     """
 
     def __init__(self):
-        self.tiny_engine = TinyDB(
-            "./database/database.json",
-            sort_keys=True,
+        client = AsyncIOMotorClient(
+            host=env.DB_HOST,
+            port=int(env.DB_PORT),
+            username=env.DB_USER,
+            password=env.DB_PASSWORD,
+            server_api=ServerApi('1')
         )
-        self.sqlite_url = "sqlite:///database/database.db"
-        if env_settings.ENVIROMENT_TYPE == "DEV":
-            self.tiny_engine = TinyDB(storage=MemoryStorage)
-            self.sqlite_url = "sqlite:///database/database_DEV.db"
-            # self.sqlite_url = "sqlite:///:memory:"
 
-        self.engine = create_engine(self.sqlite_url)
-        SQLModel.metadata.create_all(self.engine)
-        if env_settings.ENVIROMENT_TYPE == "DEV":
-            self.cleanUser()
+        dbname = client[env.DB_NAME]
+        self.all_players = dbname['players']
 
-    def cleanUser(self):
-        with Session(self.engine) as session:
-            query = select(models.UserModel)
-            users = session.exec(query).all()
-            for user in users:
-                print(user)
-                session.delete(user)
-                session.commit()
+    async def getPlayerById(self, player_id: int):
+        founded_player = await self.all_players.find_one({"_id": player_id})
+        if founded_player is None:
+            new_player = PlayerData(_id=player_id)
+            user = requests.get(
+                f'http://{env.DB_HOST}:3111/api/user/{player_id}')
+            if user.status_code == 200:
+                user = dict(user.json())
+                new_player.avatar = int(user['last_name'])
+            await self.all_players.insert_one(new_player.model_dump(by_alias=True))
+            founded_player = await self.all_players.find_one({"_id": player_id})
+        return founded_player
+
+    async def getUserDataById(self, user_id: int):
+        user = requests.get(f'http://{env.DB_HOST}:3111/api/user/{user_id}')
+        if user.status_code == 200:
+            player = await self.getPlayerById(user_id)
+            user = dict(user.json())
+            user.pop('last_name')
+            user['avatar'] = player['avatar']
+            user['xp_points'] = player['xp_points']
+            user['available_cards'] = player['available_cards']
+            user['decks'] = player['decks']
+            user['selected_deck'] = player['selected_deck']
+            if player['room_id']:
+                user['room_id'] = player['room_id']
+            if player['match_id']:
+                user['match_id'] = player['match_id']
+
+        return user
+
+    # UPDATE DB DATA
+    async def setPlayerRoomOrMatch(self, player_id: int, room_id: str = None, match_id: str = None, clear:bool = False):
+        founded_player = await self.getPlayerById(player_id)
+        if room_id:
+            founded_player['room_id'] = room_id
+        if match_id:
+            founded_player['match_id'] = match_id
+        if clear:
+            founded_player['room_id'] = None
+            founded_player['match_id'] = None
+        self.all_players.update_one(
+            {"_id": player_id},
+            {"$set": founded_player}
+        )
 
     def createNewUser(self, data: NewUserSchema) -> APIResponseSchema:
+<<<<<<< HEAD
         response = APIResponseSchema(message="User not created")
         newUser = models.UserModel(**(data.model_dump()))
         newUser.username = newUser.username.lower()
@@ -86,145 +163,23 @@ class DB_Manager:
                 response.user_data = UserPublic(**newUser.model_dump())
                 Logger.info(f'New user created {newUser.id}: {newUser.username}.', 'DB')
 
+=======
+        response = APIResponseSchema()
+        newUser = requests.post(f'http://{env.DB_HOST}:3111/api/user',
+                                json={'username': data.username.lower(), 'password': data.password, 'first_name': data.first_name, 'avatar': data.avatar})
+        if newUser.status_code == 200:
+            response.data_type = 'user_data'
+            response.user_data = newUser.json()
+>>>>>>> development
         return response
 
-    def updateUser(
-        self, user_id: int, user_new_data: NewUserSchema
-    ) -> APIResponseSchema:
-        response = APIResponseSchema(message="user not updated")
-        with Session(self.engine) as session:
-            query_user_data = select(models.UserModel).where(
-                models.UserModel.id == user_id
-            )
-            try:
-                user = session.exec(
-                    query_user_data
-                ).one()  # Possível erro de usuário não encontrado
-
-                # user.email = user_new_data.email
-                user.real_name = user_new_data.real_name
-                user.username = user_new_data.username
-                user.avatar = user_new_data.avatar
-                if user_new_data.password != "__not-change__":
-                    user.password = security.encrypt(user_new_data.password)
-
-                session.add(user)
-                session.commit()
-                session.refresh(user)
-                response.data_type = "user_updated"
-                response.message = "User data has been updated. Need logout."
-                del user.password
-                response.user_data = UserPublic(**(user.model_dump()))
-            except Exception as e:
-                response.message = e
-                consolePrint.danger(msg=f'DB: {e}')
-        return response
-
-    # Não acessado pela API
-    # será criado outro script para verificar um usuário
-    # que não loga há mais de X dias e o exclui do DB
-    def deleteUser(self, user_id: int) -> APIResponseSchema:
-        response = APIResponseSchema(message="username not found")
-        with Session(self.engine) as session:
-            query = select(models.UserModel).where(
-                models.UserModel.id == user_id
-            )
-            try:
-                user = session.exec(
-                    query
-                ).one()  # Possível erro de usuário não encontrado
-                session.delete(user)
-                session.commit()
-                response.data_type = "user_deleted"
-                self.tiny_engine.table("player").remove(doc_ids=[user_id])
-                response.message = f"user {user_id} has been deleted"
-            except Exception as e:
-                consolePrint.danger(msg=(__file__, e, "\nDB: username not found"))
-
-        return response
-
-    def createDefaultPlayerStats(self, player_id):
-
-        newPlayer = PlayersTinyDBSchema(id=player_id)
-        self.tiny_engine.table("player").insert(newPlayer.__dict__)
-
-    def getPlayerById(self, player_id: int):
-        player = self.tiny_engine.table("player").get(doc_id=player_id)
-        return player
-
-    def authUser(self, username: str, password: str):
-        response = APIResponseSchema(message="username or password invalid")
-        with Session(self.engine) as session:
-            query = select(models.UserModel).where(
-                models.UserModel.username == username.lower()
-            )
-            try:
-                user = session.exec(
-                    query
-                ).one()  # Possível erro de usuário não encontrado
-                results = user.model_dump()
-                assert security.verify(
-                    password, results["password"]
-                )  # Possível erro de senha inválida
-                results["created_at"] = str(results["created_at"])
-                results["last_login"] = str(results["last_login"])
-                # remove password data
-                results.pop("password")
-
-                response.data_type = "user_data"
-                response.message = f"{user.id} has authentication successful"
-                response.user_data = results
-                user.onLogin()
-                session.add(user)
-                session.commit()
-                consolePrint.info(f"DB: {response.message}")
-
-            except Exception as e:
-                consolePrint.danger(msg=("DB: username or password invalid"))
-
-        return response
-
-    def getUserDataById(self, user_id: int):
-        response = APIResponseSchema(
-            message=f"user with id {user_id} not found")
-        with Session(self.engine) as session:
-            query = select(models.UserModel).where(
-                models.UserModel.id == user_id
-            )
-            try:
-                user = session.exec(
-                    query
-                ).one()  # Possível erro de usuário não encontrado
-                player = self.getPlayerById(user_id)
-                results = user.model_dump()
-                results["created_at"] = str(results["created_at"])
-                results["last_login"] = str(results["last_login"])
-                results["xp_points"] = player.get("xp_points")
-                __available_cards = []
-                for card in player.get("available_cards"):
-                    __available_cards.append({"slug": card})
-                results["available_cards"] = __available_cards
-                # remove password data
-                results.pop("password")
-
-                response.data_type = "user_data"
-                response.message = "User data"
-                response.user_data = results
-
-            except:
-                consolePrint.danger(msg=("DB: username not found"))
-
-        return response
-
-    def setPlayerInRoom(self, player_id: int, room_id: str):
-        self.tiny_engine.table("player").update(
-            {"room_or_match_id": room_id}, doc_ids=[player_id])
-        if room_id != '':
-            consolePrint.info(f"DB: Player {player_id} connected in room {room_id}")
-        else:
-            consolePrint.info(f"DB: Player {player_id} not connected in any room")
-
-
+    # def updateUser(
+    #     self, user_id: int, user_new_data: NewUserSchema
+    # ) -> APIResponseSchema:
+    #     response = APIResponseSchema(message="user not updated")
+    #         player_data = PlayerData(**founded_player)
+    #         print(player_data)
+    #     return response
 
 
 DB = DB_Manager()
