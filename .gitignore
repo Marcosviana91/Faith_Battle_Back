@@ -4,6 +4,7 @@ venv
 **/*.db
 **/.env
 /database/**
+**/database.*
 .vercel
 .ruff_cache
 .pytest_cache
