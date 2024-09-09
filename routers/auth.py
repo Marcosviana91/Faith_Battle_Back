@@ -1,37 +1,25 @@
-# from typing import Annotated
+import requests
+from fastapi import APIRouter, HTTPException
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from settings import env_settings as env
 
-# from fastapi.security import OAuth2PasswordRequestForm
-from schemas.users_schema import AuthSchema, UserWs
+from schemas.users_schema import AuthSchema
 from utils.ConnectionManager import WS
-from utils.DataBaseManager import DB
-from utils.security import createAccessToken
-from utils.LoggerManager import Logger
+# from utils.LoggerManager import Logger
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-
-# T_OAuth2Form = Annotated[AuthSchema, Depends()]
 
 
 @router.post("/token")
 def handleAuth(form_data: AuthSchema):
-    db_response = DB.authUser(
-        username=form_data.username,
-        password=form_data.password,
-    )
-    if db_response.data_type == "error":
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail=db_response.message
-        )
-    access_token = createAccessToken({
-        "sub": db_response.user_data.get("id"),
-    })
-    res = {"access_token": access_token, "token_type": "Bearer", "sub": db_response.user_data.get("id")}
-    authenticated_user = UserWs(
-        id=db_response.user_data.get("id"),
-        token=access_token
-    )
-    Logger.info(f'user id {db_response.user_data.get("id")} authenticated successfully', 'AUTH')
-    WS.login(authenticated_user)
-    return res
+    if form_data.username and form_data.password:
+        auth = requests.post(f'http://{env.DB_HOST}:3111/api/auth',
+                             json={'username': form_data.username.lower(), 'password': form_data.password})
+        print(auth.status_code)
+        if auth.status_code == 200:
+            # Logger.info(f'user id {db_response.user_data.get("id")} authenticated successfully', 'AUTH')
+            return auth.json()
+        else:
+            print(auth.status_code)
+            print(auth.text)
+    return HTTPException(detail=auth.text, status_code=auth.status_code)

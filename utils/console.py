@@ -22,7 +22,8 @@ class C_Print:
         '''
         Usado para informações de passo a passo do sistema
         '''
-        print(Fore.BLACK + Back.GREEN + "DEV STATUS:\t" + Style.RESET_ALL + msg)
+        print(f'{Fore.BLACK}{Back.GREEN}DEV STATUS:\t{
+              Style.RESET_ALL}{msg}')
 
 
 consolePrint = C_Print()

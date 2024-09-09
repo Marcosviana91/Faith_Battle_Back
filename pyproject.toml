@@ -1,5 +1,5 @@
 [tool.taskipy.tasks]
-run = "fastapi dev main.py --host 0.0.0.0"
+run = "fastapi dev main.py --host 0.0.0.0 --port 3110"
 
 test = "pytest --cov=. -vv"
 post_test = "coverage html"

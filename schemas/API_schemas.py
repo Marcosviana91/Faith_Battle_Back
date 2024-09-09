@@ -2,7 +2,6 @@ from pydantic import BaseModel
 
 
 class APIResponseSchema(BaseModel):
-    message: str
     data_type: str | None = "error"
     user_data: dict | None = None
     room_list: list | None = None

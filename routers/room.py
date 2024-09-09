@@ -1,30 +1,28 @@
 from fastapi import APIRouter, HTTPException, status
 
 from schemas.API_schemas import APIResponseSchema
-from schemas.players_schema import PlayersSchema
-from schemas.rooms_schema import RoomSchema
-from utils.ROOM.RoomManager import ROOMS
+from schemas import PlayersSchema
+from schemas import RoomSchema
+from utils.ROOM.RoomManager import RM
 
 router = APIRouter(prefix="/room", tags=["room"])
 
 
 @router.get('/')
 def getRoomList():
-    rooms = ROOMS.getAllRoomsInfo()
+    rooms = RM.getAllRoomsStats()
     response = APIResponseSchema(message="There's no room.")
     if rooms == False:
         return response
-    response.message = f"Rooms founds: {len(rooms)}"
     response.data_type = "room_list"
     response.room_list = rooms
     return response
 
 
 @router.post('/')
-def createRoom(new_room: RoomSchema):
-    response = APIResponseSchema(message='Something goes wrong')
-    room = ROOMS.createRoom(new_room)
-    response.message = f"room created: {room['id']}"
+async def createRoom(new_room: RoomSchema):
+    response = APIResponseSchema()
+    room = await RM.createRoom(new_room)
     response.data_type = "room_data"
     response.room_data = room
     return response
@@ -34,8 +32,7 @@ def createRoom(new_room: RoomSchema):
 async def enterRoom(room_id: str, player:PlayersSchema, password:str = ""):
     response = APIResponseSchema(message='Something goes wrong')
     try:
-        room = await ROOMS.enterRoom(room_id, player, password)
-        response.message = "room_connected"
+        room = await RM.enterRoom(room_id, player, password)
         response.data_type = "room_data"
         response.room_data = room
         return response

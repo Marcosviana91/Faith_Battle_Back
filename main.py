@@ -1,10 +1,11 @@
+import requests
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from routers import auth, room, users, websocket
 from settings import env_settings
-from utils.MatchManager import MATCHES
 
 ORIGINS = ["*"]
 METHODS = ["*"]
@@ -25,29 +26,14 @@ app.add_middleware(
     allow_headers=HEADERS,
     # exposed_headers= HEADERS,
 )
-
 @app.get("/")
 def handleRoot():
-    res = {"message": "Root router ok"}
+    server_settings = requests.get(f'http://{env_settings.DB_HOST}:3111/api/')
+    res = {
+        'version': 'alpha-1.0.0',
+    }
+    if server_settings.status_code == 200:
+        res['active_cards'] = server_settings.json()['active_cards']
     return res
 
-
-@app.get("/populate")
-def handlePopulate():
-    from utils.populates import UserPopulate
-    res = {"message": "Populated"}
-    return res
-
-@app.get("/fake_match")
-async def makeFakeMatch():
-    from utils.populates import FakeMatch
-    await FakeMatch.createFakeMatch()
-    res = {"message": "fake_match"}
-    return res
-
-
-@app.get("/get_match_stats")
-async def getFakeMatch():
-    res = MATCHES.getStats
-    return res
 

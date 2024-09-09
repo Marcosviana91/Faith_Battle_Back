@@ -6,7 +6,7 @@ def test_createNewUser_ok():
     user_data = NewUserSchema(**{
         "username": "usuario_de_test",
         "password": "123asd",
-        "real_name": "Eu Sou Um Test",
+        "first_name": "Eu Sou Um Test",
         "email": "usuario_test@email.co",
     })
     db_response = DB.createNewUser(user_data)
@@ -17,7 +17,7 @@ def test_createNewUser_error_username_already_exist():
     user_data = NewUserSchema(**{
         "username": "usuario_de_test",
         "password": "123asd",
-        "real_name": "Eu Sou Um Test",
+        "first_name": "Eu Sou Um Test",
         "email": "usuario_test@email.co",
     })
 
@@ -29,7 +29,7 @@ def test_createNewUser_error_email_already_exist():
     user_data = NewUserSchema(**{
         "username": "usuario_de_test2",
         "password": "123asd",
-        "real_name": "Eu Sou Um Test",
+        "first_name": "Eu Sou Um Test",
         "email": "usuario_test@email.co",
     })
 
@@ -42,7 +42,7 @@ def test_updateUser_ok():
     user_data = NewUserSchema(**{
         "username": "usuario_de_test_atualizado",
         "password": "123asd",
-        "real_name": "Eu Sou Um Test Atualizado",
+        "first_name": "Eu Sou Um Test Atualizado",
         "email": "usuario_test_atualizado@email.co",
     })
     db_response = DB.updateUser(user_id, user_data)
@@ -53,7 +53,7 @@ def test_updateUser_error():
     user_data = {
         "username": "usuario_de_test2",
         "password": "123asd",
-        "real_name": "Eu Sou Um Test",
+        "first_name": "Eu Sou Um Test",
         "email": "usuario_test@email.co",
     }
     db_response = DB.updateUser(22, user_data)

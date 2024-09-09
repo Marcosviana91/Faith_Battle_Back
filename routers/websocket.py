@@ -1,18 +1,14 @@
 # from typing import Annotated
 
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, status
+from fastapi import APIRouter,  WebSocket, WebSocketDisconnect
 
 from schemas.users_schema import UserWs
 from utils.CheckUserState import checkUserStats
 from utils.ConnectionManager import WS
-from utils.MatchManager import MATCHES
-from utils.ROOM.RoomManager import ROOMS
-
-# from utils.security import getCurrentUserAuthenticated
+from utils.ROOM.RoomManager import RM
+from utils.MATCHES.MatchManager import MM, C_Match
 
 router = APIRouter(prefix="/ws", tags=["websockets"])
-
-# T_CurrentUser = Annotated[str, Depends(getCurrentUserAuthenticated)]
 
 
 @router.websocket("/")
@@ -22,22 +18,39 @@ async def handleWSConnect(websocket: WebSocket):
         while True:
             data: dict = await websocket.receive_json()
             if data.get("data_type") == "create_connection":
-                player_id = data["player_data"]["id"]
+                player_id = int(data["player_data"]["id"])
                 player_token = data["player_data"]["token"]
                 newUserWs = UserWs(
                     id=player_id,
-                    token=player_token,
+                    access_token=player_token,
                     websocket=websocket
                 )
-                WS.connect(newUserWs)
+                await WS.connect(newUserWs)
                 await checkUserStats(player_id)
             elif data.get("data_type") == "match_move":
-                await MATCHES.handleMove(data)
+                await MM.handleMove(data)
             else:
-                await ROOMS.handleRoom(data)
+                room = await RM.handleRoom(data)
+                if room.room_stage == 2:
+                    newMatch = C_Match(room=room)
+                    await RM.endRoom(room)
+                    await MM.createMatch(newMatch)
+
     except WebSocketDisconnect:
         WS.disconnect(player_id)
 
+
+
+@router.websocket("/spectate/{match_id}")
+async def enterRoom(websocket: WebSocket, match_id: str, password:str = ""):
+    await websocket.accept()
+    try:
+        while True:
+            data: dict = await websocket.receive_json()
+        
+    except WebSocketDisconnect:
+        ...
+
 @router.get("/")
 async def handleMatchWS():
-    return MATCHES.getStats
+    return WS.getStats()

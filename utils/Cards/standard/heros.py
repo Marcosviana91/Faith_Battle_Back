@@ -1,46 +1,24 @@
 from random import choice
-from schemas.cards_schema import CardSchema,  MatchSchema, PlayersInMatchSchema, getCardInListBySlugId
+from typing import TYPE_CHECKING
 
 from utils.console import consolePrint
 from utils.Cards.standard.raw_data import STANDARD_CARDS_RAW_DATA
+from .base_cards import C_Card_Match, getCardInListBySlugId
+
+if TYPE_CHECKING:
+    from utils.MATCHES.MatchClass import C_Match, C_Player_Match
 
 
-STANDARD_CARDS_HEROS = [
-    'abraao',
-    'adao',
-    'daniel',
-    'davi',
-    'elias',
-    'ester',
-    'eva',
-    'jaco',
-    'jose-do-egito',
-    'josue',
-    'maria',
-    'moises',
-    'noe',
-    'salomao',
-    'sansao',
-]
+class C_Heros(C_Card_Match):
 
+    def __init__(self, slug: str, in_game_id: str):
+        super().__init__(slug, in_game_id)
 
-class Heros(CardSchema):
-    attached_cards: list[CardSchema] = []
-    card_type: str = 'hero'
-
-    def getCardStats(self):
-        data = super().getCardStats()
-        _attached_cards = []
-        for card in self.attached_cards:
-            _attached_cards.append(card.getCardStats())
-        data["attached_cards"] = _attached_cards
-        return data
-
-    async def onAttack(self, match: MatchSchema | None = None):
+    async def onAttack(self, match: 'C_Match'):
         await super().onAttack(match)
         # A passiva da Botas do Evangelho é verificada para todos os heróis
         if getCardInListBySlugId('botas-do-evangelho', self.attached_cards):
-            player = match._getPlayerById(match.move_now.player_move)
+            player = match._getPlayerById(match.move_now.player_move_id)
             new_card = match.giveCard(player)
             if new_card:
                 await match.sendToPlayer(data={
@@ -53,8 +31,9 @@ class Heros(CardSchema):
                 }, player_id=player.id)
         # A passiva do Cinturao da Verdade é verificada para todos os heróis
         if getCardInListBySlugId('cinturao-da-verdade', self.attached_cards):
-            player = match._getPlayerById(match.move_now.player_move)
-            player_target = match._getPlayerById(match.move_now.player_target)
+            player = match._getPlayerById(match.move_now.player_move_id)
+            player_target = match._getPlayerById(
+                match.move_now.player_target_id)
             if len(player_target.card_deck) > 0:
                 reveled_card = player_target.card_deck[0]
                 reveled_card_wisdom_cost = STANDARD_CARDS_RAW_DATA[reveled_card.slug][1]
@@ -72,113 +51,93 @@ class Heros(CardSchema):
             else:
                 consolePrint.info('Não há carta para revelar')
 
-    async def onInvoke(self, match: MatchSchema | None = None):
+    async def onInvoke(self, match: 'C_Match'):
         await super().onInvoke(match)
-        player = match._getPlayerById(match.move_now.player_move)
+        player = match._getPlayerById(match.move_now.player_move_id)
         # A passiva de Abraão é verificada para todos os heróis
         if getCardInListBySlugId('abraao', player.card_battle_camp):
             consolePrint.info(f'CARD: {player.id} ativou abraão')
             player.faith_points += 1
 
-    async def onMoveToAttackZone(self, match: MatchSchema | None):
-        player = match._getPlayerById(match.move_now.player_move)
-        await super().onMoveToAttackZone(match)
+    async def onMoveToBattleZone(self, match: 'C_Match'):
+        player = match._getPlayerById(match.move_now.player_move_id)
+        await super().onMoveToBattleZone(match)
         # A passiva de Arca da Aliança é verificada para todos os heróis
         if getCardInListBySlugId('arca-da-alianca', player.card_battle_camp):
             consolePrint.info(f'CARD: {player.id} ativou Arca da Aliança')
             self.attack_point += 1
-            self.defense_points += 1
+            self.defense_point += 1
 
-    async def onRetreatToPrepareZone(self, match: MatchSchema | None):
-        player = match._getPlayerById(match.move_now.player_move)
+    async def onRetreatToPrepareZone(self, match: 'C_Match'):
+        player = match._getPlayerById(match.move_now.player_move_id)
         await super().onRetreatToPrepareZone(match)
         # A passiva de Arca da Aliança é verificada para todos os heróis
         if getCardInListBySlugId('arca-da-alianca', player.card_battle_camp):
             consolePrint.info(
                 f'CARD: {player.id} removeu o efeito Arca da Aliança')
             self.attack_point -= 1
-            self.defense_points -= 1
+            self.defense_point -= 1
 
 
-class C_Abraao(Heros):
-    ...
+class C_Abraao(C_Heros):
+    slug = 'abraao'
+
+    def __init__(self, in_game_id: str):
+        super().__init__(slug='abraao', in_game_id=in_game_id)
 
 
-Abraao = C_Abraao(
-    slug='abraao',
-    wisdom_cost=2,
-    attack_point=1,
-    defense_points=2,
-    in_game_id=None,
-)
+class C_Adao(C_Heros):
+    slug = 'adao'
 
+    def __init__(self, in_game_id: str):
+        super().__init__(slug="adao", in_game_id=in_game_id)
 
-class C_Adao(Heros):
-    def resetCardStats(self):
-        self.attack_point = 1,
-        self.defense_points = 1
-
-    async def addSkill(self, match: MatchSchema | None = None):
+    async def addSkill(self, match: 'C_Match'):
         await super().addSkill(match)
         self.attack_point += 2
-        self.defense_points += 2
+        self.defense_point += 2
 
-    async def rmvSkill(self, match: MatchSchema | None = None):
+    async def rmvSkill(self, match: 'C_Match'):
         await super().rmvSkill(match)
         self.attack_point -= 2
-        self.defense_points -= 2
+        self.defense_point -= 2
 
-    async def onInvoke(self, match: MatchSchema | None = None):
-        player = match._getPlayerById(match.move_now.player_move)
+    async def onInvoke(self, match: 'C_Match'):
+        player = match._getPlayerById(match.move_now.player_move_id)
         await super().onInvoke(match)
         # Procurar por Eva no campo de preparação e no campo de batalha
         if getCardInListBySlugId('eva', player.card_prepare_camp) or getCardInListBySlugId('eva', player.card_battle_camp):
             await self.addSkill(match)
 
-    async def onDestroy(self, match: MatchSchema | None = None):
+    async def onDestroy(self, match: 'C_Match'):
         await super().onDestroy(match)
-        self.resetCardStats()
 
 
-Adao = C_Adao(
-    slug='adao',
-    wisdom_cost=1,
-    attack_point=1,
-    defense_points=1,
-    in_game_id=None
-)
+class C_Daniel(C_Heros):
+    slug = 'daniel'
 
+    def __init__(self, in_game_id: str):
+        super().__init__(slug="daniel", in_game_id=in_game_id)
 
-class C_Daniel(Heros):
-
-    def resetCardStats(self):
-        super().resetCardStats()
-        self.attack_point = 1
-        self.defense_points = 2
-
-    async def rmvSkill(self, match: MatchSchema | None = None):
+    async def rmvSkill(self, match: 'C_Match'):
         await super().rmvSkill(match)
         self.attack_point -= self.increase_attack
         self.increase_attack = 0
 
-    async def onAttack(self, match: MatchSchema | None = None):
-        player_target = match._getPlayerById(match.move_now.player_target)
+    async def onAttack(self, match: 'C_Match'):
+        player_target = match._getPlayerById(match.move_now.player_target_id)
         await super().onAttack(match)
         self.increase_attack = len(player_target.card_battle_camp)
         self.attack_point += self.increase_attack
 
 
-Daniel = C_Daniel(
-    slug='daniel',
-    wisdom_cost=2,
-    attack_point=1,
-    defense_points=2,
-    in_game_id=None
-)
+class C_Davi(C_Heros):
+    slug = 'davi'
 
+    def __init__(self, in_game_id: str):
+        super().__init__(slug="davi", in_game_id=in_game_id)
 
-class C_Davi(Heros):
-    async def onAttack(self, match: MatchSchema | None = None):
+    async def onAttack(self, match: 'C_Match'):
         await super().onAttack(match)
         print(f'Tirar um ponto de fé do jogador {self.skill_focus_player_id}')
         await match.sendToPlayer(
@@ -196,18 +155,14 @@ class C_Davi(Heros):
             match.takeDamage(skill_player_target, 1)
 
 
-Davi = C_Davi(
-    slug='davi',
-    wisdom_cost=3,
-    attack_point=3,
-    defense_points=2,
-    in_game_id=None
-)
+class C_Elias(C_Heros):
+    slug = 'elias'
 
+    def __init__(self, in_game_id: str):
+        super().__init__(slug="elias", in_game_id=in_game_id)
 
-class C_Elias(Heros):
-    async def onInvoke(self, match: MatchSchema | None = None):
-        player = match._getPlayerById(match.move_now.player_move)
+    async def onInvoke(self, match: 'C_Match'):
+        player = match._getPlayerById(match.move_now.player_move_id)
         await super().onInvoke(match)
         await match.sendToPlayer(
             data={
@@ -218,34 +173,37 @@ class C_Elias(Heros):
             },
             player_id=player.id
         )
-        for _player in match.players_in_match:
-            # if _player.id == match.move_now.player_move: continue
-            await match.sendToPlayer(data={
-                'data_type': 'notification',
-                'notification': {
-                    "title": "Elias",
-                    "message": f"Elias está orando..."
-                }
-            }, player_id=_player.id)
+        for _team in match.players_in_match:
+            for _player in _team:
+                if _player.id == match.move_now.player_move_id:
+                    continue
+                await match.sendToPlayer(data={
+                    'data_type': 'notification',
+                    'notification': {
+                        "title": "Elias",
+                        "message": f"Elias está orando..."
+                    }
+                }, player_id=_player.id)
 
-    async def addSkill(self, match: MatchSchema | None = None):
+    async def addSkill(self, match: 'C_Match'):
         await super().addSkill(match)
-        if not match.move_now.player_target:
+        if not match.move_now.player_target_id:
             await match.sendToPlayer(data={
                 'data_type': 'notification',
                 'notification': {
                     "title": "Habilidade de Elias",
                     "message": f"Faltou sabedoria..."
                 }
-            }, player_id=match.move_now.player_move)
+            }, player_id=match.move_now.player_move_id)
         else:
-            player_target = match._getPlayerById(match.move_now.player_target)
-            await match.moveCard(player_target, match.move_now.card_target, 'battle', 'forgotten')
+            player_target = match._getPlayerById(
+                match.move_now.player_target_id)
+            await match.moveCard(player_target, match.move_now.card_target_id, 'battle', 'forgotten')
             await match.sendToPlayer(data={
                 'data_type': 'notification',
                 'notification': {
                     "title": "Habilidade de Elias",
-                    "message": f"Sua carta foi destruída: {match.move_now.card_target.split('_')[1]}"
+                    "message": f"Sua carta foi destruída: {match.move_now.card_target_id.split('_')[1]}"
                 }
             }, player_id=player_target.id)
             await match.sendToPlayer(data={
@@ -258,27 +216,18 @@ class C_Elias(Heros):
             }, player_id=player_target.id)
 
 
-Elias = C_Elias(
-    slug='elias',
-    wisdom_cost=4,
-    attack_point=3,
-    defense_points=1,
-    in_game_id=None
-)
+class C_Ester(C_Heros):
+    slug = 'ester'
 
+    def __init__(self, in_game_id: str):
+        super().__init__(slug="ester", in_game_id=in_game_id)
 
-class C_Ester(Heros):
-    async def onInvoke(self, match: MatchSchema | None = None):
-        player = match._getPlayerById(match.move_now.player_move)
+    async def onInvoke(self, match: 'C_Match'):
+        player = match._getPlayerById(match.move_now.player_move_id)
         await super().onInvoke(match)
         __card_deck = []
         for __card in player.card_deck[:3]:
-            __card_deck.append(
-                {
-                    'slug': __card.slug,
-                    'in_game_id': __card.in_game_id
-                }
-            )
+            __card_deck.append(__card.getStats())
         await match.sendToPlayer(
             data={
                 'data_type': 'card_skill',
@@ -291,18 +240,14 @@ class C_Ester(Heros):
         )
 
 
-Ester = C_Ester(
-    slug='ester',
-    wisdom_cost=1,
-    attack_point=0,
-    defense_points=2,
-    in_game_id=None,
-)
+class C_Eva(C_Heros):
+    slug = 'eva'
 
+    def __init__(self, in_game_id: str):
+        super().__init__(slug="eva", in_game_id=in_game_id)
 
-class C_Eva(Heros):
-    async def onInvoke(self, match: MatchSchema | None = None):
-        player = match._getPlayerById(match.move_now.player_move)
+    async def onInvoke(self, match: 'C_Match'):
+        player = match._getPlayerById(match.move_now.player_move_id)
         await super().onInvoke(match)
         match.giveCard(player, 1)
         # Procurar por Adão no campo de preparação
@@ -315,19 +260,15 @@ class C_Eva(Heros):
             await card.addSkill(match)
 
 
-Eva = C_Eva(
-    slug='eva',
-    wisdom_cost=1,
-    attack_point=1,
-    defense_points=1,
-    in_game_id=None
-)
+class C_Jaco(C_Heros):
+    slug = 'jaco'
 
+    def __init__(self, in_game_id: str):
+        super().__init__(slug="jaco", in_game_id=in_game_id)
 
-class C_Jaco(Heros):
-    async def onAttack(self, match: MatchSchema | None = None):
-        player = match._getPlayerById(match.move_now.player_move)
-        player_target = match._getPlayerById(match.move_now.player_target)
+    async def onAttack(self, match: 'C_Match'):
+        player = match._getPlayerById(match.move_now.player_move_id)
+        player_target = match._getPlayerById(match.move_now.player_target_id)
         await super().onAttack(match)
         if len(player_target.card_hand) > 0:
             card_to_show = choice(player_target.card_hand)
@@ -345,22 +286,13 @@ class C_Jaco(Heros):
             )
 
 
-Jaco = C_Jaco(
-    slug='jaco',
-    wisdom_cost=2,
-    attack_point=2,
-    defense_points=2,
-    in_game_id=None
-)
+class C_JoseDoEgito(C_Heros):
+    slug = 'jose-do-egito'
 
+    def __init__(self, in_game_id: str):
+        super().__init__(slug="jose-do-egito", in_game_id=in_game_id)
 
-class C_JoseDoEgito(Heros):
-    def resetCardStats(self):
-        super().resetCardStats()
-        self.attack_point = 2,
-        self.defense_points = 1
-
-    async def addSkill(self, match: MatchSchema | None = None):
+    async def addSkill(self, match: 'C_Match'):
         player_target = match.fight_camp.player_defense
         await super().addSkill(match)
         if len(player_target.card_hand) < 1:
@@ -370,7 +302,7 @@ class C_JoseDoEgito(Heros):
                     "title": "Habilidade de José do Egito",
                     "message": f"O oponente não tem cartas para descartar."
                 }
-            }, player_id=match.fight_camp.player_attack)
+            }, player_id=match.fight_camp.player_attack.id)
         else:
             __card_to_discart = choice(player_target.card_hand)
             await match.moveCard(
@@ -383,21 +315,21 @@ class C_JoseDoEgito(Heros):
                 'data_type': 'notification',
                 'notification': {
                     "title": "Habilidade de José do Egito",
-                    "message": f"A carta {__card_to_discart.in_game_id} foi descartada."
+                    "message": f"A carta {__card_to_discart.slug} foi descartada."
                 }
-            }, player_id=match.fight_camp.player_attack)
+            }, player_id=match.fight_camp.player_attack.id)
             await match.sendToPlayer(data={
                 'data_type': 'notification',
                 'notification': {
                     "title": "Habilidade de José do Egito",
-                    "message": f"A carta {__card_to_discart.in_game_id} foi descartada."
+                    "message": f"A carta {__card_to_discart.slug} foi descartada."
                 }
-            }, player_id=match.fight_camp.player_defense)
+            }, player_id=match.fight_camp.player_defense.id)
 
-    async def rmvSkill(self, match: MatchSchema | None = None):
-        player = match._getPlayerById(match.move_now.player_move)
+    async def rmvSkill(self, match: 'C_Match'):
+        player = match._getPlayerById(match.move_now.player_move_id)
         await super().rmvSkill(match)
-        gived_card: CardSchema = match.giveCard(player, 1)
+        gived_card: C_Card_Match = match.giveCard(player, 1)
         if gived_card:
             await match.sendToPlayer(data={
                 'data_type': 'notification',
@@ -405,7 +337,7 @@ class C_JoseDoEgito(Heros):
                     "title": "Habilidade de José do Egito",
                     "message": f'Você comprou a carta {gived_card.slug}.'
                 }
-            }, player_id=match.fight_camp.player_attack)
+            }, player_id=match.fight_camp.player_attack.id)
         else:
             await match.sendToPlayer(data={
                 'data_type': 'notification',
@@ -413,33 +345,32 @@ class C_JoseDoEgito(Heros):
                     "title": "Habilidade de José do Egito",
                     "message": f"Não foi possível comprar uma carta."
                 }
-            }, player_id=match.fight_camp.player_attack)
+            }, player_id=match.fight_camp.player_attack.id)
 
-    async def hasSuccessfullyAttacked(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, defense_cards: list[CardSchema] | None = None, match: MatchSchema | None = None):
-        await super().hasSuccessfullyAttacked(player, attack_cards, player_target, defense_cards, match)
+    async def hasSuccessfullyAttacked(
+            self,
+            player: 'C_Player_Match',
+            player_target: 'C_Player_Match',
+            match: 'C_Match'):
+        await super().hasSuccessfullyAttacked(player=player, player_target=player_target,  match=match)
         await self.addSkill(match=match)
 
-    async def hasNotSuccessfullyAttacked(self, player: PlayersInMatchSchema | None = None, attack_cards: list[CardSchema] | None = None, player_target: PlayersInMatchSchema | None = None, defense_cards: list[CardSchema] | None = None, match: MatchSchema | None = None):
-        await super().hasNotSuccessfullyAttacked(player, attack_cards, player_target, defense_cards, match)
+    async def hasNotSuccessfullyAttacked(
+            self,
+            player: 'C_Player_Match',
+            player_target: 'C_Player_Match',
+            match: 'C_Match'):
+        await super().hasNotSuccessfullyAttacked(player=player, player_target=player_target,  match=match)
         await self.rmvSkill(match=match)
 
 
-JoseDoEgito = C_JoseDoEgito(
-    slug='jose-do-egito',
-    wisdom_cost=2,
-    attack_point=2,
-    defense_points=1,
-    in_game_id=None
-)
+class C_Josue(C_Heros):
+    slug = 'josue'
 
+    def __init__(self, in_game_id: str):
+        super().__init__(slug="josue", in_game_id=in_game_id)
 
-class C_Josue(Heros):
-    def resetCardStats(self):
-        super().resetCardStats()
-        self.attack_point = 3
-        self.defense_points = 1
-
-    async def addSkill(self, match: MatchSchema | None = None):
+    async def addSkill(self, match: 'C_Match'):
         attack_cards = match.fight_camp.attack_cards
         await super().addSkill(match)
         for card in attack_cards:
@@ -447,7 +378,7 @@ class C_Josue(Heros):
                 print(f'Add 1/0 to {card.in_game_id}')
                 card.attack_point += 1
 
-    async def rmvSkill(self, match: MatchSchema | None = None):
+    async def rmvSkill(self, match: 'C_Match'):
         attack_cards = match.fight_camp.attack_cards
         await super().rmvSkill(match)
         for card in attack_cards:
@@ -455,33 +386,24 @@ class C_Josue(Heros):
                 print(f'Remove 1/0 to {card.in_game_id}')
                 card.attack_point -= 1
 
-    async def onAttack(self, match: MatchSchema | None = None):
+    async def onAttack(self, match: 'C_Match'):
         await super().onAttack(match)
         await self.addSkill(match)
 
 
-Josue = C_Josue(
-    slug='josue',
-    wisdom_cost=3,
-    attack_point=3,
-    defense_points=1,
-    in_game_id=None
-)
+class C_Maria(C_Heros):
+    slug = 'maria'
 
+    def __init__(self, in_game_id: str):
+        super().__init__(slug="maria", in_game_id=in_game_id)
 
-class C_Maria(Heros):
-    async def onInvoke(self, match: MatchSchema | None = None):
-        player = match._getPlayerById(match.move_now.player_move)
+    async def onInvoke(self, match: 'C_Match'):
+        player = match._getPlayerById(match.move_now.player_move_id)
         await super().onInvoke(match)
         __heros_in_deck = []
         for __card in player.card_deck:
             if __card.card_type == 'hero':
-                __heros_in_deck.append(
-                    {
-                        'slug': __card.slug,
-                        'in_game_id': __card.in_game_id
-                    }
-                )
+                __heros_in_deck.append(__card.getStats())
         sorted_cards = sorted(__heros_in_deck, key=lambda card: card['slug'])
         await match.sendToPlayer(
             data={
@@ -495,18 +417,14 @@ class C_Maria(Heros):
         )
 
 
-Maria = C_Maria(
-    slug='maria',
-    wisdom_cost=2,
-    attack_point=1,
-    defense_points=2,
-    in_game_id=None
-)
+class C_Moises(C_Heros):
+    slug = 'moises'
 
+    def __init__(self, in_game_id: str):
+        super().__init__(slug="moises", in_game_id=in_game_id)
 
-class C_Moise(Heros):
-    async def onInvoke(self, match: MatchSchema | None = None):
-        player = match._getPlayerById(match.move_now.player_move)
+    async def onInvoke(self, match: 'C_Match'):
+        player = match._getPlayerById(match.move_now.player_move_id)
         await super().onInvoke(match)
         __miracles_in_deck = []
         for __card in player.card_deck:
@@ -543,10 +461,12 @@ class C_Moise(Heros):
             player_id=player.id
         )
 
-    async def addSkill(self, match: MatchSchema | None = None):
-        player = match._getPlayerById(match.move_now.player_move)
+    async def addSkill(self, match: 'C_Match'):
+        player = match._getPlayerById(match.move_now.player_move_id)
         await super().addSkill(match)
-        card_id = match.move_now.card_list[0].in_game_id
+        card_id = match.move_now.card_list[0].get('in_game_id')
+        if card_id is None:
+            consolePrint.danger("Moisés: Não encontrou a carta")
         card_in_deck = getCardInListBySlugId(card_id, player.card_deck)
         card_in_sea = getCardInListBySlugId(
             card_id, player.card_in_forgotten_sea)
@@ -555,57 +475,49 @@ class C_Moise(Heros):
             player.card_deck.remove(card_in_deck)
             player.card_hand.append(card_in_deck)
             card_in_deck.status = 'ready'
-            for _player in match.players_in_match:
-                if _player.id == player.id:
-                    continue
-                await match.sendToPlayer(data={
-                    'data_type': 'notification',
-                    'notification': {
-                        "title": "Habilidade de Moisés",
-                        "message": f"Moisés antecipou a carta {card_in_deck.slug}."
-                    }
-                }, player_id=_player.id)
+            for _team in match.players_in_match:
+                for _player in _team:
+                    if _player.id == player.id:
+                        continue
+                    await match.sendToPlayer(data={
+                        'data_type': 'notification',
+                        'notification': {
+                            "title": "Habilidade de Moisés",
+                            "message": f"Moisés antecipou a carta {card_in_deck.slug}."
+                        }
+                    }, player_id=_player.id)
         elif card_in_sea is not None:
             player.card_in_forgotten_sea.remove(card_in_sea)
             player.card_hand.append(card_in_sea)
             card_in_sea.status = 'ready'
-            for _player in match.players_in_match:
-                if _player.id == player.id:
-                    continue
-                await match.sendToPlayer(data={
-                    'data_type': 'notification',
-                    'notification': {
-                        "title": "Habilidade de Moisés",
-                        "message": f"Moisés resgatou a carta {card_in_sea.slug}."
-                    }
-                }, player_id=_player.id)
+            for _team in match.players_in_match:
+                for _player in _team:
+                    if _player.id == player.id:
+                        continue
+                    await match.sendToPlayer(data={
+                        'data_type': 'notification',
+                        'notification': {
+                            "title": "Habilidade de Moisés",
+                            "message": f"Moisés resgatou a carta {card_in_sea.slug}."
+                        }
+                    }, player_id=_player.id)
 
 
-Moises = C_Moise(
-    slug='moises',
-    wisdom_cost=3,
-    attack_point=2,
-    defense_points=2,
-    in_game_id=None
-)
+class C_Noe(C_Heros):
+    slug = 'noe'
+
+    def __init__(self, in_game_id: str):
+        super().__init__(slug="noe", in_game_id=in_game_id)
 
 
-class C_Noe(Heros):
-    ...
+class C_Salomao(C_Heros):
+    slug = 'salomao'
 
+    def __init__(self, in_game_id: str):
+        super().__init__(slug="salomao", in_game_id=in_game_id)
 
-Noe = C_Noe(
-    slug='noe',
-    wisdom_cost=1,
-    attack_point=2,
-    defense_points=1,
-    in_game_id=None
-)
-
-
-class C_Salomao(Heros):
-    async def onInvoke(self, match: MatchSchema | None = None):
-        player = match._getPlayerById(match.move_now.player_move)
+    async def onInvoke(self, match: 'C_Match'):
+        player = match._getPlayerById(match.move_now.player_move_id)
         await super().onInvoke(match)
         if player.wisdom_points < 10:
             player.wisdom_available += 1
@@ -613,30 +525,26 @@ class C_Salomao(Heros):
             await match.sendToPlayer(data={
                 'data_type': 'notification',
                 'notification': {
-                    "title": "Habilidade de Salomão",
+                    "title": "Habilidade de  Salomão",
                     "message": f"Você ganhou 1 ponto de sabedoria."
                 }
             }, player_id=player.id)
 
-    async def onAttack(self, match: MatchSchema | None = None):
-        player = match._getPlayerById(match.move_now.player_move)
+    async def onAttack(self, match: 'C_Match'):
+        player = match._getPlayerById(match.move_now.player_move_id)
         await super().onAttack(match)
         if player.wisdom_available < player.wisdom_points:
             player.wisdom_available += 1
 
 
-Salomao = C_Salomao(
-    slug='salomao',
-    wisdom_cost=4,
-    attack_point=2,
-    defense_points=2,
-    in_game_id=None
-)
+class C_Sansao(C_Heros):
+    slug = 'sansao'
 
+    def __init__(self, in_game_id: str):
+        super().__init__(slug="sansao", in_game_id=in_game_id)
 
-class C_Sansao(Heros):
-    async def onInvoke(self, match: MatchSchema | None = None):
-        player = match._getPlayerById(match.move_now.player_move)
+    async def onInvoke(self, match: 'C_Match'):
+        player = match._getPlayerById(match.move_now.player_move_id)
         await super().onInvoke(match)
         await match.moveCard(player, self.in_game_id, 'prepare', 'battle')
         self.status = 'ready'
@@ -647,12 +555,3 @@ class C_Sansao(Heros):
                 "message": f"Sansão está pronto para atacar."
             }
         }, player_id=player.id)
-
-
-Sansao = C_Sansao(
-    slug='sansao',
-    wisdom_cost=6,
-    attack_point=5,
-    defense_points=5,
-    in_game_id=None
-)
