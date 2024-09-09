@@ -178,7 +178,7 @@ class TinyDB_Manager:
 
     # UPDATE DB DATA
     async def setPlayerRoomOrMatch(self, player_id: int, room_id: str = None, match_id: str = None, clear: bool = False):
-        founded_player = self.getPlayerById(player_id)
+        founded_player = await self.getPlayerById(player_id)
         if room_id:
             founded_player['room_id'] = room_id
         if match_id:
