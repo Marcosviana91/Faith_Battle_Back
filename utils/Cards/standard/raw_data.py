@@ -90,7 +90,7 @@ STANDARD_CARDS_ARTIFACTS = [
     'botas-do-evangelho',
     'cajado-de-moises',
     'capacete-da-salvacao',
-    'cinturao-da-verdade',
+    # 'cinturao-da-verdade',
     'couraca-da-justica',
     'escudo-da-fe',
     'espada-do-espirito',
