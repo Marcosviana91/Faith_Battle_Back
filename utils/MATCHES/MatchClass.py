@@ -161,18 +161,26 @@ class FightSchema:
                     print(f'{card_atk.in_game_id} não foi defendido!')
                     await card_atk.hasSuccessfullyAttacked(player=self.player_attack, match=self.match_room, player_target=self.player_defense)
                 else:
+                    # temp stores defeated cards
+                    _temp_array: List['C_Card_Match'] = []
                     print(f'{card_atk.in_game_id} VS {card_def.in_game_id}')
                     await card_atk.hasNotSuccessfullyAttacked(player=self.player_attack, match=self.match_room, player_target=self.player_defense)
                     if card_atk.attack_point >= card_def.defense_point:
                         print(f'{card_atk.in_game_id} derrotou {
                             card_def.in_game_id}')
-                        await self.match_room.moveCard(
-                            self.player_defense, card_def.in_game_id, "battle", "forgotten")
+                        _temp_array.append(card_def)
                     if card_def.attack_point >= card_atk.defense_point:
                         print(f'{card_def.in_game_id} derrotou {
                             card_atk.in_game_id}')
-                        await self.match_room.moveCard(
-                            self.player_attack, card_atk.in_game_id, "battle", "forgotten")
+                        _temp_array.append(card_atk)
+                    for _card in _temp_array:
+                        _player_id = int(_card.in_game_id.split("_")[0])
+                        if _player_id == self.player_attack:
+                            await self.match_room.moveCard(
+                                self.player_attack, card_atk.in_game_id, "battle", "forgotten")
+                        elif _player_id == self.player_defense:
+                            await self.match_room.moveCard(
+                                self.player_defense, card_def.in_game_id, "battle", "forgotten")
         for card_atk in self.attack_cards:
             if card_atk.slug in ['josue']:
                 await card_atk.rmvSkill(match=self.match_room)
