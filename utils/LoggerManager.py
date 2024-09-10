@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
-from colorama import Fore, Style
+from colorama import Fore, Style, Back
+
 
 
 class C_Logger:
@@ -27,7 +28,7 @@ class C_Logger:
 
     def info(self, msg: str, tag: str = None):
         '''
-        Usado para informações do correto funcionamento do sistema
+        Usado para informações do correto funcionamento do sistema com linguagem descritiva.
         '''
         self.checkData()
 
@@ -45,6 +46,54 @@ class C_Logger:
                 Style.RESET_ALL}{now} - {msg}'
         else:
             print_msg = f'{Fore.BLUE}{_name.upper()}:\t{Style.RESET_ALL}{
+                now} - {msg}'
+        print(print_msg)
+        os.chdir('../../../../')
+
+    def status(self, msg: str, tag: str = None):
+        '''
+        Usado para informações do passo a passo do sistema com linguagem de objetos.
+        '''
+        self.checkData()
+
+        now = datetime.now().time()
+        os.chdir(self.__current_dir)
+        _name = (self.status.__name__).upper()
+        if tag:
+            log_msg = f'{_name.upper()}[{tag}]:\t{now} - {msg}\n'
+        else:
+            log_msg = f'{_name.upper()}:\t{now} - {msg}\n'
+        with open(f"{_name}.txt", "a") as f:
+            f.write(log_msg)
+        if tag:
+            print_msg = f'{Fore.BLACK}{Back.GREEN}{_name.upper()}[{tag}]:\t{
+                Style.RESET_ALL}{now} - {msg}'
+        else:
+            print_msg = f'{Fore.BLACK}{Back.GREEN}{_name.upper()}:\t{Style.RESET_ALL}{
+                now} - {msg}'
+        print(print_msg)
+        os.chdir('../../../../')
+
+    def danger(self, msg: str, tag: str = None):
+        '''
+        Usado para informações de Risco
+        '''
+        self.checkData()
+
+        now = datetime.now().time()
+        os.chdir(self.__current_dir)
+        _name = (self.danger.__name__).upper()
+        if tag:
+            log_msg = f'{_name.upper()}[{tag}]:\t{now} - {msg}\n'
+        else:
+            log_msg = f'{_name.upper()}:\t{now} - {msg}\n'
+        with open(f"{_name}.txt", "a") as f:
+            f.write(log_msg)
+        if tag:
+            print_msg = f'{Fore.RED}{Back.YELLOW}{Style.BRIGHT}{_name.upper()}[{tag}]:\t{
+                Style.RESET_ALL}{now} - {msg}'
+        else:
+            print_msg = f'{Fore.RED}{Back.YELLOW}{Style.BRIGHT}{_name.upper()}:\t{Style.RESET_ALL}{
                 now} - {msg}'
         print(print_msg)
         os.chdir('../../../../')

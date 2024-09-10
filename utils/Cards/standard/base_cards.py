@@ -1,7 +1,7 @@
 from typing import List
 from typing import TYPE_CHECKING
 
-from utils.console import consolePrint
+from utils.LoggerManager import Logger
 from utils.Cards.standard.raw_data import STANDARD_CARDS_RAW_DATA
 
 if TYPE_CHECKING:
@@ -58,12 +58,15 @@ class C_Card_Match:
                 "indestrutivel": self.indestrutivel,
                 "incorruptivel": self.incorruptivel,
             })
+        Logger.status(msg=f'{_data}.', tag='C_Card_Match')
         return _data
 
     # Movimentação
 
     async def onInvoke(self, match: 'C_Match'):
         player = match._getPlayerById(match.move_now.player_move_id)
+        Logger.info(msg=f'O jogador {player.id} invocou a carta {
+                    self.in_game_id}.', tag='C_Card_Match')
         if player.wisdom_available < self.wisdom_cost:
             return
         player.card_hand.remove(self)
@@ -73,35 +76,40 @@ class C_Card_Match:
 
     async def onMoveToBattleZone(self, match: 'C_Match'):
         player = match._getPlayerById(match.move_now.player_move_id)
+        Logger.info(msg=f'O jogador {player.id} moveu a carta {
+                    self.in_game_id} para Zona de Batalha.', tag='C_Card_Match')
         player.card_prepare_camp.remove(self)
         player.card_battle_camp.append(self)
-        consolePrint.info(f'Jogador {player.id} moveu a carta {
-                          self} para ZB.')
 
     async def onRetreatToPrepareZone(self, match: 'C_Match'):
         player = match._getPlayerById(match.move_now.player_move_id)
-        consolePrint.info(f'Jogador {player.id} recuou a carta {
-                          self} para ZP.')
+        Logger.info(msg=f'O jogador {player.id} recuou a carta {
+                    self.in_game_id} para Zona de Preparação.', tag='C_Card_Match')
 
     # Habilidades
 
     async def addSkill(self, match: 'C_Match'):
         player = match._getPlayerById(match.move_now.player_move_id)
-        consolePrint.info(f'CARD: Adcionou skill de {self}')
+        Logger.info(msg=f'O jogador {player.id} ativou habilidade da carta {
+                    self.in_game_id}.', tag='C_Card_Match')
 
     async def rmvSkill(self, match: 'C_Match'):
-        consolePrint.info(f'CARD: Removeu skill de {self}')
+        Logger.info(msg=f'A habilidade da carta {
+                    self.in_game_id} foi removida.', tag='C_Card_Match')
 
     # Batalha
 
     async def onAttack(self, match: 'C_Match'):
-        consolePrint.info(f'CARD: {self} está atacando')
+        Logger.info(msg=f'A carta {
+                    self.in_game_id} está atacando.', tag='C_Card_Match')
 
     async def onDefense(self, match: 'C_Match'):
-        consolePrint.info(f'CARD: {self} está defendendo')
+        Logger.info(msg=f'A carta {
+                    self.in_game_id} está defendendo.', tag='C_Card_Match')
 
     async def onDestroy(self, match: 'C_Match'):
-        consolePrint.info(f'CARD: destruiu: {self}')
+        Logger.info(msg=f'A carta {
+                    self.in_game_id} foi destruída.', tag='C_Card_Match')
         self.reset()
 
     async def hasSuccessfullyAttacked(
@@ -110,8 +118,8 @@ class C_Card_Match:
         player: 'C_Player_Match' = None,
         player_target: 'C_Player_Match' = None,
     ):
-        consolePrint.info(
-            f'CARD: {self} atacou com sucesso na sala {match.id} o jogador {player_target.id}!')
+        Logger.info(msg=f'A carta {self.in_game_id} atacou o jogador {
+                    player_target.id}.', tag='C_Card_Match')
 
     async def hasNotSuccessfullyAttacked(
         self,
@@ -119,8 +127,8 @@ class C_Card_Match:
         player: 'C_Player_Match' = None,
         player_target: 'C_Player_Match' = None,
     ):
-        consolePrint.info(
-            f'CARD: {self} foi defendido na sala {match.id} pelo jogador {player_target.id}!')
+        Logger.info(msg=f'A carta {
+                    self.in_game_id} foi defendida.', tag='C_Card_Match')
 
     # Itemização
 
@@ -130,8 +138,7 @@ class C_Card_Match:
             match.move_now.card_target_id, player.card_prepare_camp)
         player.card_prepare_camp.remove(self)
         card_target.attached_cards.append(self)
-        consolePrint.info(f"O artefato {self} foi equipado ao Herói {
-                          card_target}")
+        Logger.info(msg=f'O artefato {self.in_game_id} foi equipado ao Herói {card_target}.', tag='C_Card_Match')
         # Verificar a armadura de Deus
 
     async def onDettach(self, match: 'C_Match'):
@@ -140,8 +147,7 @@ class C_Card_Match:
             match.move_now.card_target_id, player.card_prepare_camp)
         card_target.attached_cards.remove(self)
         player.card_prepare_camp.append(self)
-        consolePrint.info(f"O artefato {self} foi removido do Herói {
-                          card_target}")
+        Logger.info(msg=f'O artefato {self.in_game_id} foi removido do Herói {card_target}.', tag='C_Card_Match')
 
 # Utilitários
 

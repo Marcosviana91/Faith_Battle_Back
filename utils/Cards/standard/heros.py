@@ -1,6 +1,7 @@
 from random import choice
 from typing import TYPE_CHECKING
 
+from utils.MATCHES.MatchClass import C_Match
 from utils.console import consolePrint
 from utils.Cards.standard.raw_data import STANDARD_CARDS_RAW_DATA
 from .base_cards import C_Card_Match, getCardInListBySlugId
@@ -245,11 +246,15 @@ class C_Eva(C_Heros):
 
     def __init__(self, in_game_id: str):
         super().__init__(slug="eva", in_game_id=in_game_id)
+        
+    async def addSkill(self, match: C_Match):
+        await super().addSkill(match)
+        player = match._getPlayerById(match.move_now.player_move_id)
+        match.giveCard(player, 1)
 
     async def onInvoke(self, match: 'C_Match'):
         player = match._getPlayerById(match.move_now.player_move_id)
         await super().onInvoke(match)
-        match.giveCard(player, 1)
         # Procurar por Adão no campo de preparação
         card = getCardInListBySlugId('adao', player.card_prepare_camp)
         if card:
