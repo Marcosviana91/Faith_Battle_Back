@@ -8,7 +8,7 @@ from fastapi import WebSocket
 from utils.ConnectionManager import WS
 
 from utils.LoggerManager import Logger
-from utils.console import consolePrint
+# from utils.console import consolePrint
 
 from utils.Cards.standard.base_cards import C_Card_Match, cardListToDict, getCardInListBySlugId
 from utils.Cards import createCardMatchByCardList
@@ -119,6 +119,8 @@ class FightSchema:
             __temp_cards_attack.append(cardObj_atk)
         self.attack_cards = __temp_cards_attack
         del __temp_cards_attack
+        Logger.info(msg=f'Uma batalha iniciou da sala: {self.match_room.id}', tag='C_Match')
+        Logger.status(msg=f'{self.getStats()}', tag='FightSchema')
 
     async def attack(self) -> None:
         for card in self.attack_cards:
@@ -158,27 +160,27 @@ class FightSchema:
                 card_atk.status = 'used'
                 if (card_def == None):
                     total_damage += card_atk.attack_point
-                    print(f'{card_atk.in_game_id} não foi defendido!')
                     await card_atk.hasSuccessfullyAttacked(player=self.player_attack, match=self.match_room, player_target=self.player_defense)
                 else:
                     # temp stores defeated cards
                     _temp_array: List['C_Card_Match'] = []
                     print(f'{card_atk.in_game_id} VS {card_def.in_game_id}')
+                    Logger.info(msg=f'{card_atk.in_game_id} VS {card_def.in_game_id}.', tag='FightSchema')
+                    Logger.status(msg=f'Carta atacante: {card_atk.getStats()}.', tag='C_Card_Match')
+                    Logger.status(msg=f'Carta defensora: {card_def.getStats()}.', tag='C_Card_Match')
                     await card_atk.hasNotSuccessfullyAttacked(player=self.player_attack, match=self.match_room, player_target=self.player_defense)
                     if card_atk.attack_point >= card_def.defense_point:
-                        print(f'{card_atk.in_game_id} derrotou {
-                            card_def.in_game_id}')
+                        Logger.info(msg=f'{card_atk.in_game_id} derrotou {card_def.in_game_id}.', tag='FightSchema')
                         _temp_array.append(card_def)
                     if card_def.attack_point >= card_atk.defense_point:
-                        print(f'{card_def.in_game_id} derrotou {
-                            card_atk.in_game_id}')
+                        Logger.info(msg=f'{card_def.in_game_id} VS {card_atk.in_game_id}.', tag='FightSchema')
                         _temp_array.append(card_atk)
                     for _card in _temp_array:
                         _player_id = int(_card.in_game_id.split("_")[0])
-                        if _player_id == self.player_attack:
+                        if _player_id == self.player_attack.id:
                             await self.match_room.moveCard(
                                 self.player_attack, card_atk.in_game_id, "battle", "forgotten")
-                        elif _player_id == self.player_defense:
+                        elif _player_id == self.player_defense.id:
                             await self.match_room.moveCard(
                                 self.player_defense, card_def.in_game_id, "battle", "forgotten")
         for card_atk in self.attack_cards:
@@ -220,6 +222,16 @@ class C_Match:
         self.fight_camp: FightSchema = None  # create and delete on every fight
         self.move_now: MoveSchema = None
         self.end_match: str = None
+        
+        self.winner: int = None
+        self.montou_a_armadura_completa: bool = False
+        self.first_blood: int = None # derrotou o primeiro herói
+        self.has_sins: List[int] = [] # ids de quem usou pecado
+        self.take_damage: List[int] = [] # ids de quem tomou dano na fé
+        self.not_believe: List[int] = [] # ids de quem usou artefatos equipáveis em heróis no campo de batalha
+        
+        Logger.info(msg=f'Sala iniciada: {self.id}', tag='C_Match')
+        Logger.status(msg=f'{self.getStats()}', tag='C_Match')
 
         if len(self.players_in_match) > 1:
             shuffle(self.players_in_match)
@@ -277,8 +289,10 @@ class C_Match:
         await WS.sendToPlayer(data, player_id)
 
     async def updatePlayers(self):
+        Logger.status(msg=f'{self.id }<<<: {self.getStats()}', tag='C_Match')
         for _team in self.players_in_match:
             for player in _team:
+                Logger.status(msg=f'Jogador: {player.id }<<<: {player.getStats(private=True)}', tag='C_Player_Match')
                 await self.sendToPlayer(
                     player.id,
                     {
@@ -310,6 +324,8 @@ class C_Match:
                     if self.deatmatch:
                         # Cada jogar perde um ponto de fé a cada rodada
                         self.takeDamage(player, 1)
+                        Logger.info(
+                            msg=f'Deathmatch - Round {self.round_match}', tag='C_Match')
                     else:
                         # Finaliza a partida
                         ...
@@ -320,6 +336,8 @@ class C_Match:
     async def playerTurnHandle(self):
         # Manipular a vez de cada jogador de cada time
         player = self.players_in_match[self.team_turn][self.player_turn]
+        Logger.info(msg=f'Turno do jogador: {player.id}', tag='C_Match')
+        Logger.status(msg=f'{player.getStats()}', tag='C_Player_Match')
         if player.faith_points < 1:
             await self.finishTurn()
         player.wisdom_available = player.wisdom_points
@@ -361,6 +379,7 @@ class C_Match:
             player.card_hand.append(card_selected)
             count += 1
             player.card_deck.remove(card_selected)
+            Logger.info(msg=f'Jogador: {player.id} comprou a carta: {card_selected.in_game_id}', tag='C_Player_Match')
         return card_selected
 
     async def moveCard(self, player: C_Player_Match, card_id: str, move_from: str, move_to: str):
@@ -398,9 +417,9 @@ class C_Match:
         return bool(move_done)
 
     async def beginAttack(self, move: MoveSchema):
-        print(f'Jogador {move.player_move_id} está atacando o jogador {
-            move.player_target_id} com as cartas {move.card_list}')
 
+        Logger.info(msg=f'Jogador: {move.player_move_id} está atacando o jogador {
+                    move.player_target_id} com as cartas {move.card_list}', tag='C_Player_Match')
         self.can_others_move = True
         player_attack = self._getPlayerById(move.player_move_id)
         player_defense = self._getPlayerById(move.player_target_id)
@@ -414,8 +433,8 @@ class C_Match:
         await self.fight_camp.attack()
 
     async def beginDefense(self, move: MoveSchema):
-        print(f'Jogador {move.player_move_id} está defendendo o ataque do jogador {
-            move.player_target_id} com as cartas {move.card_list}')
+        Logger.info(msg=f'Jogador: {move.player_move_id} está defendendo o ataque do jogador {
+                    move.player_target_id} com as cartas {move.card_list}', tag='C_Player_Match')
         await self.fight_camp.defense(move.card_list)
 
     async def fightNow(self):
@@ -426,8 +445,9 @@ class C_Match:
     def takeDamage(self, player: C_Player_Match, damage: int):
         player.faith_points -= damage
         print(f'Jogador {player.id} perdeu {damage} de fé.')
+        Logger.info(msg=f'Jogador: {player.id} perdeu {damage}pts de fé.', tag='C_Player_Match')
         if (player.faith_points < 1):
-            print(f'Jogador {player.id} morreu.')
+            Logger.info(msg=f'Jogador: {player.id} foi eliminado.', tag='C_Player_Match')
         self.checkWinner()
 
     def checkWinner(self):
@@ -437,8 +457,10 @@ class C_Match:
                 if player.faith_points > 0:
                     winner.append(player)
         if len(winner) == 1:
+            Logger.info(msg=f'Jogador: {player.id} venceu.', tag='C_Match')
             print(f'{winner[0].id} venceu')
-            self.player_turn = winner[0].id
+            self.winner = winner[0].id # pq?
+            # self.player_turn = winner[0].id # pq?
             # Gerar estatisticas...
             return True
         return False
@@ -455,8 +477,7 @@ class C_Match:
         print('preparar a tela de estatísticas')
 
     async def incoming(self, data: dict):
-        # Logger.info(f'>>> {data}', 'MATCH')
-        consolePrint.status(data)
+        Logger.status(msg=f'{self.id }>>>: {data}', tag='C_Match')
         assert self.id == data['match_id']
         assert self.round_match == data['round_match']
         move = MoveSchema(**data)
@@ -470,7 +491,7 @@ class C_Match:
             await self.finishTurn()
 
         if move.move_type == 'surrender':
-            print(f'{player.id} SURRENDERED...')
+            Logger.info(msg=f'Jogador {player.id} desistiu.', tag='C_Match')
             # if player.id == self.player_turn:
             await self.finishTurn()
             self.takeDamage(player, player.faith_points)

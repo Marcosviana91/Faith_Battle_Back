@@ -1,5 +1,5 @@
 from schemas.users_schema import UserWs
-from utils.console import consolePrint
+from utils.LoggerManager import Logger
 from utils.security import getCurrentUserAuthenticated
 
 
@@ -11,7 +11,6 @@ class WS_Manager:
         for user in self.all_users:
             if user.id == user_id:
                 return user
-        consolePrint.danger(msg=f'WS: User {user_id} not connected in WS')
         return None
     
     def getStats(self):
@@ -28,7 +27,7 @@ class WS_Manager:
             user_ws.websocket.close()
             return
         if authenticated_user_id != user_ws.id:
-            consolePrint.danger(msg=f"Token não combina com o usuário.")
+            Logger.danger(msg=f'Token não combina com o usuário {user_ws.id}', tag='WS')
             user_ws.websocket.close()
             return
         user = self.__getUserWsById(user_ws.id)
@@ -36,21 +35,16 @@ class WS_Manager:
             user.websocket = user_ws.websocket
         else:
             self.all_users.append(user_ws)
-        consolePrint.info(
-            msg=f"WS: User {user_ws.id} has connected.")
-        consolePrint.info(
-            msg=f"WS: Users connected in game: {
-                self.all_users.__len__()}."
-        )
+        Logger.info(msg=f"Usuário {user_ws.id} conectou usando um token", tag="AUTH")
+        Logger.info(msg=f"Usuários conectados ao jogo: {self.all_users.__len__()}", tag="WS")
 
     def disconnect(self, user_id: int = None):
         user = self.__getUserWsById(user_id)
         if user:
             user.websocket = None
             self.all_users.remove(user)
-            consolePrint.status(msg=f"WS: User {user_id} has disconnected.")
-        consolePrint.info(msg=f"WS: Users connected in game: {
-            self.all_users.__len__()}.")
+            Logger.info(msg=f"Usuário {user_id} se desconectou do jogo.", tag="WS")
+        Logger.info(msg=f"Usuários conectados ao jogo: {self.all_users.__len__()}", tag="WS")
 
     async def sendToPlayer(self, data: dict, user_id: int):
         user = self.__getUserWsById(user_id)

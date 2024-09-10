@@ -1,6 +1,7 @@
 from schemas.API_schemas import ClientRequestSchema
 from utils.DataBaseManager import DB
 from utils.MATCHES.MatchClass import C_Match
+from utils.LoggerManager import Logger
 
 
 class MatchManager:
@@ -46,6 +47,8 @@ class MatchManager:
             for player in _team:
                 await DB.setPlayerRoomOrMatch(player_id=player.id, clear=True)
         self.MATCHES.remove(match)
+        Logger.info(msg=f'Partida encerrada: {match.id}', tag='MatchManager')
+        Logger.status(msg=f'Partida encerrada: {match.getStats()}', tag='MatchManager')
         del match
 
 

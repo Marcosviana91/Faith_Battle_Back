@@ -10,7 +10,7 @@ from tinydb import TinyDB
 
 from settings import env_settings as env
 
-# from utils.console import consolePrint
+from utils.LoggerManager import Logger
 
 from schemas.users_schema import NewUserSchema
 from schemas.API_schemas import APIResponseSchema
@@ -161,7 +161,6 @@ class TinyDB_Manager:
         user = requests.get(f'http://{env.DB_HOST}:3111/api/user/{user_id}')
         if user.status_code == 200:
             player = await self.getPlayerById(user_id)
-            print(player)
             user = dict(user.json())
             user.pop('last_name')
             user['avatar'] = player['avatar']
@@ -178,7 +177,7 @@ class TinyDB_Manager:
 
     # UPDATE DB DATA
     async def setPlayerRoomOrMatch(self, player_id: int, room_id: str = None, match_id: str = None, clear: bool = False):
-        founded_player = self.getPlayerById(player_id)
+        founded_player = await self.getPlayerById(player_id)
         if room_id:
             founded_player['room_id'] = room_id
         if match_id:
@@ -196,6 +195,8 @@ class TinyDB_Manager:
         if newUser.status_code == 200:
             response.data_type = 'user_data'
             response.user_data = newUser.json()
+            Logger.info(msg=f'Novo usuário cadastrado: {data.username}')
+            Logger.status(msg=f'Novo usuário cadastrado: {newUser.json()}')
         return response
 
     # def updateUser(
