@@ -22,7 +22,7 @@ class C_Logger:
             os.chdir(f'{_date}')
         os.chdir('../../../../')
 
-    def checkData(self):
+    def __checkData(self):
         if datetime.now().date() != self.__current_date:
             self.__init__()
 
@@ -30,7 +30,7 @@ class C_Logger:
         '''
         Usado para informações do correto funcionamento do sistema com linguagem descritiva.
         '''
-        self.checkData()
+        self.__checkData()
 
         now = datetime.now().time()
         os.chdir(self.__current_dir)
@@ -54,7 +54,7 @@ class C_Logger:
         '''
         Usado para informações do passo a passo do sistema com linguagem de objetos.
         '''
-        self.checkData()
+        self.__checkData()
 
         now = datetime.now().time()
         os.chdir(self.__current_dir)
@@ -78,7 +78,7 @@ class C_Logger:
         '''
         Usado para informações de Risco
         '''
-        self.checkData()
+        self.__checkData()
 
         now = datetime.now().time()
         os.chdir(self.__current_dir)
