@@ -49,6 +49,14 @@ class C_Heros(C_Card_Match):
                         'stillUntilDismiss': True
                     }
                 }, player_id=player.id)
+                await match.sendToPlayer(data={
+                    'data_type': 'notification',
+                    'notification': {
+                        "title": "Cinturão da Verdade",
+                        "message": f'Você revelou a carta {STANDARD_CARDS_RAW_DATA[reveled_card.slug][0]} com {reveled_card_wisdom_cost} de custo e perdeu fé no mesmo valor.',
+                        'stillUntilDismiss': True
+                    }
+                }, player_id=player_target.id)
             else:
                 consolePrint.info('Não há carta para revelar')
 
@@ -63,6 +71,9 @@ class C_Heros(C_Card_Match):
     async def onMoveToBattleZone(self, match: 'C_Match'):
         player = match._getPlayerById(match.move_now.player_move_id)
         await super().onMoveToBattleZone(match)
+        # Seta os artefatos como 'used' para não poderem ser desequipados
+        for _card in self.attached_cards:
+            _card.status = 'used'
         # A passiva de Arca da Aliança é verificada para todos os heróis
         if getCardInListBySlugId('arca-da-alianca', player.card_battle_camp):
             consolePrint.info(f'CARD: {player.id} ativou Arca da Aliança')
@@ -72,6 +83,9 @@ class C_Heros(C_Card_Match):
     async def onRetreatToPrepareZone(self, match: 'C_Match'):
         player = match._getPlayerById(match.move_now.player_move_id)
         await super().onRetreatToPrepareZone(match)
+        # Seta os artefatos como 'ready' para poderem ser desequipados
+        for _card in self.attached_cards:
+            _card.status = 'ready'
         # A passiva de Arca da Aliança é verificada para todos os heróis
         if getCardInListBySlugId('arca-da-alianca', player.card_battle_camp):
             consolePrint.info(
@@ -81,12 +95,11 @@ class C_Heros(C_Card_Match):
 
     async def onDestroy(self, match: 'C_Match'):
         player_target_id = int(self.in_game_id.split("_")[0])
-        print("player_target_id", player_target_id)
         player_target = match._getPlayerById(player_target_id)
         await super().onDestroy(match)
         for _card in self.attached_cards:
-            Logger.info(msg=f'A carta {
-                        self.in_game_id} foi destruída.', tag='C_Card_Match')
+            Logger.info(msg=f'O equipamento {
+                        _card.in_game_id} foi destruída.', tag='C_Card_Match')
             player_target.card_in_forgotten_sea.append(_card)
         self.attached_cards = []
 
@@ -119,10 +132,8 @@ class C_Adao(C_Heros):
         await super().onInvoke(match)
         # Procurar por Eva no campo de preparação e no campo de batalha
         if getCardInListBySlugId('eva', player.card_prepare_camp) or getCardInListBySlugId('eva', player.card_battle_camp):
+            Logger.info(msg='EVA está em jogo.', tag='C_Card_Match')
             await self.addSkill(match)
-
-    async def onDestroy(self, match: 'C_Match'):
-        await super().onDestroy(match)
 
 
 class C_Daniel(C_Heros):
@@ -266,14 +277,17 @@ class C_Eva(C_Heros):
     async def onInvoke(self, match: 'C_Match'):
         player = match._getPlayerById(match.move_now.player_move_id)
         await super().onInvoke(match)
+        await self.addSkill(match)
         # Procurar por Adão no campo de preparação
         card = getCardInListBySlugId('adao', player.card_prepare_camp)
         if card:
             await card.addSkill(match)
+            Logger.info(msg="ADÃO está em jogo", tag='C_Card_Match')
         # Procurar por Adão no campo de batalha
         card = getCardInListBySlugId('adao', player.card_battle_camp)
         if card:
             await card.addSkill(match)
+            Logger.info(msg="ADÃO está em jogo", tag='C_Card_Match')
 
 
 class C_Jaco(C_Heros):
