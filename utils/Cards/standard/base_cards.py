@@ -143,11 +143,13 @@ class C_Card_Match:
         # Verificar a armadura de Deus
 
     async def onDettach(self, match: 'C_Match'):
+        # self is hero card
         player = match._getPlayerById(match.move_now.player_move_id)
+        # card_target is the attached card to remove
         card_target = getCardInListBySlugId(
-            match.move_now.card_target_id, player.card_prepare_camp)
-        card_target.attached_cards.remove(self)
-        player.card_prepare_camp.append(self)
+            match.move_now.card_target_id, self.attached_cards)
+        self.attached_cards.remove(card_target)
+        player.card_prepare_camp.append(card_target)
         Logger.info(msg=f'O artefato {self.in_game_id} foi removido do Herói {card_target}.', tag='C_Card_Match')
 
 # Utilitários
