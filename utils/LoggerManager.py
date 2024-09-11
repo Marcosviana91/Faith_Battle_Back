@@ -65,13 +65,13 @@ class C_Logger:
             log_msg = f'{_name.upper()}:\t{now} - {msg}\n'
         with open(f"{_name}.txt", "a") as f:
             f.write(log_msg)
-        if tag:
-            print_msg = f'{Fore.BLACK}{Back.GREEN}{_name.upper()}[{tag}]:\t{
-                Style.RESET_ALL}{now} - {msg}'
-        else:
-            print_msg = f'{Fore.BLACK}{Back.GREEN}{_name.upper()}:\t{Style.RESET_ALL}{
-                now} - {msg}'
-        print(print_msg)
+        # if tag:
+        #     print_msg = f'{Fore.BLACK}{Back.GREEN}{_name.upper()}[{tag}]:\t{
+        #         Style.RESET_ALL}{now} - {msg}'
+        # else:
+        #     print_msg = f'{Fore.BLACK}{Back.GREEN}{_name.upper()}:\t{Style.RESET_ALL}{
+        #         now} - {msg}'
+        # print(print_msg)
         os.chdir('../../../../')
 
     def danger(self, msg: str, tag: str = None):
