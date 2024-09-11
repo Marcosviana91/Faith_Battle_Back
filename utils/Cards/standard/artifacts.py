@@ -4,9 +4,13 @@ from .base_cards import C_Card_Match, getCardInListBySlugId
 from utils.Cards.standard.raw_data import STANDARD_CARDS_RAW_DATA
 
 from utils.console import consolePrint
+from utils.LoggerManager import Logger
 
 if TYPE_CHECKING:
     from utils.MATCHES.MatchClass import C_Match
+
+ARMADURA_DE_DEUS = ['botas-do-evangelho', 'capacete-da-salvacao',
+                    'cinturao-da-verdade', 'couraca-da-justica', 'escudo-da-fe', 'espada-do-espirito']
 
 
 class C_Artifacts(C_Card_Match):
@@ -14,7 +18,7 @@ class C_Artifacts(C_Card_Match):
     def __init__(self, slug: str, in_game_id: str):
         super().__init__(slug, in_game_id)
         self.attachable = True
-        
+
     def getStats(self):
         _data = super().getStats()
         _data.update({
@@ -25,6 +29,31 @@ class C_Artifacts(C_Card_Match):
     async def onInvoke(self, match: 'C_Match'):
         await super().onInvoke(match)
         self.status = 'ready'
+
+    async def onMoveToBattleZone(self, match: 'C_Match'):
+        await super().onMoveToBattleZone(match)
+        self.status = 'used'
+
+    async def onAttach(self, match: 'C_Match'):
+        await super().onAttach(match)
+        player = match._getPlayerById(match.move_now.player_move_id)
+        card_hero = getCardInListBySlugId(
+            match.move_now.card_target_id, player.card_prepare_camp)
+        armadura_completa = {
+            'botas-do-evangelho': False,
+            'capacete-da-salvacao': False,
+            'cinturao-da-verdade': False,
+            'couraca-da-justica': False,
+            'escudo-da-fe': False,
+            'espada-do-espirito': False
+        }
+        for _card in card_hero.attached_cards:
+            if _card.slug in ARMADURA_DE_DEUS:
+                armadura_completa[_card.slug] = True
+        if armadura_completa['botas-do-evangelho'] == armadura_completa['capacete-da-salvacao'] == armadura_completa['cinturao-da-verdade'] == armadura_completa['couraca-da-justica'] == armadura_completa['escudo-da-fe'] == armadura_completa['espada-do-espirito'] == True:
+            Logger.info(msg=f'O jogador {player.id} completou a armadura de Deus.', tag='C_Match')
+            await match.finishMatch()
+            match.winner = player.id
 
 
 class C_ArcaDaAlianca(C_Artifacts):
@@ -190,6 +219,7 @@ class C_CapaceteDaSalvacao(C_Artifacts):
 class C_CinturaoDaVerdade(C_Artifacts):
     slug = 'cinturao-da-verdade'
 
+    # A passiva do Cinturao da Verdade é verificada para todos os heróis na classe heros
     def __init__(self, in_game_id: str):
         super().__init__(slug='cinturao-da-verdade', in_game_id=in_game_id)
 
