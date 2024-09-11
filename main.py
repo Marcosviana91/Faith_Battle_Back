@@ -30,7 +30,7 @@ app.add_middleware(
 def handleRoot():
     server_settings = requests.get(f'http://{env_settings.DB_HOST}:3111/api/')
     res = {
-        'version': 'alpha-1.0.0',
+        'version': 'alpha-1.0.1',
     }
     if server_settings.status_code == 200:
         res['active_cards'] = server_settings.json()['active_cards']

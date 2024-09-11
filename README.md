@@ -1,11 +1,10 @@
 # The Faith Battle fã game
 
-version: pre-alpha-1.0.0 (closed tests)
+version: alpha-1.0.0 (closed tests)
 
 Based in [Faith Battle](https://www.faithbattle.com.br/) card game.
 
-Actually with 15 hero basic cards:
-Abraão, Adão, Daniel, Davi, Elias, Ester, Eva, Jacó, José do Egito, Josué, Maria, Moisés, Noé, Salomão and Sansão
+Actually with 30 basic cards bettwen heros, miracles and artifacts.
 
 ## Cards
 Currently, there are 15 basic hero cards available in the game. Each hero card features wisdom cost, attack points, and defense points, along with passive and active skills.
@@ -42,13 +41,16 @@ Currently, there are 15 basic hero cards available in the game. Each hero card f
     0. [Botas do Evangélho](https://www.faithbattle.com.br/c%C3%B3pia-her%C3%B3is?lightbox=dataItem-loor3ix8)
     0. [Cajado de Moisés](https://www.faithbattle.com.br/c%C3%B3pia-her%C3%B3is?lightbox=dataItem-looqzyis)
     0. [Capacete da Salvação](https://www.faithbattle.com.br/c%C3%B3pia-her%C3%B3is?lightbox=dataItem-loor598j) - Cannot be affected by sins - Not working
-    0. [Couraça da Justiça](https://www.faithbattle.com.br/c%C3%B3pia-her%C3%B3is?lightbox=dataItem-luq2mbyx) - "Exodia" - Not working
+    0. [Cinturão da Verdade](https://www.faithbattle.com.br/c%C3%B3pia-her%C3%B3is?lightbox=dataItem-loor8m7y)
+    0. [Couraça da Justiça](https://www.faithbattle.com.br/c%C3%B3pia-her%C3%B3is?lightbox=dataItem-luq2mbyx)
     0. [Escudo da Fé](https://www.faithbattle.com.br/c%C3%B3pia-her%C3%B3is?lightbox=dataItem-looqykdj)
     0. [Espada do Espírito](https://www.faithbattle.com.br/c%C3%B3pia-her%C3%B3is?lightbox=dataItem-looqx8ym)
     0. [Os 10 Mandamentos](https://www.faithbattle.com.br/c%C3%B3pia-her%C3%B3is?lightbox=dataItem-loor6hsp)
 
+> Player and card status, that offers protection still not working
+
 ### Next Steps
-The next update will introduce miracle cards, which will be listed alphabetically rather than by priority:
+The nexts updates will introduce others miracle cards, which will be listed alphabetically rather than by priority:
 
 - Miracle cards that **DON’T** work:
     1. Cordeiro de Deus
@@ -60,4 +62,4 @@ The next update will introduce miracle cards, which will be listed alphabeticall
 
 - Artifacts cards that **DON’T** work:
     1. [Arca de Noé](https://www.faithbattle.com.br/c%C3%B3pia-her%C3%B3is?lightbox=dataItem-looqutkv)
-    0. [Cinturão da Verdade](https://www.faithbattle.com.br/c%C3%B3pia-her%C3%B3is?lightbox=dataItem-loor8m7y)
+
