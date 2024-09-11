@@ -35,10 +35,11 @@ class RoomManager:
         return response
 
     def _getRoomById(self, room_id: str) -> C_Room:
-        for room in self.ROOMS:
-            if room.id == room_id:
-                return room
-        consolePrint.danger(f'Room ID not found: {room_id}')
+        if room_id is not None:
+            for room in self.ROOMS:
+                if room.id == room_id:
+                    return room
+            consolePrint.danger(f'Room ID not found: {room_id}')
         return None
 
 #     def getRoomInfo(self, room_id):

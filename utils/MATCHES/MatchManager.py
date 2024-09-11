@@ -11,9 +11,11 @@ class MatchManager:
         self.SPECTABLE_MATCHES: list[C_Match] = []
 
     def _getMatchById(self, match_id: str) -> C_Match:
-        for match in self.MATCHES:
-            if match.id == match_id:
-                return match
+        if match_id is not None:
+            for match in self.MATCHES:
+                if match.id == match_id:
+                    return match
+        return None
 
     def getStats(self):
         response = []

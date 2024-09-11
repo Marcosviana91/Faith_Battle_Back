@@ -9,10 +9,7 @@ from utils.ROOM.RoomManager import RM
 async def checkUserStats(player_id: int):
     room_id = dict(await DB.getPlayerById(player_id)).get("room_id", None)
     match_id = dict(await DB.getPlayerById(player_id)).get("match_id", None)
-    # Enviar um leave room para o cliente caso não exista a sala nem partida
-    if room_id is None and match_id is None:
-        # await DB.setPlayerRoomOrMatch(player_id)
-        # await WS.sendToPlayer({"data_type": "disconnected"}, player_id)
+    if room_id == None and match_id == None:
         return None
 
     room = RM._getRoomById(room_id)
@@ -63,4 +60,8 @@ async def checkUserStats(player_id: int):
                                     },
                                     user_id=player.id
                                 )
+    # Enviar um leave room para o cliente caso não exista a sala nem partida
+    if room is None and match is None:
+        await DB.setPlayerRoomOrMatch(player_id, clear=True)
+        await WS.sendToPlayer({"data_type": "disconnected"}, player_id)
     return None
