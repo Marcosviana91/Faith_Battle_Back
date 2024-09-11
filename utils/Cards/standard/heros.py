@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 from utils.console import consolePrint
 from utils.Cards.standard.raw_data import STANDARD_CARDS_RAW_DATA
+from utils.LoggerManager import Logger
 from .base_cards import C_Card_Match, getCardInListBySlugId
 
 if TYPE_CHECKING:
@@ -77,6 +78,17 @@ class C_Heros(C_Card_Match):
                 f'CARD: {player.id} removeu o efeito Arca da Aliança')
             self.attack_point -= 1
             self.defense_point -= 1
+
+    async def onDestroy(self, match: 'C_Match'):
+        player_target_id = int(self.in_game_id.split("_")[0])
+        print("player_target_id", player_target_id)
+        player_target = match._getPlayerById(player_target_id)
+        await super().onDestroy(match)
+        for _card in self.attached_cards:
+            Logger.info(msg=f'A carta {
+                        self.in_game_id} foi destruída.', tag='C_Card_Match')
+            player_target.card_in_forgotten_sea.append(_card)
+        self.attached_cards = []
 
 
 class C_Abraao(C_Heros):
@@ -245,7 +257,7 @@ class C_Eva(C_Heros):
 
     def __init__(self, in_game_id: str):
         super().__init__(slug="eva", in_game_id=in_game_id)
-        
+
     async def addSkill(self, match: 'C_Match'):
         await super().addSkill(match)
         player = match._getPlayerById(match.move_now.player_move_id)
