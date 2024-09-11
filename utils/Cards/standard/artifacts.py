@@ -13,6 +13,14 @@ class C_Artifacts(C_Card_Match):
 
     def __init__(self, slug: str, in_game_id: str):
         super().__init__(slug, in_game_id)
+        self.attachable = True
+        
+    def getStats(self):
+        _data = super().getStats()
+        _data.update({
+            'attachable': self.attachable,
+        })
+        return _data
 
     async def onInvoke(self, match: 'C_Match'):
         await super().onInvoke(match)
@@ -24,6 +32,7 @@ class C_ArcaDaAlianca(C_Artifacts):
 
     def __init__(self, in_game_id: str):
         super().__init__(slug='arca-da-alianca', in_game_id=in_game_id)
+        self.attachable = False
 
     async def addSkill(self, match: 'C_Match'):
         await super().addSkill(match)
@@ -264,6 +273,7 @@ class C_Os10Mandamentos(C_Artifacts):
 
     def __init__(self, in_game_id: str):
         super().__init__(slug='os-10-mandamentos', in_game_id=in_game_id)
+        self.attachable = False
 
     async def addSkill(self, match: 'C_Match'):
         await super().addSkill(match)
