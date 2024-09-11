@@ -115,7 +115,7 @@ class C_Room:
         initial_cards: int = INITIAL_CARDS,
         maximum_deck_tries: int = MAXIMUM_DECK_TRIES,
     ):
-        # Easy mode garante um heroi custo 1 e um artefato ou milagre custo 1
+        # Easy mode garante um heroi custo 1 E um artefato ou milagre custo 1
         # Também garante que as cartas trocadas não sejam escolhidas de novo no mesmo momento, mas no próximo sorteio sim
         self.easy_mode = easy_mode
         # Deatmatch permita que a partida se estenda até que o último jogador esteja vivo, após o limite de rodadas, a cada rodada todos perdem 1 ponto de fé
@@ -235,18 +235,18 @@ class C_Room:
                             if card.slug == 'eva':
                                 print("ACHOU EVA")
                             __heros_1.append(card)
-                    #     elif card.card_type == 'miracle' or card.card_type == 'artifact':
-                    #         print(card)
-                    #         __miracles_artifacts_1.append(card)
-                    #         player.card_deck.remove(card)
+                        elif card.card_type == 'miracle' or card.card_type == 'artifact':
+                            print(card)
+                            __miracles_artifacts_1.append(card)
                 hero_1_selected = choice(__heros_1)
                 print('escolheu', hero_1_selected)
                 player.card_hand.append(hero_1_selected)
                 player.card_deck.remove(hero_1_selected)
 
-        #         miracles_artifacts_1_selected = choice(__miracles_artifacts_1)
-        #         player.card_hand.append(miracles_artifacts_1_selected)
-        #         __miracles_artifacts_1.remove(miracles_artifacts_1_selected)
+                miracles_artifacts_1_selected = choice(__miracles_artifacts_1)
+                print('escolheu', miracles_artifacts_1_selected)
+                player.card_hand.append(miracles_artifacts_1_selected)
+                player.card_deck.remove(miracles_artifacts_1_selected)
 
                 count = 1
         while count < number_of_cards:
