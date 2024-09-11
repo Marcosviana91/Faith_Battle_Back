@@ -37,6 +37,7 @@ class C_Card_Match:
         self.wisdom_cost = STANDARD_CARDS_RAW_DATA[self.slug][1]
         self.attack_point = STANDARD_CARDS_RAW_DATA[self.slug][2]
         self.defense_point = STANDARD_CARDS_RAW_DATA[self.slug][3]
+        self.status = 'ready'
 
     def getStats(self):
         _data = {
