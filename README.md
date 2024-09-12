@@ -1,6 +1,6 @@
 # The Faith Battle fã game
 
-version: alpha-1.0.0 (closed tests)
+version: alpha-1.0.1 (closed tests)
 
 Based in [Faith Battle](https://www.faithbattle.com.br/) card game.
 
