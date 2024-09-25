@@ -245,6 +245,18 @@ class C_Ressurreicao(C_Miracles):
     async def addSkill(self, match: 'C_Match'):
         await super().addSkill(match)
         # Retorna um herói de qualquer mar do esquecimento ao jogo sob seu controle. Voce escolhe em qual zona ele voltará.
+        player_target = match._getPlayerById(self.card_move.get(
+            'player_target_id'))  # Jogador que vai receber a carta
+        player_target2 = match._getPlayerById(self.card_move.get(
+            'player_target2_id'))  # Jogador que vai ceder a carta
+        card_target_id: str = self.card_move.get('card_target_id')
+        card_hero = getCardInListBySlugId(
+            card_target_id, player_target2.card_in_forgotten_sea) # Herói que vai ressucitar
+        player_target2.card_in_forgotten_sea.remove(card_hero)
+        player_target.card_prepare_camp.append(card_hero)
+        old_card_id = card_hero.in_game_id.split("_")
+        card_hero.in_game_id = f'{player_target.id}_{old_card_id[1]}_{old_card_id[2]}'
+        await card_hero.onResurrection(player=player_target, match=match)
 
 
 class C_RestauracaoDeFe(C_Miracles):
