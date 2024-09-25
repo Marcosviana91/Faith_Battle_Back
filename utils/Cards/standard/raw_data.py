@@ -73,12 +73,12 @@ STANDARD_CARDS_MIRACLES = [
     # 'cordeiro-de-deus',
     'diluvio',
     'fogo-do-ceu',
-    # 'forca-de-sansao',
+    'forca-de-sansao',
     # 'liberacao-celestial',
     'no-ceu-tem-pao',
     # 'passagem-segura',
     # 'protecao-divina',
-    # 'ressurreicao',
+    'ressurreicao',
     'restauracao-de-fe',
     'sabedoria-de-salomao',
     'sarca-ardente',
@@ -86,16 +86,27 @@ STANDARD_CARDS_MIRACLES = [
 
 STANDARD_CARDS_ARTIFACTS = [
     'arca-da-alianca',
-    # 'arca-de-noe',
+    'arca-de-noe',
     'botas-do-evangelho',
     'cajado-de-moises',
     'capacete-da-salvacao',
-    # 'cinturao-da-verdade',
+    'cinturao-da-verdade',
     'couraca-da-justica',
     'escudo-da-fe',
     'espada-do-espirito',
     'os-10-mandamentos',
 ]
 
-STANDARD_CARDS = [*STANDARD_CARDS_HEROS, *STANDARD_CARDS_MIRACLES,
-                  *STANDARD_CARDS_ARTIFACTS, *STANDARD_CARDS_LEGENDARY_HEROS]
+STANDARD_CARDS_SINS = [
+    # 'fruto-proibido',
+    # 'idolatria',
+    # 'traicao',
+]
+
+STANDARD_CARDS = [
+    *STANDARD_CARDS_HEROS,
+    *STANDARD_CARDS_MIRACLES,
+    *STANDARD_CARDS_ARTIFACTS,
+    *STANDARD_CARDS_SINS,
+    *STANDARD_CARDS_LEGENDARY_HEROS,
+]
