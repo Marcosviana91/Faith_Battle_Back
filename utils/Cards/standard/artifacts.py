@@ -51,7 +51,8 @@ class C_Artifacts(C_Card_Match):
             if _card.slug in ARMADURA_DE_DEUS:
                 armadura_completa[_card.slug] = True
         if armadura_completa['botas-do-evangelho'] == armadura_completa['capacete-da-salvacao'] == armadura_completa['cinturao-da-verdade'] == armadura_completa['couraca-da-justica'] == armadura_completa['escudo-da-fe'] == armadura_completa['espada-do-espirito'] == True:
-            Logger.info(msg=f'O jogador {player.id} completou a armadura de Deus.', tag='C_Match')
+            Logger.info(msg=f'O jogador {
+                        player.id} completou a armadura de Deus.', tag='C_Match')
             await match.finishMatch()
             match.winner = player.id
 
@@ -75,13 +76,13 @@ class C_ArcaDaAlianca(C_Artifacts):
             'data_type': 'notification',
             'notification': {
                 "title": "Arca da Aliança",
-                "message": f"Seus heróis ganham 1/1 no ZB."
+                "message": f"Todos os Heróis na ZB sob seu controle ganham 1/1."
             }
         }, player_id=player.id)
 
     async def rmvSkill(self, match: 'C_Match'):
         await super().rmvSkill(match)
-        player_target = match._getPlayerById(match.move_now.player_target_id)
+        player_target = match._getPlayerById(self.in_game_id.split("_")[0])
         for card in player_target.card_battle_camp:
             if card.card_type == "hero":
                 card.attack_point -= 1
@@ -140,6 +141,20 @@ class C_BotasDoEvangelho(C_Artifacts):
     # A passiva da Botas do Evangelho é verificada para todos os heróis na classe heros
     def __init__(self, in_game_id: str):
         super().__init__(slug='botas-do-evangelho', in_game_id=in_game_id)
+
+    async def addSkill(self, match: 'C_Match'):
+        await super().addSkill(match)
+        player = match._getPlayerById(match.move_now.player_move_id)
+        new_card = match.giveCard(player)
+        if new_card:
+            await match.sendToPlayer(data={
+                'data_type': 'notification',
+                'notification': {
+                    "title": 'Botas do Evangelho',
+                    "message": f'Comprou a carta {new_card.slug}.',
+                    "stillUntilDismiss": True
+                }
+            }, player_id=player.id)
 
 
 class C_CajadoDeMoises(C_Artifacts):
@@ -223,6 +238,35 @@ class C_CinturaoDaVerdade(C_Artifacts):
     def __init__(self, in_game_id: str):
         super().__init__(slug='cinturao-da-verdade', in_game_id=in_game_id)
 
+    async def addSkill(self, match: 'C_Match'):
+        await super().addSkill(match)
+        player = match._getPlayerById(match.move_now.player_move_id)
+        player_target = match._getPlayerById(match.move_now.player_target_id)
+        if len(player_target.card_deck) > 0:
+            reveled_card = player_target.card_deck[0]
+            reveled_card_wisdom_cost = STANDARD_CARDS_RAW_DATA[reveled_card.slug][1]
+            consolePrint.info(f'Jogador {player_target.id} revelou a carta {
+                                STANDARD_CARDS_RAW_DATA[reveled_card.slug][0]}')
+            match.takeDamage(player_target, reveled_card_wisdom_cost)
+            await match.sendToPlayer(data={
+                'data_type': 'notification',
+                'notification': {
+                    "title": "Cinturão da Verdade",
+                    "message": f'Jogador {player_target.id} revelou a carta {STANDARD_CARDS_RAW_DATA[reveled_card.slug][0]} com {reveled_card_wisdom_cost} de custo.',
+                    'stillUntilDismiss': True
+                }
+            }, player_id=player.id)
+            await match.sendToPlayer(data={
+                'data_type': 'notification',
+                'notification': {
+                    "title": "Cinturão da Verdade",
+                    "message": f'Você revelou a carta {STANDARD_CARDS_RAW_DATA[reveled_card.slug][0]} com {reveled_card_wisdom_cost} de custo e perdeu fé no mesmo valor.',
+                    'stillUntilDismiss': True
+                }
+            }, player_id=player_target.id)
+        else:
+            consolePrint.info('Não há carta para revelar')
+
 
 class C_CouracaDaJustica(C_Artifacts):
     slug = 'couraca-da-justica'
@@ -284,7 +328,7 @@ class C_EspadaDoEspirito(C_Artifacts):
         await match.sendToPlayer(data={
             'data_type': 'notification',
             'notification': {
-                "title": "Arca de Noé",
+                "title": "Espada do Espírito",
                 "message": f"{card_target.slug} é imbloqueável agora."
             }
         }, player_id=player.id)
@@ -317,7 +361,7 @@ class C_Os10Mandamentos(C_Artifacts):
         await match.sendToPlayer(data={
             'data_type': 'notification',
             'notification': {
-                "title": "Arca de Noé",
+                "title": "Os 10 Mandamentos",
                 "message": f"Suas cartas agora custam -1 de sabedoria."
             }
         }, player_id=player.id)
