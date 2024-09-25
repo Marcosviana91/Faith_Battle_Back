@@ -1,13 +1,15 @@
 from random import choice
 from typing import List
 
+import requests
 from nanoid import generate
 
-from utils.Cards.standard.raw_data import STANDARD_CARDS_RAW_DATA
 from utils.Cards.standard.base_cards import C_Card_Room, cardListToDict, getCardInListBySlugId
 
 from utils.DataBaseManager import DB
 from utils.console import consolePrint
+
+from settings import env_settings
 
 MINIMUM_DECK_CARDS = 10
 MAXIMUM_CARDS_REPEATS = 2
@@ -40,6 +42,7 @@ class C_Player:
 
 
 class C_Room:
+    SERVER_AVAILABLE_CARDS = []
     def __init__(
         self,
         name: str,
@@ -55,6 +58,11 @@ class C_Room:
         self.room_stage = 0
         self.connected_players: List[List[C_Player]] = [[]]
         self.created_by = created_by
+        server_settings = requests.get(f'http://{env_settings.DB_HOST}:3111/api/')
+        if server_settings.status_code == 200:
+            self.SERVER_AVAILABLE_CARDS = server_settings.json()['active_cards']
+            consolePrint.info("Cartas recebidas do servidor...")
+            print(self.SERVER_AVAILABLE_CARDS)
 
         self.setConfig()
 
@@ -126,11 +134,14 @@ class C_Room:
         selected_deck = _player_data['selected_deck']
         decks = _player_data['decks']
         deck: list['C_Card_Room'] = []
-        for _deck in decks:
-            if _deck["_id"] == selected_deck:
-                for card in _deck['cards']:
-                    _new_card = C_Card_Room(card, player_id)
-                    deck.append(_new_card)
+        # for _deck in decks:
+        #     if _deck["_id"] == selected_deck:
+        #         for card in _deck['cards']:
+        #             _new_card = C_Card_Room(card, player_id)
+        #             deck.append(_new_card)
+        for _card in self.SERVER_AVAILABLE_CARDS:
+            _new_card = C_Card_Room(_card, player_id)
+            deck.append(_new_card)
 
         c_player = C_Player(
             id=player_id,
