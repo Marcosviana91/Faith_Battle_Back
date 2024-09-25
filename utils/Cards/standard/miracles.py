@@ -146,9 +146,45 @@ class C_ForcaDeSansao(C_Miracles):
     def __init__(self, in_game_id: str):
         super().__init__(slug=self.slug, in_game_id=in_game_id)
 
+    async def onInvoke(self, match: 'C_Match'):
+        await super().onInvoke(match)
+        for _team in match.players_in_match:
+            for _player in _team:
+                await match.sendToPlayer(data={
+                    'data_type': 'notification',
+                    'notification': {
+                        "title": "Força de Sansão",
+                        "message": f"O monstro vai sair da jaula..."
+                    }
+                }, player_id=_player.id)
+
     async def addSkill(self, match: 'C_Match'):
         await super().addSkill(match)
         # O herói alvo ganha 3/3 até o final do turno. Se o alvo é Sansão, ele se torna indestrutível até o final do turno.
+        player_target_id = self.card_move.get('player_target_id')
+        card_target_id: str = self.card_move.get('card_target_id')
+        player_target = match._getPlayerById(player_target_id)
+        card_hero = getCardInListBySlugId(
+            card_target_id, player_target.card_battle_camp)
+        card_hero.attached_effects.append(self)
+        card_hero.attack_point += 3
+        card_hero.defense_point += 3
+        if card_hero.slug == 'sansao':
+            card_hero.indestrutivel = True
+
+    async def rmvSkill(self, match: 'C_Match'):
+        await super().rmvSkill(match)
+        # O herói alvo ganha 3/3 até o final do turno. Se o alvo é Sansão, ele se torna indestrutível até o final do turno.
+        player_target_id = self.card_move.get('player_target_id')
+        card_target_id: str = self.card_move.get('card_target_id')
+        player_target = match._getPlayerById(player_target_id)
+        card_hero = getCardInListBySlugId(
+            card_target_id, player_target.card_battle_camp)
+        card_hero.attached_effects.remove(self)
+        card_hero.attack_point -= 3
+        card_hero.defense_point -= 3
+        if card_hero.slug == 'sansao':
+            card_hero.indestrutivel = False
 
 
 class C_LiberacaoCelestial(C_Miracles):
