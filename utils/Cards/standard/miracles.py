@@ -84,22 +84,31 @@ class C_Diluvio(C_Miracles):
         await super().addSkill(match)
         # Destrói todos os heróis e artefatos da zona de batalha. Noé e a Arca sobrevivem
         # Verificar Arca de Noé dentre as cartas acopladas aos heróis - FALTA
-        _card_list_whitout_noe = list(
-            filter(lambda _card: _card.slug != 'noe', player_target.card_battle_camp))
-        tasks = [await match.moveCard(player=player_target, card_id=_card.in_game_id,
-                                      move_from='battle', move_to='forgotten') for _card in _card_list_whitout_noe]
+        all_tasks = []
+        for _team in match.players_in_match:
+            for player_target in _team:
+                _card_list_whitout_noe = list(
+                    filter(lambda _card: _card.slug != 'noe', player_target.card_battle_camp))
+                _card_list_whitout_arca_de_noe: List[C_Card_Match] = []
+                for __card in _card_list_whitout_noe:
+                    if getCardInListBySlugId('arca-de-noe', __card.attached_cards):
+                        continue
+                    _card_list_whitout_arca_de_noe.append(__card)
+                player_tasks = [await match.moveCard(player=player_target, card_id=_card.in_game_id,
+                                                     move_from='battle', move_to='forgotten') for _card in _card_list_whitout_arca_de_noe]
+                all_tasks = [*all_tasks, *player_tasks]
+                await match.sendToPlayer(data={
+                    'data_type': 'notification',
+                    'notification': {
+                        "title": "Gênesis: 7:23",
+                        "message": f"O dilúvio destruiu todo ser vivo da face da Terra, homens e animais foram exterminados. Só restaram Noé e aqueles que com ele estavam na Arca.",
+                        "stillUntilDismiss": True
+                    }
+                }, player_id=player_target.id)
         try:
-            await asyncio.wait(tasks)
+            await asyncio.wait(all_tasks)
         except AttributeError as e:
             consolePrint.danger(f'MIRACLE: AttributeError {e}')
-        await match.sendToPlayer(data={
-            'data_type': 'notification',
-            'notification': {
-                "title": "Gênesis: 7:23",
-                "message": f"O dilúvio destruiu todo ser vivo da face da Terra, homens e animais foram exterminados. Só restaram Noé e aqueles que com ele estavam na Arca.",
-                "stillUntilDismiss": True
-            }
-        }, player_id=player_target.id)
 
 
 class C_FogoDoCeu(C_Miracles):
