@@ -42,7 +42,22 @@ class C_CordeiroDeDeus(C_Miracles):
 
     async def addSkill(self, match: 'C_Match'):
         await super().addSkill(match)
-        # Até seu próximo turno, o jogador alvo não perde pontos de fé, pecados não o afetam e suas cartas são indestritívies
+        # Até seu próximo turno, o jogador alvo não perde pontos de fé, pecados não o afetam e suas cartas são indestrutívies
+        player_target = match._getPlayerById(self.card_move.get('player_target_id'))
+        player_target.fe_inabalavel = True
+        player_target.incorruptivel = True
+        for _card in player_target.card_battle_camp:
+            _card.indestrutivel = True
+        player_target.attached_effects.append(self)
+        
+    async def rmvSkill(self, match: 'C_Match'):
+        await super().rmvSkill(match)
+        player_target = match._getPlayerById(self.card_move.get('player_target_id'))
+        player_target.fe_inabalavel = False
+        player_target.incorruptivel = False
+        for _card in player_target.card_battle_camp:
+            _card.indestrutivel = False
+        player_target.attached_effects.remove(self)
 
 
 class C_Diluvio(C_Miracles):
