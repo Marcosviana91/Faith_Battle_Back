@@ -58,6 +58,7 @@ class C_Heros(C_Card_Match):
         if getCardInListBySlugId('abraao', player.card_battle_camp):
             consolePrint.info(f'CARD: {player.id} ativou abraão')
             player.faith_points += 1
+            player.fe_recebida += 1
 
     async def onMoveToBattleZone(self, match: 'C_Match'):
         player = match._getPlayerById(match.move_now.player_move_id)

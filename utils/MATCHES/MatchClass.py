@@ -45,6 +45,22 @@ class C_Player_Match:
         # não pode ser atacado por heróis INTANGÍVEL
         self.nao_sofre_ataque_de_herois: bool = False
 
+        # Estatísticas para o final do jogo
+        self.usou_pecados = []  # lista com slug das cartas
+        self.usou_milagres = []  # lista com slug das cartas
+        self.dano_em_fé = {
+            'total_aplicado': 0,
+            'total_recebido': 0,
+            'oponentes':
+                {
+                    #         'id': {
+                    #             'dano_aplicado': 0,
+                    #             'dano_recebido': 0,
+                    #         }
+                },
+        }
+        self.fe_recebida: int = 0
+
     def getStats(self, private: bool = False):
 
         _data = {
@@ -60,6 +76,10 @@ class C_Player_Match:
             "incorruptivel": self.incorruptivel,
             "nao_sofre_danos_de_efeitos": self.nao_sofre_danos_de_efeitos,
             "nao_sofre_ataque_de_herois": self.nao_sofre_ataque_de_herois,
+            "usou_pecados": self.usou_pecados,
+            "usou_milagres": self.usou_milagres,
+            "dano_em_fé": self.dano_em_fé,
+            "fe_recebida": self.fe_recebida,
         }
 
         if private:
@@ -181,17 +201,19 @@ class FightSchema:
                     await card_atk.hasNotSuccessfullyAttacked(player=self.player_attack, match=self.match_room, player_target=self.player_defense)
                     if card_atk.attack_point >= card_def.defense_point:
                         if card_def.indestrutivel:
-                            Logger.info(f"{card_def.in_game_id} é indestrutível.")
+                            Logger.info(
+                                f"{card_def.in_game_id} é indestrutível.")
                         else:
                             Logger.info(msg=f'{card_atk.in_game_id} derrotou {
                                         card_def.in_game_id}.', tag='FightSchema')
                             _temp_array.append(card_def)
                     if card_def.attack_point >= card_atk.defense_point:
                         if card_atk.indestrutivel:
-                             Logger.info(f"{card_atk.in_game_id} é indestrutível.")
+                            Logger.info(
+                                f"{card_atk.in_game_id} é indestrutível.")
                         else:
                             Logger.info(msg=f'{card_def.in_game_id} VS {
-                                    card_atk.in_game_id}.', tag='FightSchema')
+                                card_atk.in_game_id}.', tag='FightSchema')
                             _temp_array.append(card_atk)
                     for _card in _temp_array:
                         _player_id = int(_card.in_game_id.split("_")[0])
@@ -260,7 +282,7 @@ def convert_C_Player_and_C_Cards(player: 'C_Player') -> 'C_Player_Match':
 class C_Match:
     CARDS_STATUS_FOR_PLAYERS = ['cordeiro-de-deus', 'passagem-segura']
     CARDS_STATUS_FOR_HEROS = ['forca-de-sansao']
-    
+
     def __init__(self, room: 'C_Room'):
         self.id = room.id
         self.name = room.name
@@ -268,11 +290,28 @@ class C_Match:
         self.spectators = [WebSocket]  # Conexões anônimas de espectadores
         # Tranformar C_Player em C_Player_Match e C_Cards em C_Card_Match
         self.players_in_match: List[List[C_Player_Match]] = []
+
         for _team_index, _team in enumerate(room.connected_players):
             self.players_in_match.append([])
             for player in _team:
-                self.players_in_match[_team_index].append(
-                    convert_C_Player_and_C_Cards(player))
+                _player_match = convert_C_Player_and_C_Cards(player)
+                self.players_in_match[_team_index].append(_player_match)
+
+        for _team in self.players_in_match:
+            for _player in _team:
+                
+                for __team in self.players_in_match:
+                    for _oponent in __team:
+                        
+                        if _oponent.id == _player.id:
+                            continue
+                        _player.dano_em_fé['oponentes'].update({
+                            _oponent.id: {
+                                'dano_aplicado': 0,
+                                'dano_recebido': 0,
+                            }
+                        })
+
         self.faith_points = room.faith_points
         self.deatmatch = room.deatmatch
         self.start_match = str(datetime.now(tz=ZoneInfo("America/Sao_Paulo")))
@@ -311,8 +350,8 @@ class C_Match:
                 #     },
                 # ])
 
-
     # setar a disponibilidade de uso das cartas de cada jogador
+
     def __setCardHandStatus(self):
         for _team in self.players_in_match:
             for player in _team:
@@ -389,7 +428,8 @@ class C_Match:
             for player in _team:
                 # Reseta os efeitos nas cartas que estão na zona de batalha e zona de preparação
                 for slug in self.CARDS_STATUS_FOR_HEROS:
-                    __all_cards = [*player.card_battle_camp, *player.card_prepare_camp]
+                    __all_cards = [*player.card_battle_camp,
+                                   *player.card_prepare_camp]
                     for __card in __all_cards:
                         _card = getCardInListBySlugId(
                             slug, __card.attached_effects)
@@ -530,8 +570,30 @@ class C_Match:
         await self.fight_camp.defense(move.card_list)
 
     async def fightNow(self):
+        import pprint
         damage = await self.fight_camp.fight()
         self.takeDamage(self.fight_camp.player_defense, damage)
+
+        for _team in self.players_in_match:
+            for _player in _team:
+                print(_player.getStats().get('id'))
+                pprint.pprint(_player.getStats().get('dano_em_fé'))
+
+        print('\n\n')
+
+        player_attack_dano_em_fé = self.fight_camp.player_attack.dano_em_fé
+        player_attack_dano_em_fé['total_aplicado'] += damage
+        player_attack_dano_em_fé['oponentes'][self.fight_camp.player_defense.id]['dano_aplicado'] += damage
+
+        player_defense_dano_em_fé = self.fight_camp.player_defense.dano_em_fé
+        player_defense_dano_em_fé['total_recebido'] += damage
+        player_defense_dano_em_fé['oponentes'][self.fight_camp.player_attack.id]['dano_recebido'] += damage
+
+        for _team in self.players_in_match:
+            for _player in _team:
+                print(_player.getStats().get('id'))
+                pprint.pprint(_player.getStats().get('dano_em_fé'))
+
         await self.sendToPlayer(data={
             'data_type': 'notification',
             'notification': {

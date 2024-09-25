@@ -16,6 +16,7 @@ class C_Sins(C_Card_Match):
 
     async def onInvoke(self, match: 'C_Match'):
         player = match._getPlayerById(match.move_now.player_move_id)
+        player.usou_pecados.append(self.slug)
         await super().onInvoke(match)
         await match.sendToPlayer(
             data={

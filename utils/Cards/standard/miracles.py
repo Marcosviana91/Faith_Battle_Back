@@ -16,6 +16,7 @@ class C_Miracles(C_Card_Match):
 
     async def onInvoke(self, match: 'C_Match'):
         player = match._getPlayerById(match.move_now.player_move_id)
+        player.usou_milagres.append(self.slug)
         await super().onInvoke(match)
         await match.sendToPlayer(
             data={
@@ -302,6 +303,7 @@ class C_RestauracaoDeFe(C_Miracles):
             if _card.card_type == 'hero':
                 faith_count += 1
         player_target.faith_points += faith_count
+        player_target.fe_recebida += faith_count
         await match.sendToPlayer(data={
             'data_type': 'notification',
             'notification': {
@@ -358,6 +360,7 @@ class C_SarcaArdente(C_Miracles):
         await super().addSkill(match)
         # O jogador alva ganha 2 pontos de fé e o oponente alvo perde 2 pontos de fé
         player_target.faith_points += 2
+        player_target.fe_recebida += 2
         match.takeDamage(player_target2, 2)
         await match.sendToPlayer(data={
             'data_type': 'notification',
