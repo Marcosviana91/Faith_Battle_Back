@@ -362,6 +362,7 @@ class C_SarcaArdente(C_Miracles):
         player_target.faith_points += 2
         player_target.fe_recebida += 2
         match.takeDamage(player_target2, 2)
+        match.setDanoEmFe(player_target, player_target2, 2)
         await match.sendToPlayer(data={
             'data_type': 'notification',
             'notification': {

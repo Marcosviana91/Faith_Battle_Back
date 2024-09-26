@@ -175,6 +175,8 @@ class C_Davi(C_Heros):
         skill_player_target = match._getPlayerById(self.skill_focus_player_id)
         if skill_player_target is not None:
             match.takeDamage(skill_player_target, 1)
+            player = match._getPlayerById(self.in_game_id.split("_")[0])
+            match.setDanoEmFe(player, skill_player_target, 1)
 
 
 class C_Elias(C_Heros):

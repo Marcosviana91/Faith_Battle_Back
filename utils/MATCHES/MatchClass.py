@@ -48,7 +48,7 @@ class C_Player_Match:
         # Estatísticas para o final do jogo
         self.usou_pecados = []  # lista com slug das cartas
         self.usou_milagres = []  # lista com slug das cartas
-        self.dano_em_fé = {
+        self.dano_em_fe = {
             'total_aplicado': 0,
             'total_recebido': 0,
             'oponentes':
@@ -60,6 +60,7 @@ class C_Player_Match:
                 },
         }
         self.fe_recebida: int = 0
+        self.round_eliminado: int = 0
 
     def getStats(self, private: bool = False):
 
@@ -78,8 +79,10 @@ class C_Player_Match:
             "nao_sofre_ataque_de_herois": self.nao_sofre_ataque_de_herois,
             "usou_pecados": self.usou_pecados,
             "usou_milagres": self.usou_milagres,
-            "dano_em_fé": self.dano_em_fé,
+            "dano_em_fe": self.dano_em_fe,
             "fe_recebida": self.fe_recebida,
+            "round_eliminado": self.round_eliminado,
+            
         }
 
         if private:
@@ -179,7 +182,7 @@ class FightSchema:
 
     async def fight(self):
         total_damage = 0
-        if (len(self.attack_cards) > len(self.defense_cards)):
+        if (len(self.attack_cards) != len(self.defense_cards)):
             print("Tem mais ataque do que defesa")
         else:
             for index, card_atk in enumerate(self.attack_cards):
@@ -206,6 +209,8 @@ class FightSchema:
                         else:
                             Logger.info(msg=f'{card_atk.in_game_id} derrotou {
                                         card_def.in_game_id}.', tag='FightSchema')
+                            if self.match_room.first_blood == None:
+                                self.match_room.first_blood = self.player_attack.id
                             _temp_array.append(card_def)
                     if card_def.attack_point >= card_atk.defense_point:
                         if card_atk.indestrutivel:
@@ -299,13 +304,13 @@ class C_Match:
 
         for _team in self.players_in_match:
             for _player in _team:
-                
+
                 for __team in self.players_in_match:
                     for _oponent in __team:
-                        
+
                         if _oponent.id == _player.id:
                             continue
-                        _player.dano_em_fé['oponentes'].update({
+                        _player.dano_em_fe['oponentes'].update({
                             _oponent.id: {
                                 'dano_aplicado': 0,
                                 'dano_recebido': 0,
@@ -380,7 +385,9 @@ class C_Match:
             "round_match": self.round_match,
             "player_turn": self.players_in_match[self.team_turn][self.player_turn].id,
             "players_in_match": __players_in_match,
-            'deatmatch': self.deatmatch
+            'deatmatch': self.deatmatch,
+            'first_blood': self.first_blood,
+            'take_damage': self.take_damage,
         }
         if (self.fight_camp):
             response.update({
@@ -452,6 +459,7 @@ class C_Match:
                 if self.round_match > 10:
                     if self.deatmatch:
                         # Cada jogar perde um ponto de fé a cada rodada
+                        #  Esta dano não conta para as estatísticas
                         self.takeDamage(player, 1)
                         Logger.info(
                             msg=f'Deathmatch - Round {self.round_match}', tag='C_Match')
@@ -570,29 +578,13 @@ class C_Match:
         await self.fight_camp.defense(move.card_list)
 
     async def fightNow(self):
-        import pprint
         damage = await self.fight_camp.fight()
         self.takeDamage(self.fight_camp.player_defense, damage)
-
-        for _team in self.players_in_match:
-            for _player in _team:
-                print(_player.getStats().get('id'))
-                pprint.pprint(_player.getStats().get('dano_em_fé'))
-
-        print('\n\n')
-
-        player_attack_dano_em_fé = self.fight_camp.player_attack.dano_em_fé
-        player_attack_dano_em_fé['total_aplicado'] += damage
-        player_attack_dano_em_fé['oponentes'][self.fight_camp.player_defense.id]['dano_aplicado'] += damage
-
-        player_defense_dano_em_fé = self.fight_camp.player_defense.dano_em_fé
-        player_defense_dano_em_fé['total_recebido'] += damage
-        player_defense_dano_em_fé['oponentes'][self.fight_camp.player_attack.id]['dano_recebido'] += damage
-
-        for _team in self.players_in_match:
-            for _player in _team:
-                print(_player.getStats().get('id'))
-                pprint.pprint(_player.getStats().get('dano_em_fé'))
+        self.setDanoEmFe(
+            self.fight_camp.player_attack,
+            self.fight_camp.player_defense,
+            damage
+        )
 
         await self.sendToPlayer(data={
             'data_type': 'notification',
@@ -603,12 +595,24 @@ class C_Match:
         }, player_id=self.fight_camp.player_defense.id)
         self.fight_camp = None
 
+    def setDanoEmFe(self, player_give_damage: 'C_Player_Match', player_take_damage: 'C_Player_Match', damage: int):
+        player_attack_dano_em_fe = player_give_damage.dano_em_fe
+        player_attack_dano_em_fe['total_aplicado'] += damage
+        player_attack_dano_em_fe['oponentes'][player_take_damage.id]['dano_aplicado'] += damage
+
+        player_defense_dano_em_fe = player_take_damage.dano_em_fe
+        player_defense_dano_em_fe['total_recebido'] += damage
+        player_defense_dano_em_fe['oponentes'][player_give_damage.id]['dano_recebido'] += damage
+
     def takeDamage(self, player: C_Player_Match, damage: int):
         player.faith_points -= damage
+        if player.id not in self.take_damage:
+            self.take_damage.append(player.id)
         print(f'Jogador {player.id} perdeu {damage} de fé.')
         Logger.info(msg=f'Jogador: {player.id} perdeu {
                     damage}pts de fé.', tag='C_Player_Match')
         if (player.faith_points < 1):
+            player.round_eliminado = self.round_match
             Logger.info(msg=f'Jogador: {
                         player.id} foi eliminado.', tag='C_Player_Match')
         self.checkWinner()
@@ -659,6 +663,17 @@ class C_Match:
             # if player.id == self.player_turn:
             await self.finishTurn()
             self.takeDamage(player, player.faith_points)
+            for _team in self.players_in_match:
+                for _player in _team:
+                    if _player.id == player.id:
+                        continue
+                    await self.sendToPlayer(data={
+                        "data_type": "notification",
+                        "notification": {
+                            "message": f"%PLAYER_NAME:{player.id}% se rendeu..."
+                        }
+                    },
+                        player_id=_player.id)
             # DB.setPlayerInRoom(player_id=player.id, room_id="")
 
         if move.move_type == 'move_to_battle':
