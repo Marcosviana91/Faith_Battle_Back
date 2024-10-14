@@ -4,7 +4,7 @@ from fastapi import APIRouter,  WebSocket, WebSocketDisconnect
 
 from schemas.users_schema import UserWs
 from utils.CheckUserState import checkUserStats
-from utils.ConnectionManager import WS
+from utils.ConnectionManager import WS, WSFlat
 from utils.ROOM.RoomManager import RM
 from utils.MATCHES.MatchManager import MM, C_Match
 
@@ -39,7 +39,19 @@ async def handleWSConnect(websocket: WebSocket):
     except WebSocketDisconnect:
         WS.disconnect(player_id)
 
+@router.websocket("/flat")
+async def handleWSFlatConnect(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        while True:
+            data: dict = await websocket.receive_json()
+            if data.get('data_type') == "create_connection":
+                name = data['player_data']['name']
+                sala = data['player_data']['sala']
+                WSFlat.connect(name, sala, websocket)
 
+    except WebSocketDisconnect:
+        WSFlat.disconnect(name)
 
 @router.websocket("/spectate/{match_id}")
 async def enterRoom(websocket: WebSocket, match_id: str, password:str = ""):
