@@ -33,7 +33,7 @@ def handleRoot():
         'version': 'alpha-1.0.1',
     }
     if server_settings.status_code == 200:
-        res['active_cards'] = server_settings.json()['active_cards']
+        res.update(server_settings.json())
     return res
 
 
