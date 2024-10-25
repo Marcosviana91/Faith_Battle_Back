@@ -11,7 +11,7 @@ class NewUserSchema(BaseModel):
     username: str
     password: str
     first_name: str
-    avatar: int
+    avatar: str
     # email: EmailStr
 
 

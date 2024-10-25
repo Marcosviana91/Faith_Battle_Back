@@ -7,6 +7,8 @@ from utils.ROOM.RoomManager import RM
 
 
 async def checkUserStats(player_id: int):
+    # TODO checkUserStats
+    return None
     room_id = dict(await DB.getPlayerById(player_id)).get("room_id", None)
     match_id = dict(await DB.getPlayerById(player_id)).get("match_id", None)
     if room_id == None and match_id == None:
@@ -49,17 +51,31 @@ async def checkUserStats(player_id: int):
                     }
                         await WS.sendToPlayer(data=player_to_send, user_id=player_id)
                         await WS.sendToPlayer(data=match_to_send, user_id=player_id)
+
                         for _card in player.card_prepare_camp:
                             if _card.card_type == "miracle":
-                                await WS.sendToPlayer(
-                                    data={
-                                        "data_type": "card_skill",
-                                        "card_data": {
-                                            "slug": _card.slug,
-                                        }
-                                    },
-                                    user_id=player.id
-                                )
+                                # Testar se a carta já está na pilha
+                                if match.card_stack != None:
+                                    if not match.card_stack.isCardInStack(card_id=_card.in_game_id):
+                                        await WS.sendToPlayer(
+                                            data={
+                                                "data_type": "card_skill",
+                                                "card_data": {
+                                                    "slug": _card.slug,
+                                                }
+                                            },
+                                            user_id=player.id
+                                        )
+                                else:
+                                    await WS.sendToPlayer(
+                                                data={
+                                                    "data_type": "card_skill",
+                                                    "card_data": {
+                                                        "slug": _card.slug,
+                                                    }
+                                                },
+                                                user_id=player.id
+                                            )
     # Enviar um leave room para o cliente caso não exista a sala nem partida
     if room is None and match is None:
         await DB.setPlayerRoomOrMatch(player_id, clear=True)
