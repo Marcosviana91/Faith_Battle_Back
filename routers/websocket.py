@@ -39,29 +39,36 @@ async def handleWSConnect(websocket: WebSocket):
     except WebSocketDisconnect:
         WS.disconnect(player_id)
 
+
 @router.websocket("/flat")
 async def handleWSFlatConnect(websocket: WebSocket):
     await websocket.accept()
     try:
         while True:
             data: dict = await websocket.receive_json()
+            print('RECV <<<:', data)
             if data.get('data_type') == "create_connection":
                 name = data['player_data']['name']
                 sala = data['player_data']['sala']
-                WSFlat.connect(name, sala, websocket)
+                await WSFlat.connect(name, sala, websocket)
+            elif data.get('data_type') == "card_move":
+                await WSFlat.send2Room(room=sala, data=data)
 
     except WebSocketDisconnect:
-        WSFlat.disconnect(name)
+        pass
+        # WSFlat.disconnect(name, sala)
+
 
 @router.websocket("/spectate/{match_id}")
-async def enterRoom(websocket: WebSocket, match_id: str, password:str = ""):
+async def enterRoom(websocket: WebSocket, match_id: str, password: str = ""):
     await websocket.accept()
     try:
         while True:
             data: dict = await websocket.receive_json()
-        
+
     except WebSocketDisconnect:
         ...
+
 
 @router.get("/")
 async def handleMatchWS():
