@@ -207,13 +207,14 @@ class C_Room:
                 print('escolheu', hero_1_selected)
                 player.card_hand.append(hero_1_selected)
                 player.card_deck.remove(hero_1_selected)
+                count += 1
+                if len(__miracles_artifacts_1) > 0:
+                    miracles_artifacts_1_selected = choice(__miracles_artifacts_1)
+                    print('escolheu', miracles_artifacts_1_selected)
+                    player.card_hand.append(miracles_artifacts_1_selected)
+                    player.card_deck.remove(miracles_artifacts_1_selected)
+                    count += 1
 
-                miracles_artifacts_1_selected = choice(__miracles_artifacts_1)
-                print('escolheu', miracles_artifacts_1_selected)
-                player.card_hand.append(miracles_artifacts_1_selected)
-                player.card_deck.remove(miracles_artifacts_1_selected)
-
-                count = 2
         while count < number_of_cards:
             card_selected = choice(player.card_deck)
             player.card_hand.append(card_selected)

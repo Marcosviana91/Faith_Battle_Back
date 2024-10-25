@@ -53,22 +53,20 @@ class C_Heros(C_Card_Match):
 
     async def onInvoke(self, match: 'C_Match'):
         await super().onInvoke(match)
-        player = match._getPlayerById(match.move_now.player_move_id)
         # A passiva de Abraão é verificada para todos os heróis
-        if getCardInListBySlugId('abraao', player.card_battle_camp):
-            consolePrint.info(f'CARD: {player.id} ativou abraão')
-            player.faith_points += 1
-            player.fe_recebida += 1
+        if getCardInListBySlugId('abraao', self.player.card_battle_camp):
+            consolePrint.info(f'CARD: {self.player.id} ativou abraão')
+            self.player.faith_points += 1
+            self.player.fe_recebida += 1
 
     async def onMoveToBattleZone(self, match: 'C_Match'):
-        player = match._getPlayerById(match.move_now.player_move_id)
         await super().onMoveToBattleZone(match)
         # Seta os artefatos como 'used' para não poderem ser desequipados
         for _card in self.attached_cards:
             _card.status = 'used'
         # A passiva de Arca da Aliança é verificada para todos os heróis
-        if getCardInListBySlugId('arca-da-alianca', player.card_battle_camp):
-            consolePrint.info(f'CARD: {player.id} ativou Arca da Aliança')
+        if getCardInListBySlugId('arca-da-alianca', self.player.card_battle_camp):
+            consolePrint.info(f'CARD: {self.player.id} ativou Arca da Aliança')
             self.attack_point += 1
             self.defense_point += 1
 
@@ -120,19 +118,17 @@ class C_Adao(C_Heros):
         self.defense_point -= 2
 
     async def onInvoke(self, match: 'C_Match'):
-        player = match._getPlayerById(match.move_now.player_move_id)
         await super().onInvoke(match)
         # Procurar por Eva no campo de preparação e no campo de batalha
-        if getCardInListBySlugId('eva', player.card_prepare_camp) or getCardInListBySlugId('eva', player.card_battle_camp):
-            Logger.info(msg='EVA está em jogo.', tag='C_Card_Match')
+        if getCardInListBySlugId('eva', self.player.card_prepare_camp) or getCardInListBySlugId('eva', self.player.card_battle_camp):
+            Logger.info(msg='Adão encontrou Eva no jogo.', tag='C_Card_Match')
             await self.addSkill(match)
 
     async def onResurrection(self, match: 'C_Match', player: 'C_Player_Match'):
         await super().onResurrection(match, player)
         if getCardInListBySlugId('eva', player.card_prepare_camp) or getCardInListBySlugId('eva', player.card_battle_camp):
-            Logger.info(msg='EVA está em jogo.', tag='C_Card_Match')
-            self.attack_point += 2
-            self.defense_point += 2
+            Logger.info(msg='Adão encontrou Eva no jogo.', tag='C_Card_Match')
+            self.addSkill(match)
 
 
 class C_Daniel(C_Heros):
@@ -513,7 +509,7 @@ class C_Maria(C_Heros):
             },
             player_id=player.id
         )
-    
+
     async def onResurrection(self, match: 'C_Match', player: 'C_Player_Match'):
         await super().onResurrection(match, player)
         __heros_in_deck = []
@@ -565,6 +561,15 @@ class C_Moises(C_Heros):
                 )
         sorted_miracles_in_forgoten_sea = sorted(
             __miracles_in_forgoten_sea, key=lambda card: card['slug'])
+        if len(__miracles_in_forgoten_sea) == 0 and len(__miracles_in_deck) == 0:
+            await match.sendToPlayer(data={
+                'data_type': 'notification',
+                'notification': {
+                    "title": "Habilidade de Moisés",
+                    "message": f"Não há milagres."
+                }
+            }, player_id=player.id)
+            return
         await match.sendToPlayer(
             data={
                 'data_type': 'card_skill',
@@ -576,7 +581,7 @@ class C_Moises(C_Heros):
             },
             player_id=player.id
         )
-        
+
     async def onResurrection(self, match: 'C_Match', player: 'C_Player_Match'):
         await super().onResurrection(match, player)
         __miracles_in_deck = []
@@ -682,7 +687,7 @@ class C_Salomao(C_Heros):
                     "message": f"Você ganhou 1 ponto de sabedoria."
                 }
             }, player_id=player.id)
-    
+
     async def onResurrection(self, match: 'C_Match', player: 'C_Player_Match'):
         await super().onResurrection(match, player)
         if player.wisdom_points < 10:
@@ -721,7 +726,7 @@ class C_Sansao(C_Heros):
                 "message": f"Sansão está pronto para atacar."
             }
         }, player_id=player.id)
-    
+
     async def onResurrection(self, match: 'C_Match', player: 'C_Player_Match'):
         await super().onResurrection(match, player)
         await match.moveCard(player, self.in_game_id, 'prepare', 'battle')

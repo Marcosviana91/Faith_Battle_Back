@@ -45,7 +45,7 @@ class C_CordeiroDeDeus(C_Miracles):
     async def addSkill(self, match: 'C_Match'):
         await super().addSkill(match)
         # Até seu próximo turno, o jogador alvo não perde pontos de fé, pecados não o afetam e suas cartas são indestrutívies
-        player_target = match._getPlayerById(self.card_move.get('player_target_id'))
+        player_target = match._getPlayerById(self.card_move.player_target_id)
         player_target.fe_inabalavel = True
         player_target.incorruptivel = True
         for _card in player_target.card_battle_camp:
@@ -54,7 +54,7 @@ class C_CordeiroDeDeus(C_Miracles):
         
     async def rmvSkill(self, match: 'C_Match'):
         await super().rmvSkill(match)
-        player_target = match._getPlayerById(self.card_move.get('player_target_id'))
+        player_target = match._getPlayerById(self.card_move.player_target_id)
         player_target.fe_inabalavel = False
         player_target.incorruptivel = False
         for _card in player_target.card_battle_camp:
@@ -133,7 +133,7 @@ class C_FogoDoCeu(C_Miracles):
 
     async def addSkill(self, match: 'C_Match'):
         await super().addSkill(match)
-        player_target_id = self.card_move.get('player_target_id')
+        player_target_id = self.card_move.player_target_id
         if not player_target_id:
             await match.sendToPlayer(data={
                 'data_type': 'notification',
@@ -146,7 +146,7 @@ class C_FogoDoCeu(C_Miracles):
             player_target = match._getPlayerById(player_target_id)
             # Destrói uma carta da zona de batalha
             # Mesma habilidade de Elias
-            card_target_id: str = self.card_move.get('card_target_id')
+            card_target_id: str = self.card_move.card_target_id
             await match.moveCard(player_target, card_target_id, 'battle', 'forgotten')
             await match.sendToPlayer(data={
                 'data_type': 'notification',
@@ -165,6 +165,9 @@ class C_FogoDoCeu(C_Miracles):
             }, player_id=player_target.id)
             consolePrint.status(
                 f'A carta {card_target_id} foi destruída')
+            # Verificar heróis em batalha
+            if match.fight_camp:
+                match.fight_camp.destroyHeroBeforeFight(card_target_id)
 
 
 class C_ForcaDeSansao(C_Miracles):
@@ -188,7 +191,7 @@ class C_ForcaDeSansao(C_Miracles):
     async def addSkill(self, match: 'C_Match'):
         await super().addSkill(match)
         # O herói alvo ganha 3/3 até o final do turno. Se o alvo é Sansão, ele se torna indestrutível até o final do turno.
-        player_target_id = self.card_move.get('player_target_id')
+        player_target_id = self.card_move.player_target_id
         card_target_id: str = self.card_move.get('card_target_id')
         player_target = match._getPlayerById(player_target_id)
         card_hero = getCardInListBySlugId(
@@ -202,8 +205,8 @@ class C_ForcaDeSansao(C_Miracles):
     async def rmvSkill(self, match: 'C_Match'):
         await super().rmvSkill(match)
         # O herói alvo ganha 3/3 até o final do turno. Se o alvo é Sansão, ele se torna indestrutível até o final do turno.
-        player_target_id = self.card_move.get('player_target_id')
-        card_target_id: str = self.card_move.get('card_target_id')
+        player_target_id = self.card_move.player_target_id
+        card_target_id: str = self.card_move.card_target_id
         player_target = match._getPlayerById(player_target_id)
         card_hero = getCardInListBySlugId(
             card_target_id, player_target.card_battle_camp)
@@ -234,7 +237,7 @@ class C_NoCeuTemPao(C_Miracles):
     async def addSkill(self, match: 'C_Match'):
         await super().addSkill(match)
         player_target = match._getPlayerById(
-            self.card_move.get('player_target_id'))
+            self.card_move.player_target_id)
         # O jogador alvo compra 3 cartas, se voce tem moisés em sua zona de batalha, compre 5.
         match.giveCard(player_target, 3)
         card = getCardInListBySlugId('moises', player_target.card_battle_camp)
@@ -273,10 +276,8 @@ class C_Ressurreicao(C_Miracles):
     async def addSkill(self, match: 'C_Match'):
         await super().addSkill(match)
         # Retorna um herói de qualquer mar do esquecimento ao jogo sob seu controle. Voce escolhe em qual zona ele voltará.
-        player_target = match._getPlayerById(self.card_move.get(
-            'player_target_id'))  # Jogador que vai receber a carta
-        player_target2 = match._getPlayerById(self.card_move.get(
-            'player_target2_id'))  # Jogador que vai ceder a carta
+        player_target = match._getPlayerById(self.card_move.            player_target_id)  # Jogador que vai receber a carta
+        player_target2 = match._getPlayerById(self.card_move.player_target2_id)  # Jogador que vai ceder a carta
         card_target_id: str = self.card_move.get('card_target_id')
         card_hero = getCardInListBySlugId(
             card_target_id, player_target2.card_in_forgotten_sea) # Herói que vai ressucitar
@@ -323,7 +324,7 @@ class C_SabedoriaDeSalomao(C_Miracles):
 
     async def addSkill(self, match: 'C_Match'):
         player_target = match._getPlayerById(
-            self.card_move.get('player_target_id'))
+            self.card_move.player_target_id)
         await super().addSkill(match)
         # O jogador alvo reativa 3 cartas de sabedoria.
         player_target.wisdom_available += 3
@@ -354,9 +355,9 @@ class C_SarcaArdente(C_Miracles):
 
     async def addSkill(self, match: 'C_Match'):
         player_target = match._getPlayerById(
-            self.card_move.get('player_target_id'))
+            self.card_move.player_target_id)
         player_target2 = match._getPlayerById(
-            self.card_move.get('player_target2_id'))
+            self.card_move.player_target2_id)
         await super().addSkill(match)
         # O jogador alva ganha 2 pontos de fé e o oponente alvo perde 2 pontos de fé
         player_target.faith_points += 2
