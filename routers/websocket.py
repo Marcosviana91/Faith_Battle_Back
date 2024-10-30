@@ -10,7 +10,7 @@ from utils.MATCHES.MatchManager import MM, C_Match
 
 router = APIRouter(prefix="/ws", tags=["websockets"])
 
-
+# Rota para o jogo gerenciado pela API
 @router.websocket("/")
 async def handleWSConnect(websocket: WebSocket):
     await websocket.accept()
@@ -51,7 +51,9 @@ async def handleWSFlatConnect(websocket: WebSocket):
                 name = data['player_data']['name']
                 sala = data['player_data']['sala']
                 await WSFlat.connect(name, sala, websocket)
-            elif data.get('data_type') == "card_move":
+            elif data.get('data_type') == "give_card":
+                await WSFlat.giveCards(sala=sala, name=name)
+            else:
                 await WSFlat.send2Room(room=sala, data=data)
 
     except WebSocketDisconnect:

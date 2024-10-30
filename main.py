@@ -7,6 +7,8 @@ from starlette.middleware.sessions import SessionMiddleware
 from routers import auth, room, users, websocket
 from settings import env_settings
 
+from utils.Cards.standard.raw_data import STANDARD_CARDS
+
 ORIGINS = ["*"]
 METHODS = ["*"]
 HEADERS = ["*"]
@@ -31,6 +33,7 @@ def handleRoot():
     server_settings = requests.get(f'http://{env_settings.DB_HOST}:3111/api/')
     res = {
         'version': 'alpha-1.0.1',
+        'active_cards': STANDARD_CARDS
     }
     if server_settings.status_code == 200:
         res.update(server_settings.json())

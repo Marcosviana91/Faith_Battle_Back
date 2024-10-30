@@ -5,6 +5,7 @@ import requests
 from nanoid import generate
 
 from utils.Cards.standard.base_cards import C_Card_Room, cardListToDict, getCardInListBySlugId
+from utils.Cards.standard.raw_data import STANDARD_CARDS
 
 from utils.DataBaseManager import DB
 from utils.console import consolePrint
@@ -42,7 +43,7 @@ class C_Player:
 
 
 class C_Room:
-    SERVER_AVAILABLE_CARDS = []
+    SERVER_AVAILABLE_CARDS = STANDARD_CARDS
     def __init__(
         self,
         name: str,
@@ -58,11 +59,11 @@ class C_Room:
         self.room_stage = 0
         self.connected_players: List[List[C_Player]] = [[]]
         self.created_by = created_by
-        server_settings = requests.get(f'http://{env_settings.DB_HOST}:3111/api/')
-        if server_settings.status_code == 200:
-            self.SERVER_AVAILABLE_CARDS = server_settings.json()['active_cards']
-            consolePrint.info("Cartas recebidas do servidor...")
-            print(self.SERVER_AVAILABLE_CARDS)
+        # server_settings = requests.get(f'http://{env_settings.DB_HOST}:3111/api/')
+        # if server_settings.status_code == 200:
+        #     self.SERVER_AVAILABLE_CARDS = server_settings.json()['active_cards']
+        #     consolePrint.info("Cartas recebidas do servidor...")
+        #     print(self.SERVER_AVAILABLE_CARDS)
 
         self.setConfig()
 

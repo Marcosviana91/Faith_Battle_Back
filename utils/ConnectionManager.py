@@ -4,6 +4,7 @@ from schemas.users_schema import UserWs
 from utils.LoggerManager import Logger
 from utils.security import getCurrentUserAuthenticated
 
+# Pegar esses dados da API do Django
 from utils.Cards.standard.raw_data import STANDARD_CARDS_RAW_DATA
 
 from random import shuffle
@@ -15,27 +16,18 @@ CARDS_DATA = {
 
 
 for key in STANDARD_CARDS_RAW_DATA:
-    # print(
-    #     {
-    #         'slug': key,
-    #         'in_game_id': "",
-    #         'where_i_am': 'deck',
-    #         'attack_point': STANDARD_CARDS_RAW_DATA[key][2],
-    #         'defense_point': STANDARD_CARDS_RAW_DATA[key][3],
-    #         'wisdom_cost': STANDARD_CARDS_RAW_DATA[key][1],
-    #     }
-    # )
     CARDS_DATA['cards'].append(
         {
             'slug': key,
             'in_game_id': "",
             'where_i_am': 'deck',
-            'attack_point': STANDARD_CARDS_RAW_DATA[key][2],
-            'defense_point': STANDARD_CARDS_RAW_DATA[key][3],
-            'wisdom_cost': STANDARD_CARDS_RAW_DATA[key][1],
+            # TODO: pegar start position da API do Django
+            'position': {'left': 437, 'bottom': 188},
+            'bottom_left_value': STANDARD_CARDS_RAW_DATA[key][2],
+            'bottom_right_value': STANDARD_CARDS_RAW_DATA[key][3],
+            'top_left_value': STANDARD_CARDS_RAW_DATA[key][1],
         }
     )
-
 
 
 class WS_Manager:
@@ -123,7 +115,7 @@ class WS_Flat_Manager:
             self.all_room = {}
             print('All rooms cleared...')
             return
-        elif self.all_room.get(room):
+        if self.all_room.get(room):
             # print(f"Ja tem a sala {room}")
             _room = dict(self.all_room.get(room))
             # pprint(_room)
@@ -168,10 +160,17 @@ class WS_Flat_Manager:
         if jogador_1_ws and jogador_2_ws:
             # print(jogador_1_ws, jogador_2_ws)
             print('iniciar partida')
-            await self.send2Room(room=room, data={
-                'data_type': 'start',
+            self.all_room.update({room: {
+                'jogador_1': self.all_room[room]['jogador_1'],
+                'jogador_2': self.all_room[room]['jogador_2'],
                 'cards': self.generateCards(room=room)
-            })
+            }})
+            data_to_send = {
+                'data_type': 'start',
+                'cards': self.all_room.get(room)['cards']
+            }
+            # print(data_to_send)
+            await self.send2Room(room=room, data=data_to_send)
         # print('\nStats')
         # pprint(self.all_room)
 
@@ -180,12 +179,47 @@ class WS_Flat_Manager:
         # jogador_1 = self.all_room['room']['jogador_1']
         # jogador_2 = self.all_room['room']['jogador_2']
 
+    async def giveCards(self, sala: str, name: str):
+        _sala = dict(self.all_room.get(sala))
+        # print(_sala['cards'][name])
+        card_to_give = None
+        for card in _sala['cards'][name]:
+            if card['where_i_am'] == 'deck':
+                card.update({
+                    'where_i_am': 'hand',
+                    # 'position': {'left': 0, 'bottom': 0}
+                })
+                card_to_give = card
+                break
+        print(card_to_give)
+        if card_to_give:
+            data_to_send = {
+                'data_type': 'give_card',
+                'player': name,
+                'card': card
+            }
+            await self.send2Room(room=sala, data=data_to_send)
+        # TODO: resposta de sem cartas no deck
+
     async def send2Room(self, room: str, data: dict):
-        print('SEND >>>: ', data)
+        import pprint
+        print('SEND >>>: ')
+        pprint.pprint(data['data_type'])
         _room = self.all_room.get(room)
         try:
-            await _room['jogador_1']['ws'].send_json(data)
-            await _room['jogador_2']['ws'].send_json(data)
+            # if (data['data_type'] =='card_move'):
+            #     print('Enviar DATA individualmente: ')
+            #     print(data['player'])
+            #     for jogador in _room:
+            #         if (data['player']) != _room[jogador]['nome']:
+            #             print(f'Enviar para {jogador}: ')
+            #             await _room[jogador]['ws'].send_json(data)
+            # else:
+            #     print('Enviar DATA para TODOS')
+            for jogador in _room:
+                if jogador == 'cards':
+                    continue
+                await _room[jogador]['ws'].send_json(data)
         except Exception as e:
             print("ERROR - send2Room:", e)
 
