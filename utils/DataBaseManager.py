@@ -39,7 +39,7 @@ LOWER_DECK = Deck(**{
 
 class PlayerData(BaseModel):
     id: int = Field(alias="_id")
-    avatar: int = Field(default=1)
+    avatar: str = Field()
     available_cards: list[str] = Field(default=STANDARD_CARDS)
     decks: list[Deck] | None = Field(
         default=[STANDARD_DECK, UPPER_DECK, LOWER_DECK])
@@ -160,18 +160,17 @@ class TinyDB_Manager:
     async def getUserDataById(self, user_id: int):
         user = requests.get(f'http://{env.DB_HOST}:3111/api/user/{user_id}')
         if user.status_code == 200:
-            player = await self.getPlayerById(user_id)
+            # player = await self.getPlayerById(user_id)
             user = dict(user.json())
-            user.pop('last_name')
-            user['avatar'] = player['avatar']
-            user['xp_points'] = player['xp_points']
-            user['available_cards'] = player['available_cards']
-            user['decks'] = player['decks']
-            user['selected_deck'] = player['selected_deck']
-            if player['room_id']:
-                user['room_id'] = player['room_id']
-            if player['match_id']:
-                user['match_id'] = player['match_id']
+            # user['avatar'] = player['avatar']
+            # user['xp_points'] = player['xp_points']
+            # user['available_cards'] = player['available_cards']
+            # user['decks'] = player['decks']
+            # user['selected_deck'] = player['selected_deck']
+            # if player['room_id']:
+            #     user['room_id'] = player['room_id']
+            # if player['match_id']:
+            #     user['match_id'] = player['match_id']
 
         return user
 

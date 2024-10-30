@@ -1,5 +1,5 @@
 import asyncio  # Usado por Diluvio
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 from .base_cards import C_Card_Match, getCardInListBySlugId
 
@@ -16,6 +16,7 @@ class C_Miracles(C_Card_Match):
 
     async def onInvoke(self, match: 'C_Match'):
         player = match._getPlayerById(match.move_now.player_move_id)
+        player.usou_milagres.append(self.slug)
         await super().onInvoke(match)
         await match.sendToPlayer(
             data={
@@ -28,10 +29,11 @@ class C_Miracles(C_Card_Match):
         )
 
     async def addSkill(self, match: 'C_Match'):
-        player = match._getPlayerById(match.move_now.player_move_id)
+        player = match._getPlayerById(self.card_move.get('player_move_id'))
         await super().addSkill(match)
         player.card_prepare_camp.remove(self)
         player.card_in_forgotten_sea.append(self)
+        self.reset()
 
 
 class C_CordeiroDeDeus(C_Miracles):
@@ -42,7 +44,22 @@ class C_CordeiroDeDeus(C_Miracles):
 
     async def addSkill(self, match: 'C_Match'):
         await super().addSkill(match)
-        # Até seu próximo turno, o jogador alvo não perde pontos de fé, pecados não o afetam e suas cartas são indestritívies
+        # Até seu próximo turno, o jogador alvo não perde pontos de fé, pecados não o afetam e suas cartas são indestrutívies
+        player_target = match._getPlayerById(self.card_move.player_target_id)
+        player_target.fe_inabalavel = True
+        player_target.incorruptivel = True
+        for _card in player_target.card_battle_camp:
+            _card.indestrutivel = True
+        player_target.attached_effects.append(self)
+        
+    async def rmvSkill(self, match: 'C_Match'):
+        await super().rmvSkill(match)
+        player_target = match._getPlayerById(self.card_move.player_target_id)
+        player_target.fe_inabalavel = False
+        player_target.incorruptivel = False
+        for _card in player_target.card_battle_camp:
+            _card.indestrutivel = False
+        player_target.attached_effects.remove(self)
 
 
 class C_Diluvio(C_Miracles):
@@ -65,26 +82,35 @@ class C_Diluvio(C_Miracles):
                 }, player_id=_player.id)
 
     async def addSkill(self, match: 'C_Match'):
-        player_target = match._getPlayerById(match.move_now.player_target_id)
         await super().addSkill(match)
+        # player_target = match._getPlayerById(match.move_now.player_target_id)
         # Destrói todos os heróis e artefatos da zona de batalha. Noé e a Arca sobrevivem
         # Verificar Arca de Noé dentre as cartas acopladas aos heróis - FALTA
-        _card_list_whitout_noe = list(
-            filter(lambda _card: _card.slug != 'noe', player_target.card_battle_camp))
-        tasks = [await match.moveCard(player=player_target, card_id=_card.in_game_id,
-                                      move_from='battle', move_to='forgotten') for _card in _card_list_whitout_noe]
+        all_tasks = []
+        for _team in match.players_in_match:
+            for player_target in _team:
+                _card_list_whitout_noe = list(
+                    filter(lambda _card: _card.slug != 'noe', player_target.card_battle_camp))
+                _card_list_whitout_arca_de_noe: List[C_Card_Match] = []
+                for __card in _card_list_whitout_noe:
+                    if getCardInListBySlugId('arca-de-noe', __card.attached_cards):
+                        continue
+                    _card_list_whitout_arca_de_noe.append(__card)
+                player_tasks = [await match.moveCard(player=player_target, card_id=_card.in_game_id,
+                                                     move_from='battle', move_to='forgotten') for _card in _card_list_whitout_arca_de_noe]
+                all_tasks = [*all_tasks, *player_tasks]
+                await match.sendToPlayer(data={
+                    'data_type': 'notification',
+                    'notification': {
+                        "title": "Gênesis: 7:23",
+                        "message": f"O dilúvio destruiu todo ser vivo da face da Terra, homens e animais foram exterminados. Só restaram Noé e aqueles que com ele estavam na Arca.",
+                        "stillUntilDismiss": True
+                    }
+                }, player_id=player_target.id)
         try:
-            await asyncio.wait(tasks)
+            await asyncio.wait(all_tasks)
         except AttributeError as e:
             consolePrint.danger(f'MIRACLE: AttributeError {e}')
-        await match.sendToPlayer(data={
-            'data_type': 'notification',
-            'notification': {
-                "title": "Gênesis: 7:23",
-                "message": f"O dilúvio destruiu todo ser vivo da face da Terra, homens e animais foram exterminados. Só restaram Noé e aqueles que com ele estavam na Arca.",
-                "stillUntilDismiss": True
-            }
-        }, player_id=player_target.id)
 
 
 class C_FogoDoCeu(C_Miracles):
@@ -107,7 +133,8 @@ class C_FogoDoCeu(C_Miracles):
 
     async def addSkill(self, match: 'C_Match'):
         await super().addSkill(match)
-        if not match.move_now.player_target_id:
+        player_target_id = self.card_move.player_target_id
+        if not player_target_id:
             await match.sendToPlayer(data={
                 'data_type': 'notification',
                 'notification': {
@@ -116,16 +143,16 @@ class C_FogoDoCeu(C_Miracles):
                 }
             }, player_id=match.move_now.player_move_id)
         else:
-            player_target = match._getPlayerById(
-                match.move_now.player_target_id)
+            player_target = match._getPlayerById(player_target_id)
             # Destrói uma carta da zona de batalha
             # Mesma habilidade de Elias
-            await match.moveCard(player_target, match.move_now.card_target_id, 'battle', 'forgotten')
+            card_target_id: str = self.card_move.card_target_id
+            await match.moveCard(player_target, card_target_id, 'battle', 'forgotten')
             await match.sendToPlayer(data={
                 'data_type': 'notification',
                 'notification': {
                     "title": "Fogo do Céu",
-                    "message": f"A carta {match.move_now.card_target_id.split('_')[1]} foi destruída"
+                    "message": f"A carta {card_target_id.split('_')[1]} foi destruída"
                 }
             }, player_id=player_target.id)
             await match.sendToPlayer(data={
@@ -137,7 +164,10 @@ class C_FogoDoCeu(C_Miracles):
                 }
             }, player_id=player_target.id)
             consolePrint.status(
-                f'A carta {match.move_now.card_target_id} foi destruída')
+                f'A carta {card_target_id} foi destruída')
+            # Verificar heróis em batalha
+            if match.fight_camp:
+                match.fight_camp.destroyHeroBeforeFight(card_target_id)
 
 
 class C_ForcaDeSansao(C_Miracles):
@@ -146,9 +176,45 @@ class C_ForcaDeSansao(C_Miracles):
     def __init__(self, in_game_id: str):
         super().__init__(slug=self.slug, in_game_id=in_game_id)
 
+    async def onInvoke(self, match: 'C_Match'):
+        await super().onInvoke(match)
+        for _team in match.players_in_match:
+            for _player in _team:
+                await match.sendToPlayer(data={
+                    'data_type': 'notification',
+                    'notification': {
+                        "title": "Força de Sansão",
+                        "message": f"O monstro vai sair da jaula..."
+                    }
+                }, player_id=_player.id)
+
     async def addSkill(self, match: 'C_Match'):
         await super().addSkill(match)
         # O herói alvo ganha 3/3 até o final do turno. Se o alvo é Sansão, ele se torna indestrutível até o final do turno.
+        player_target_id = self.card_move.player_target_id
+        card_target_id: str = self.card_move.get('card_target_id')
+        player_target = match._getPlayerById(player_target_id)
+        card_hero = getCardInListBySlugId(
+            card_target_id, player_target.card_battle_camp)
+        card_hero.attached_effects.append(self)
+        card_hero.attack_point += 3
+        card_hero.defense_point += 3
+        if card_hero.slug == 'sansao':
+            card_hero.indestrutivel = True
+
+    async def rmvSkill(self, match: 'C_Match'):
+        await super().rmvSkill(match)
+        # O herói alvo ganha 3/3 até o final do turno. Se o alvo é Sansão, ele se torna indestrutível até o final do turno.
+        player_target_id = self.card_move.player_target_id
+        card_target_id: str = self.card_move.card_target_id
+        player_target = match._getPlayerById(player_target_id)
+        card_hero = getCardInListBySlugId(
+            card_target_id, player_target.card_battle_camp)
+        card_hero.attached_effects.remove(self)
+        card_hero.attack_point -= 3
+        card_hero.defense_point -= 3
+        if card_hero.slug == 'sansao':
+            card_hero.indestrutivel = False
 
 
 class C_LiberacaoCelestial(C_Miracles):
@@ -170,7 +236,8 @@ class C_NoCeuTemPao(C_Miracles):
 
     async def addSkill(self, match: 'C_Match'):
         await super().addSkill(match)
-        player_target = match._getPlayerById(match.move_now.player_target_id)
+        player_target = match._getPlayerById(
+            self.card_move.player_target_id)
         # O jogador alvo compra 3 cartas, se voce tem moisés em sua zona de batalha, compre 5.
         match.giveCard(player_target, 3)
         card = getCardInListBySlugId('moises', player_target.card_battle_camp)
@@ -209,6 +276,16 @@ class C_Ressurreicao(C_Miracles):
     async def addSkill(self, match: 'C_Match'):
         await super().addSkill(match)
         # Retorna um herói de qualquer mar do esquecimento ao jogo sob seu controle. Voce escolhe em qual zona ele voltará.
+        player_target = match._getPlayerById(self.card_move.            player_target_id)  # Jogador que vai receber a carta
+        player_target2 = match._getPlayerById(self.card_move.player_target2_id)  # Jogador que vai ceder a carta
+        card_target_id: str = self.card_move.get('card_target_id')
+        card_hero = getCardInListBySlugId(
+            card_target_id, player_target2.card_in_forgotten_sea) # Herói que vai ressucitar
+        player_target2.card_in_forgotten_sea.remove(card_hero)
+        player_target.card_prepare_camp.append(card_hero)
+        old_card_id = card_hero.in_game_id.split("_")
+        card_hero.in_game_id = f'{player_target.id}_{old_card_id[1]}_{old_card_id[2]}'
+        await card_hero.onResurrection(player=player_target, match=match)
 
 
 class C_RestauracaoDeFe(C_Miracles):
@@ -218,7 +295,8 @@ class C_RestauracaoDeFe(C_Miracles):
         super().__init__(slug='restauracao-de-fe', in_game_id=in_game_id)
 
     async def addSkill(self, match: 'C_Match'):
-        player_target = match._getPlayerById(match.move_now.player_target_id)
+        player_target = match._getPlayerById(
+            self.card_move.get('player_target_id'))
         await super().addSkill(match)
         # O jogador alvo ganha um ponto de fé por cada herói no campo de batlaha dele.
         faith_count = 0
@@ -226,6 +304,7 @@ class C_RestauracaoDeFe(C_Miracles):
             if _card.card_type == 'hero':
                 faith_count += 1
         player_target.faith_points += faith_count
+        player_target.fe_recebida += faith_count
         await match.sendToPlayer(data={
             'data_type': 'notification',
             'notification': {
@@ -244,7 +323,8 @@ class C_SabedoriaDeSalomao(C_Miracles):
         super().__init__(slug='sabedoria-de-salomao', in_game_id=in_game_id)
 
     async def addSkill(self, match: 'C_Match'):
-        player_target = match._getPlayerById(match.move_now.player_target_id)
+        player_target = match._getPlayerById(
+            self.card_move.player_target_id)
         await super().addSkill(match)
         # O jogador alvo reativa 3 cartas de sabedoria.
         player_target.wisdom_available += 3
@@ -274,12 +354,16 @@ class C_SarcaArdente(C_Miracles):
         super().__init__(slug='sarca-ardente', in_game_id=in_game_id)
 
     async def addSkill(self, match: 'C_Match'):
-        player_target = match._getPlayerById(match.move_now.player_target_id)
-        player_target2 = match._getPlayerById(match.move_now.player_target2_id)
+        player_target = match._getPlayerById(
+            self.card_move.player_target_id)
+        player_target2 = match._getPlayerById(
+            self.card_move.player_target2_id)
         await super().addSkill(match)
         # O jogador alva ganha 2 pontos de fé e o oponente alvo perde 2 pontos de fé
         player_target.faith_points += 2
+        player_target.fe_recebida += 2
         match.takeDamage(player_target2, 2)
+        match.setDanoEmFe(player_target, player_target2, 2)
         await match.sendToPlayer(data={
             'data_type': 'notification',
             'notification': {

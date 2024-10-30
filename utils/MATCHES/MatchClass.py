@@ -1,3 +1,4 @@
+import asyncio  # Usado por CardStack._resolveSkills
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from random import shuffle
@@ -7,8 +8,8 @@ from fastapi import WebSocket
 
 from utils.ConnectionManager import WS
 
+from utils.console import consolePrint
 from utils.LoggerManager import Logger
-# from utils.console import consolePrint
 
 from utils.Cards.standard.base_cards import C_Card_Match, cardListToDict, getCardInListBySlugId
 from utils.Cards import createCardMatchByCardList
@@ -31,13 +32,35 @@ class C_Player_Match:
         self.wisdom_points: int = 0
         self.wisdom_available: int = 0
 
+        # Lista de efeitos ao jogador
+        self.attached_effects: List[C_Card_Match] = []
         # lista de ids que já foi atacado, para não se repetir
         self.ja_atacou: list[int] = []
-        self.fe_inabalavel: bool = False  # não pode perder pontos de fé
-        self.incorruptivel: bool = False  # não pode ser alvo de pecados
+        # não pode perder pontos de fé
+        self.fe_inabalavel: bool = False
+        # não pode ser alvo de pecados
+        self.incorruptivel: bool = False
         # não pode sofrer dano de efeitos de cartas como Davi
         self.nao_sofre_danos_de_efeitos: bool = False
-        self.nao_sofre_ataque_de_herois: bool = False  # não pode ser atacado por heróis
+        # não pode ser atacado por heróis INTANGÍVEL
+        self.nao_sofre_ataque_de_herois: bool = False
+
+        # Estatísticas para o final do jogo
+        self.usou_pecados = []  # lista com slug das cartas
+        self.usou_milagres = []  # lista com slug das cartas
+        self.dano_em_fe = {
+            'total_aplicado': 0,
+            'total_recebido': 0,
+            'oponentes':
+                {
+                    #         'id': {
+                    #             'dano_aplicado': 0,
+                    #             'dano_recebido': 0,
+                    #         }
+                },
+        }
+        self.fe_recebida: int = 0
+        self.round_eliminado: int = 0
 
     def getStats(self, private: bool = False):
 
@@ -54,6 +77,12 @@ class C_Player_Match:
             "incorruptivel": self.incorruptivel,
             "nao_sofre_danos_de_efeitos": self.nao_sofre_danos_de_efeitos,
             "nao_sofre_ataque_de_herois": self.nao_sofre_ataque_de_herois,
+            "usou_pecados": self.usou_pecados,
+            "usou_milagres": self.usou_milagres,
+            "dano_em_fe": self.dano_em_fe,
+            "fe_recebida": self.fe_recebida,
+            "round_eliminado": self.round_eliminado,
+            
         }
 
         if private:
@@ -151,9 +180,21 @@ class FightSchema:
             "defense_cards": cardListToDict(self.defense_cards),
         }
 
+    def destroyHeroBeforeFight(self, card_id):
+        _card_atk = getCardInListBySlugId(card_id, self.attack_cards)
+        if _card_atk is not None:
+            _card_atk_index = self.attack_cards.index(_card_atk)
+            self.defense_cards.pop(_card_atk_index)
+            Logger.info(msg=f'A carta {card_id} e a carta {self.defense_cards[_card_atk_index].in_game_id} foram removidas da batalha.' ,tag='FightSchema')
+        _card_dfs = getCardInListBySlugId(card_id, self.defense_cards)
+        if _card_dfs is not None:
+            _card_dfs_index = self.defense_cards.index(_card_dfs)
+            self.defense_cards[_card_dfs_index] = None
+            Logger.info(msg=f'A carta {card_id} foi removida da batalha.' ,tag='FightSchema')
+
     async def fight(self):
         total_damage = 0
-        if (len(self.attack_cards) > len(self.defense_cards)):
+        if (len(self.attack_cards) != len(self.defense_cards)):
             print("Tem mais ataque do que defesa")
         else:
             for index, card_atk in enumerate(self.attack_cards):
@@ -174,13 +215,33 @@ class FightSchema:
                                   card_def.getStats()}.', tag='C_Card_Match')
                     await card_atk.hasNotSuccessfullyAttacked(player=self.player_attack, match=self.match_room, player_target=self.player_defense)
                     if card_atk.attack_point >= card_def.defense_point:
-                        Logger.info(msg=f'{card_atk.in_game_id} derrotou {
-                                    card_def.in_game_id}.', tag='FightSchema')
-                        _temp_array.append(card_def)
+                        if card_def.indestrutivel:
+                            Logger.info(
+                                f"{card_def.in_game_id} é indestrutível.")
+                        else:
+                            Logger.info(msg=f'{card_atk.in_game_id} derrotou {
+                                        card_def.in_game_id}.', tag='FightSchema')
+                            if self.match_room.first_blood == None:
+                                self.match_room.first_blood = self.player_attack.id
+                                for _team in self.match_room.players_in_match:
+                                    for _player in _team:
+                                        await self.match_room.sendToPlayer(data={
+                                            "data_type": "notification",
+                                            "notification": {
+                                                "title": "First Blood",
+                                                "message": f"%PLAYER_NAME:{self.player_attack.id}% feriu o primeiro herói."
+                                            }
+                                        },
+                                            player_id=_player.id)
+                            _temp_array.append(card_def)
                     if card_def.attack_point >= card_atk.defense_point:
-                        Logger.info(msg=f'{card_def.in_game_id} VS {
-                                    card_atk.in_game_id}.', tag='FightSchema')
-                        _temp_array.append(card_atk)
+                        if card_atk.indestrutivel:
+                            Logger.info(
+                                f"{card_atk.in_game_id} é indestrutível.")
+                        else:
+                            Logger.info(msg=f'{card_def.in_game_id} VS {
+                                card_atk.in_game_id}.', tag='FightSchema')
+                            _temp_array.append(card_atk)
                     for _card in _temp_array:
                         _player_id = int(_card.in_game_id.split("_")[0])
                         if _player_id == self.player_attack.id:
@@ -189,11 +250,53 @@ class FightSchema:
                         elif _player_id == self.player_defense.id:
                             await self.match_room.moveCard(
                                 self.player_defense, card_def.in_game_id, "battle", "forgotten")
+                        if _card.slug in ['eva',]:
+                            _card.rmvSkill(self.match_room)
         for card_atk in self.attack_cards:
             if card_atk.slug in ['josue']:
                 await card_atk.rmvSkill(match=self.match_room)
         self.player_attack.ja_atacou.append(self.player_defense.id)
         return total_damage
+
+
+class CardStack:
+    def __init__(self, players_alive: int, match: 'C_Match'):
+        self.__players_alive = players_alive
+        self.match = match
+        self.__players_not_move = []
+        self.__cards: List[C_Card_Match] = []
+
+    async def _resolveSkills(self):
+        # for _card in self.__cards[::-1]:
+        #     print(f'Resolvendo: {_card.in_game_id}')
+        tasks = [await _card.addSkill(self.match) for _card in self.__cards[::-1]]
+        try:
+            await asyncio.wait(tasks)
+        except AttributeError as e:
+            consolePrint.danger(f'MIRACLE: AttributeError {e}')
+        self.match.card_stack = None
+
+    def getStats(self):
+        return {
+            "cards": cardListToDict(self.__cards),
+            "players_not_move": self.players_not_move,
+        }
+
+    def isCardInStack(self, card_id: str) -> bool:
+        for card in self.__cards:
+            if card.in_game_id == card_id:
+                return True
+        return False
+
+    async def notChange(self, player_id: int):
+        self.__players_not_move.append(player_id)
+        print(f'{player_id} não vai interferir')
+        if len(self.__players_not_move) == self.__players_alive:
+            await self._resolveSkills()
+
+    def addCard(self, card: C_Card_Match):
+        self.__cards.append(card)
+        self.players_not_move = []
 
 
 def convert_C_Player_and_C_Cards(player: 'C_Player') -> 'C_Player_Match':
@@ -206,6 +309,9 @@ def convert_C_Player_and_C_Cards(player: 'C_Player') -> 'C_Player_Match':
 
 
 class C_Match:
+    CARDS_STATUS_FOR_PLAYERS = ['cordeiro-de-deus', 'passagem-segura']
+    CARDS_STATUS_FOR_HEROS = ['forca-de-sansao']
+
     def __init__(self, room: 'C_Room'):
         self.id = room.id
         self.name = room.name
@@ -213,11 +319,28 @@ class C_Match:
         self.spectators = [WebSocket]  # Conexões anônimas de espectadores
         # Tranformar C_Player em C_Player_Match e C_Cards em C_Card_Match
         self.players_in_match: List[List[C_Player_Match]] = []
+
         for _team_index, _team in enumerate(room.connected_players):
             self.players_in_match.append([])
             for player in _team:
-                self.players_in_match[_team_index].append(
-                    convert_C_Player_and_C_Cards(player))
+                _player_match = convert_C_Player_and_C_Cards(player)
+                self.players_in_match[_team_index].append(_player_match)
+
+        for _team in self.players_in_match:
+            for _player in _team:
+
+                for __team in self.players_in_match:
+                    for _oponent in __team:
+
+                        if _oponent.id == _player.id:
+                            continue
+                        _player.dano_em_fe['oponentes'].update({
+                            _oponent.id: {
+                                'dano_aplicado': 0,
+                                'dano_recebido': 0,
+                            }
+                        })
+
         self.faith_points = room.faith_points
         self.deatmatch = room.deatmatch
         self.start_match = str(datetime.now(tz=ZoneInfo("America/Sao_Paulo")))
@@ -226,6 +349,7 @@ class C_Match:
         self.player_turn = 0
 
         self.fight_camp: FightSchema = None  # create and delete on every fight
+        self.card_stack: CardStack = None  # create and delete on every spells
         self.move_now: MoveSchema = None
         self.end_match: str = None
 
@@ -251,15 +375,12 @@ class C_Match:
                 # Escolha aqui as cartas da frente do deck
                 # self._reorderPlayerDeck(player=_player, new_deck=[
                 #     {
-                #         'in_game_id': 'adao',
-                #     },
-                #     {
-                #         'in_game_id':  'eva',
+                #         'in_game_id': 'ressurreicao',
                 #     },
                 # ])
 
-    # setar a disponibilidade de uso das cartas de cada jogador
     def __setCardHandStatus(self):
+    # setar a disponibilidade de uso das cartas de cada jogador
         for _team in self.players_in_match:
             for player in _team:
                 for card in player.card_hand:
@@ -287,11 +408,17 @@ class C_Match:
             "round_match": self.round_match,
             "player_turn": self.players_in_match[self.team_turn][self.player_turn].id,
             "players_in_match": __players_in_match,
-            'deatmatch': self.deatmatch
+            'deatmatch': self.deatmatch,
+            'first_blood': self.first_blood,
+            'take_damage': self.take_damage,
         }
         if (self.fight_camp):
             response.update({
                 "fight_camp": self.fight_camp.getStats()
+            })
+        if (self.card_stack):
+            response.update({
+                "card_stack": self.card_stack.getStats()
             })
         return response
 
@@ -329,6 +456,21 @@ class C_Match:
         self.round_match += 1
         for _team in self.players_in_match:
             for player in _team:
+                # Reseta os efeitos nas cartas que estão na zona de batalha e zona de preparação
+                for slug in self.CARDS_STATUS_FOR_HEROS:
+                    __all_cards = [*player.card_battle_camp,
+                                   *player.card_prepare_camp]
+                    for __card in __all_cards:
+                        _card = getCardInListBySlugId(
+                            slug, __card.attached_effects)
+                        if _card:
+                            await _card.rmvSkill(match=self)
+                # Reseta os efeitos no jogador
+                for slug in self.CARDS_STATUS_FOR_PLAYERS:
+                    _card = getCardInListBySlugId(
+                        slug, player.attached_effects)
+                    if _card:
+                        await _card.rmvSkill(match=self)
                 # Reseta as cartas ['daniel', ]
                 daniel_card = getCardInListBySlugId(
                     'daniel', player.card_battle_camp)
@@ -340,6 +482,7 @@ class C_Match:
                 if self.round_match > 10:
                     if self.deatmatch:
                         # Cada jogar perde um ponto de fé a cada rodada
+                        #  Esta dano não conta para as estatísticas
                         self.takeDamage(player, 1)
                         Logger.info(
                             msg=f'Deathmatch - Round {self.round_match}', tag='C_Match')
@@ -363,17 +506,19 @@ class C_Match:
             ...
         else:
             self.giveCard(player)
-        for card in player.card_prepare_camp:
+        all_cards = [*player.card_prepare_camp, *player.card_battle_camp]
+        for card in all_cards:
             card.status = "ready"
-        for card in player.card_battle_camp:
-            card.status = "ready"
-        await self.sendToPlayer(data={
-            "data_type": "notification",
-            "notification": {
-                "message": "Sua vez de jogar!"
-            }
-        },
-            player_id=player.id)
+            card.can_move = True
+            card.can_attack = True
+        if player.faith_points > 0:
+            await self.sendToPlayer(data={
+                "data_type": "notification",
+                "notification": {
+                    "message": "Sua vez de jogar!"
+                }
+            },
+                player_id=player.id)
 
     async def finishTurn(self):
         if (self.team_turn < len(self.players_in_match)-1):
@@ -407,7 +552,6 @@ class C_Match:
         if (move_from == "hand"):
             card = getCardInListBySlugId(card_id, player.card_hand)
             if (move_to == "prepare" and (card.wisdom_cost <= player.wisdom_available)):
-                # card.status = "used"  # Precisa ficar antes do card.onInvoke - Sansão
                 await card.onInvoke(self)
             elif (move_to == 'forgotten'):
                 player.card_hand.remove(card)
@@ -460,6 +604,12 @@ class C_Match:
     async def fightNow(self):
         damage = await self.fight_camp.fight()
         self.takeDamage(self.fight_camp.player_defense, damage)
+        self.setDanoEmFe(
+            self.fight_camp.player_attack,
+            self.fight_camp.player_defense,
+            damage
+        )
+
         await self.sendToPlayer(data={
             'data_type': 'notification',
             'notification': {
@@ -469,15 +619,30 @@ class C_Match:
         }, player_id=self.fight_camp.player_defense.id)
         self.fight_camp = None
 
+    def setDanoEmFe(self, player_give_damage: 'C_Player_Match', player_take_damage: 'C_Player_Match', damage: int):
+        player_attack_dano_em_fe = player_give_damage.dano_em_fe
+        player_attack_dano_em_fe['total_aplicado'] += damage
+        player_attack_dano_em_fe['oponentes'][player_take_damage.id]['dano_aplicado'] += damage
+
+        player_defense_dano_em_fe = player_take_damage.dano_em_fe
+        player_defense_dano_em_fe['total_recebido'] += damage
+        player_defense_dano_em_fe['oponentes'][player_give_damage.id]['dano_recebido'] += damage
+
     def takeDamage(self, player: C_Player_Match, damage: int):
-        player.faith_points -= damage
-        print(f'Jogador {player.id} perdeu {damage} de fé.')
-        Logger.info(msg=f'Jogador: {player.id} perdeu {
-                    damage}pts de fé.', tag='C_Player_Match')
-        if (player.faith_points < 1):
-            Logger.info(msg=f'Jogador: {
-                        player.id} foi eliminado.', tag='C_Player_Match')
-        self.checkWinner()
+        if damage > 0:
+            _old_faith_points = player.faith_points
+            player.faith_points -= damage
+            if player.id not in self.take_damage:
+                self.take_damage.append(player.id)
+            Logger.info(msg=f'O jogador {player.id} perdeu {
+                        damage}pts de fé. {_old_faith_points} -> {player.faith_points}', tag='C_Player_Match')
+            if (player.faith_points < 1):
+                player.round_eliminado = self.round_match
+                Logger.info(msg=f'Jogador: {
+                            player.id} foi eliminado.', tag='C_Player_Match')
+            self.checkWinner()
+        else:
+            Logger.info(msg=f'O jogador {player.id} não perdeu pontos de fé', tag='C_Player_Match')
 
     def checkWinner(self):
         winner: list[C_Player_Match] = []
@@ -506,12 +671,17 @@ class C_Match:
         print('preparar a tela de estatísticas')
 
     async def incoming(self, data: dict):
-        Logger.status(msg=f'{self.id}>>>: {data}', tag='C_Match')
+        consolePrint.status(msg=f'{self.id}>>>: {data}')
+        # Logger.status(msg=f'{self.id}>>>: {data}', tag='C_Match')
         assert self.id == data['match_id']
         assert self.round_match == data['round_match']
         move = MoveSchema(**data)
         self.move_now = move
         player = self._getPlayerById(move.player_move_id)
+        all_places_in_game = [*player.card_hand, *player.card_prepare_camp, *player.card_battle_camp]
+        card_to_set_move = getCardInListBySlugId(card_id=move.card_id, card_list=all_places_in_game)
+        if card_to_set_move:
+            card_to_set_move.setCardMove(move) 
         if move.move_type == 'move_to_prepare':
             await self.moveCard(player, card_id=move.card_id,
                                 move_from="hand", move_to="prepare")
@@ -524,6 +694,17 @@ class C_Match:
             # if player.id == self.player_turn:
             await self.finishTurn()
             self.takeDamage(player, player.faith_points)
+            for _team in self.players_in_match:
+                for _player in _team:
+                    if _player.id == player.id:
+                        continue
+                    await self.sendToPlayer(data={
+                        "data_type": "notification",
+                        "notification": {
+                            "message": f"%PLAYER_NAME:{player.id}% se rendeu..."
+                        }
+                    },
+                        player_id=_player.id)
             # DB.setPlayerInRoom(player_id=player.id, room_id="")
 
         if move.move_type == 'move_to_battle':
@@ -548,17 +729,31 @@ class C_Match:
 
         if move.move_type == 'card_skill':
             card = getCardInListBySlugId(
-                card_slug=move.card_id, card_list=player.card_prepare_camp)
-            await card.addSkill(match=self)
+                card_id=move.card_id, card_list=player.card_prepare_camp)
+            if card.card_type == 'miracle':
+                if self.card_stack == None:
+                    __players_alive = 0
+                    for _team in self.players_in_match:
+                        for _player in _team:
+                            if _player.faith_points > 0:
+                                __players_alive += 1
+                    self.card_stack = CardStack(
+                        players_alive=__players_alive, match=self)
+                await card.prepend(match=self)
+            if card.card_type == 'hero':
+                await card.addSkill(match=self)
+
+        if move.move_type == 'resolve_skill':
+            await self.card_stack.notChange(move.player_move_id)
 
         if move.move_type == 'attach':
             card = getCardInListBySlugId(
-                card_slug=move.card_id, card_list=player.card_prepare_camp)
+                card_id=move.card_id, card_list=player.card_prepare_camp)
             await card.onAttach(match=self)
 
         if move.move_type == 'dettach':
             card = getCardInListBySlugId(
-                card_slug=move.card_id, card_list=player.card_prepare_camp)
+                card_id=move.card_id, card_list=player.card_prepare_camp)
             await card.onDettach(match=self)
 
         self.move_now = None

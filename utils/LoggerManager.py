@@ -51,6 +51,7 @@ class C_Logger:
         os.chdir('../../../../')
 
     def status(self, msg: str, tag: str = None):
+        pass
         '''
         Usado para informações do passo a passo do sistema com linguagem de objetos.
         '''

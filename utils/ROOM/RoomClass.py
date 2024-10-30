@@ -1,12 +1,16 @@
 from random import choice
-
 from typing import List
+
+import requests
 from nanoid import generate
 
-from utils.Cards.standard.raw_data import STANDARD_CARDS_RAW_DATA
+from utils.Cards.standard.base_cards import C_Card_Room, cardListToDict, getCardInListBySlugId
+from utils.Cards.standard.raw_data import STANDARD_CARDS
 
 from utils.DataBaseManager import DB
 from utils.console import consolePrint
+
+from settings import env_settings
 
 MINIMUM_DECK_CARDS = 10
 MAXIMUM_CARDS_REPEATS = 2
@@ -15,62 +19,15 @@ MAXIMUM_FAITH_POINTS = 15
 MAXIMUM_DECK_TRIES = 3
 
 
-class C_Card:
-    def __init__(self, slug: str, player_id: int):
-        self.slug = slug
-
-        self.wisdom_cost = STANDARD_CARDS_RAW_DATA[self.slug][1]
-        self.attack_point = STANDARD_CARDS_RAW_DATA[self.slug][2]
-        self.defense_point = STANDARD_CARDS_RAW_DATA[self.slug][3]
-        self.card_type = STANDARD_CARDS_RAW_DATA[self.slug][4]
-
-        self.in_game_id = f'{player_id}_{slug}_{generate(
-            size=6, alphabet='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')}'
-
-    def __str__(self):
-        return f"{self.in_game_id}"
-
-    def getStats(self):
-        return {
-            "slug": self.slug,
-            "in_game_id": self.in_game_id,
-            "card_type": self.card_type,
-            "wisdom_cost": self.wisdom_cost,
-            "attack_point": self.attack_point,
-            "defense_point": self.defense_point,
-            "status": 'ready',
-        }
-
-
-def getCardInListBySlugId(card_slug: str, card_list: list[C_Card]) -> C_Card | None:
-    if card_slug != None:
-        for card in card_list:
-            if card != None:
-                if card.in_game_id.find(card_slug) >= 0:
-                    return card
-    return None
-
-
-def cardListToDict(card_list: list[C_Card]):
-    __list = []
-    for card in card_list:
-        if card:
-            __list.append(card.getStats())
-        else:
-            __list.append({"slug": "not-defense"})
-    return __list
-
-
 class C_Player:
-    def __init__(self, id: int, xp_points: int, card_deck: list[C_Card]):
+    def __init__(self, id: int, xp_points: int, card_deck: list['C_Card_Room']):
         self.id = id
         self.card_deck = card_deck
         self.xp_points = xp_points
 
         self.ready: bool = False
         self.deck_try: int = 0
-        self.card_hand: list[C_Card] = []
-
+        self.card_hand: list['C_Card_Room'] = []
 
     def getStats(self, type: str = None):
 
@@ -86,6 +43,7 @@ class C_Player:
 
 
 class C_Room:
+    SERVER_AVAILABLE_CARDS = STANDARD_CARDS
     def __init__(
         self,
         name: str,
@@ -101,6 +59,11 @@ class C_Room:
         self.room_stage = 0
         self.connected_players: List[List[C_Player]] = [[]]
         self.created_by = created_by
+        # server_settings = requests.get(f'http://{env_settings.DB_HOST}:3111/api/')
+        # if server_settings.status_code == 200:
+        #     self.SERVER_AVAILABLE_CARDS = server_settings.json()['active_cards']
+        #     consolePrint.info("Cartas recebidas do servidor...")
+        #     print(self.SERVER_AVAILABLE_CARDS)
 
         self.setConfig()
 
@@ -171,12 +134,15 @@ class C_Room:
         _player_data = await DB.getPlayerById(player_id=player_id)
         selected_deck = _player_data['selected_deck']
         decks = _player_data['decks']
-        deck: list[C_Card] = []
-        for _deck in decks:
-            if _deck["_id"] == selected_deck:
-                for card in _deck['cards']:
-                    _new_card = C_Card(card, player_id)
-                    deck.append(_new_card)
+        deck: list['C_Card_Room'] = []
+        # for _deck in decks:
+        #     if _deck["_id"] == selected_deck:
+        #         for card in _deck['cards']:
+        #             _new_card = C_Card_Room(card, player_id)
+        #             deck.append(_new_card)
+        for _card in self.SERVER_AVAILABLE_CARDS:
+            _new_card = C_Card_Room(_card, player_id)
+            deck.append(_new_card)
 
         c_player = C_Player(
             id=player_id,
@@ -242,13 +208,14 @@ class C_Room:
                 print('escolheu', hero_1_selected)
                 player.card_hand.append(hero_1_selected)
                 player.card_deck.remove(hero_1_selected)
+                count += 1
+                if len(__miracles_artifacts_1) > 0:
+                    miracles_artifacts_1_selected = choice(__miracles_artifacts_1)
+                    print('escolheu', miracles_artifacts_1_selected)
+                    player.card_hand.append(miracles_artifacts_1_selected)
+                    player.card_deck.remove(miracles_artifacts_1_selected)
+                    count += 1
 
-                miracles_artifacts_1_selected = choice(__miracles_artifacts_1)
-                print('escolheu', miracles_artifacts_1_selected)
-                player.card_hand.append(miracles_artifacts_1_selected)
-                player.card_deck.remove(miracles_artifacts_1_selected)
-
-                count = 1
         while count < number_of_cards:
             card_selected = choice(player.card_deck)
             player.card_hand.append(card_selected)

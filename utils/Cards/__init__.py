@@ -1,13 +1,12 @@
 from typing import List, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from utils.ROOM.RoomClass import C_Card
-    from utils.Cards.standard.base_cards import C_Card_Match
+    from utils.Cards.standard.base_cards import C_Card_Match, C_Card_Room
 
-from .standard import heros, miracles, artifacts
+from .standard import heros, miracles, artifacts, sins
 
 
-STANDARD_CARDS_CLASSES: list['C_Card_Match'] = [
+STANDARD_CARDS_CLASSES: List['C_Card_Match'] = [
     heros.C_Abraao,
     heros.C_Adao,
     heros.C_Daniel,
@@ -26,17 +25,17 @@ STANDARD_CARDS_CLASSES: list['C_Card_Match'] = [
     # miracles.C_CordeiroDeDeus,
     miracles.C_Diluvio,
     miracles.C_FogoDoCeu,
-    # miracles.C_ForcaDeSansao,
+    miracles.C_ForcaDeSansao,
     # miracles.C_LiberacaoCelestial,
     miracles.C_NoCeuTemPao,
     # miracles.C_PassagemSegura,
     # miracles.C_ProtecaoDivina,
-    # miracles.C_Ressurreicao,
+    miracles.C_Ressurreicao,
     miracles.C_RestauracaoDeFe,
     miracles.C_SabedoriaDeSalomao,
     miracles.C_SarcaArdente,
     artifacts.C_ArcaDaAlianca,
-    # artifacts.C_ArcaDeNoe,
+    artifacts.C_ArcaDeNoe,
     artifacts.C_BotasDoEvangelho,
     artifacts.C_CajadoDeMoises,
     artifacts.C_CapaceteDaSalvacao,
@@ -45,10 +44,13 @@ STANDARD_CARDS_CLASSES: list['C_Card_Match'] = [
     artifacts.C_EscudoDaFe,
     artifacts.C_EspadaDoEspirito,
     artifacts.C_Os10Mandamentos,
+    # sins.C_FrutoProibido,
+    # sins.C_Idolatria,
+    # sins.C_Traicao,
 ]
 
 
-def createCardMatchByCardList(card_list: list['C_Card']) -> list['C_Card_Match']:
+def createCardMatchByCardList(card_list: list['C_Card_Room']) -> list['C_Card_Match']:
     card_object = []
     for card in card_list:
         for card_match in STANDARD_CARDS_CLASSES:
@@ -58,12 +60,3 @@ def createCardMatchByCardList(card_list: list['C_Card']) -> list['C_Card_Match']
                 break
     return card_object
 
-
-# def cardListToDict(card_list: list[CardSchema]):
-#     __list = []
-#     for card in card_list:
-#         if card:
-#             __list.append(card.getCardStats())
-#         else:
-#             __list.append({"slug": "not-defense"})
-#     return __list

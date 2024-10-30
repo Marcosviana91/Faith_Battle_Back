@@ -15,9 +15,9 @@ STANDARD_CARDS_RAW_DATA = {
     'noe': ('Noé', 1, 2, 1, 'hero'),
     'salomao': ('Salomão', 4, 2, 2, 'hero'),
     'sansao': ('Sansão', 6, 5, 5, 'hero'),
-    'davi-ssj': ('Davi', 3, 4, 5, 'legendary'),
-    'josue-ssj': ('Josué', 3, 3, 2, 'legendary'),
-    'moises-ssj': ('Moisés', 3, 2, 3, 'legendary'),
+    # 'davi-lendario': ('Davi', 3, 4, 5, 'legendary'),
+    # 'josue-lendario': ('Josué', 3, 3, 2, 'legendary'),
+    # 'moises-lendario': ('Moisés', 3, 2, 3, 'legendary'),
     'arca-da-alianca': ('Arca da Aliança', 5, 0, 0, 'artifact'),
     'arca-de-noe': ('Arca de Noé', 5, 0, 0, 'artifact'),
     'botas-do-evangelho': ('Botas do Evangelho', 2, 0, 0, 'artifact'),
@@ -71,31 +71,42 @@ STANDARD_CARDS_LEGENDARY_HEROS = [
 
 STANDARD_CARDS_MIRACLES = [
     # 'cordeiro-de-deus',
-    'diluvio',
-    'fogo-do-ceu',
+    # 'diluvio',
+    # 'fogo-do-ceu',
     # 'forca-de-sansao',
     # 'liberacao-celestial',
-    'no-ceu-tem-pao',
+    # 'no-ceu-tem-pao',
     # 'passagem-segura',
     # 'protecao-divina',
     # 'ressurreicao',
-    'restauracao-de-fe',
-    'sabedoria-de-salomao',
-    'sarca-ardente',
+    # 'restauracao-de-fe',
+    # 'sabedoria-de-salomao',
+    # 'sarca-ardente',
 ]
 
 STANDARD_CARDS_ARTIFACTS = [
     'arca-da-alianca',
-    # 'arca-de-noe',
+    'arca-de-noe',
     'botas-do-evangelho',
     'cajado-de-moises',
     'capacete-da-salvacao',
-    # 'cinturao-da-verdade',
+    'cinturao-da-verdade',
     'couraca-da-justica',
     'escudo-da-fe',
     'espada-do-espirito',
     'os-10-mandamentos',
 ]
 
-STANDARD_CARDS = [*STANDARD_CARDS_HEROS, *STANDARD_CARDS_MIRACLES,
-                  *STANDARD_CARDS_ARTIFACTS, *STANDARD_CARDS_LEGENDARY_HEROS]
+STANDARD_CARDS_SINS = [
+    # 'fruto-proibido',
+    # 'idolatria',
+    # 'traicao',
+]
+
+STANDARD_CARDS = [
+    *STANDARD_CARDS_HEROS,
+    *STANDARD_CARDS_MIRACLES,
+    *STANDARD_CARDS_ARTIFACTS,
+    *STANDARD_CARDS_SINS,
+    *STANDARD_CARDS_LEGENDARY_HEROS,
+]
