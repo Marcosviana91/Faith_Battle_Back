@@ -59,7 +59,7 @@ class C_Room:
         self.room_stage = 0
         self.connected_players: List[List[C_Player]] = [[]]
         self.created_by = created_by
-        # server_settings = requests.get(f'http://{env_settings.DB_HOST}:3111/api/')
+        # server_settings = requests.get(f'http://{env_settings.API_HOST}:3111/api/')
         # if server_settings.status_code == 200:
         #     self.SERVER_AVAILABLE_CARDS = server_settings.json()['active_cards']
         #     consolePrint.info("Cartas recebidas do servidor...")

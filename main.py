@@ -30,7 +30,7 @@ app.add_middleware(
 )
 @app.get("/")
 def handleRoot():
-    server_settings = requests.get(f'http://{env_settings.DB_HOST}:3111/api/')
+    server_settings = requests.get(f'http://{env_settings.API_HOST}:3111/api/')
     res = {
         'version': 'alpha-1.1.1',
         'active_cards': STANDARD_CARDS

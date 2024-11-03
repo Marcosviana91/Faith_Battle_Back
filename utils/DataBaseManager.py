@@ -56,7 +56,7 @@ class PlayerData(BaseModel):
 
 #     def __init__(self):
 #         client = AsyncIOMotorClient(
-#             host=env.DB_HOST,
+#             host=env.API_HOST,
 #             port=int(env.DB_PORT),
 #             username=env.DB_USER,
 #             password=env.DB_PASSWORD,
@@ -71,7 +71,7 @@ class PlayerData(BaseModel):
 #         if founded_player is None:
 #             new_player = PlayerData(_id=player_id)
 #             user = requests.get(
-#                 f'http://{env.DB_HOST}:3111/api/user/{player_id}')
+#                 f'http://{env.API_HOST}:3111/api/user/{player_id}')
 #             if user.status_code == 200:
 #                 user = dict(user.json())
 #                 new_player.avatar = int(user['last_name'])
@@ -80,7 +80,7 @@ class PlayerData(BaseModel):
 #         return founded_player
 
 #     async def getUserDataById(self, user_id: int):
-#         user = requests.get(f'http://{env.DB_HOST}:3111/api/user/{user_id}')
+#         user = requests.get(f'http://{env.API_HOST}:3111/api/user/{user_id}')
 #         if user.status_code == 200:
 #             player = await self.getPlayerById(user_id)
 #             user = dict(user.json())
@@ -114,7 +114,7 @@ class PlayerData(BaseModel):
 
 #     def createNewUser(self, data: NewUserSchema) -> APIResponseSchema:
 #         response = APIResponseSchema()
-#         newUser = requests.post(f'http://{env.DB_HOST}:3111/api/user',
+#         newUser = requests.post(f'http://{env.API_HOST}:3111/api/user',
 #                                 json={'username': data.username.lower(), 'password': data.password, 'first_name': data.first_name, 'avatar': data.avatar})
 #         if newUser.status_code == 200:
 #             response.data_type = 'user_data'
@@ -141,7 +141,7 @@ class TinyDB_Manager:
             sort_keys=True,
         )
 
-        self.all_players = tiny_engine.table(env.DB_NAME)
+        self.all_players = ''#tiny_engine.table(env.DB_NAME)
 
     async def getPlayerById(self, player_id: int):
         founded_player = self.all_players.get(
@@ -149,7 +149,7 @@ class TinyDB_Manager:
         if founded_player is None:
             new_player = PlayerData(_id=player_id)
             user = requests.get(
-                f'http://{env.DB_HOST}:3111/api/user/{player_id}')
+                f'http://{env.API_HOST}:3111/api/user/{player_id}')
             if user.status_code == 200:
                 user = dict(user.json())
                 new_player.avatar = int(user['last_name'])
@@ -158,7 +158,7 @@ class TinyDB_Manager:
         return founded_player
 
     async def getUserDataById(self, user_id: int):
-        user = requests.get(f'http://{env.DB_HOST}:3111/api/user/{user_id}')
+        user = requests.get(f'http://{env.API_HOST}:3111/api/user/{user_id}')
         if user.status_code == 200:
             # player = await self.getPlayerById(user_id)
             user = dict(user.json())
@@ -189,7 +189,7 @@ class TinyDB_Manager:
 
     def createNewUser(self, data: NewUserSchema) -> APIResponseSchema:
         response = APIResponseSchema()
-        newUser = requests.post(f'http://{env.DB_HOST}:3111/api/user',
+        newUser = requests.post(f'http://{env.API_HOST}:3111/api/user',
                                 json={'username': data.username.lower(), 'password': data.password, 'first_name': data.first_name, 'avatar': data.avatar})
         if newUser.status_code == 200:
             response.data_type = 'user_data'
