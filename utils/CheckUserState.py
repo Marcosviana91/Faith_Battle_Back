@@ -7,9 +7,9 @@ from utils.ROOM.RoomManager import RM
 
 
 async def checkUserStats(player_id: int):
-    room_id = dict(await DB.getPlayerById(player_id)).get("room_id", None)
-    match_id = dict(await DB.getPlayerById(player_id)).get("match_id", None)
-    if room_id == None and match_id == None:
+    room_id = await DB.getPlayerRoom(player_id)
+    if room_id == None:
+        await WS.sendToPlayer({"data_type": "disconnected"}, player_id)
         return None
 
     room = RM._getRoomById(room_id)
@@ -34,7 +34,7 @@ async def checkUserStats(player_id: int):
                     await WS.sendToPlayer(data=room_to_send, user_id=player_id)
 
     else:
-        match = MM._getMatchById(match_id)
+        match = MM._getMatchById(room_id)
         if match:
             for _team in match.players_in_match:
                 for player in _team:
@@ -62,6 +62,6 @@ async def checkUserStats(player_id: int):
                                 )
     # Enviar um leave room para o cliente caso não exista a sala nem partida
     if room is None and match is None:
-        await DB.setPlayerRoomOrMatch(player_id, clear=True)
+        await DB.setPlayerRoom(player_id)
         await WS.sendToPlayer({"data_type": "disconnected"}, player_id)
     return None
