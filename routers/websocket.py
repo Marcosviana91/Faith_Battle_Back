@@ -4,7 +4,7 @@ from fastapi import APIRouter,  WebSocket, WebSocketDisconnect
 
 from schemas.users_schema import UserWs
 from utils.CheckUserState import checkUserStats
-from utils.ConnectionManager import WS, WSFlat
+from utils.ConnectionManager import WS
 from utils.ROOM.RoomManager import RM
 from utils.MATCHES.MatchManager import MM, C_Match
 
