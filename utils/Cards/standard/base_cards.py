@@ -46,9 +46,9 @@ class C_Card_Move:
         card_list: List[Dict] | None = [],
         *args, **kwargs
     ):
-        self.player_target_id = player_target_id,
-        self.player_target2_id = player_target2_id,
-        self.card_target_id = card_target_id,
+        self.player_target_id = player_target_id
+        self.player_target2_id = player_target2_id
+        self.card_target_id = card_target_id
         self.card_list = card_list
 
 
@@ -86,8 +86,8 @@ class C_Card_Match:
         return f"{STANDARD_CARDS_RAW_DATA[self.slug][0]}"
     
     def setCardMove(self, move: 'MoveSchema'):
-        self.card_move = C_Card_Move(**move.__dict__)
         print(f'Definindo card_move de {self.in_game_id}')
+        self.card_move = C_Card_Move(**move.__dict__)
         print(self.card_move.__dict__)
 
     def reset(self):

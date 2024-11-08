@@ -29,7 +29,7 @@ class C_Miracles(C_Card_Match):
         )
 
     async def addSkill(self, match: 'C_Match'):
-        player = match._getPlayerById(self.card_move.get('player_move_id'))
+        player = match._getPlayerById(self.card_move.player_target_id)
         await super().addSkill(match)
         player.card_prepare_camp.remove(self)
         player.card_in_forgotten_sea.append(self)

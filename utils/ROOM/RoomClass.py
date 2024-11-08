@@ -5,6 +5,7 @@ import requests
 from nanoid import generate
 
 from utils.Cards.standard.base_cards import C_Card_Room, cardListToDict, getCardInListBySlugId
+from utils.Cards.standard.raw_data import STANDARD_CARDS
 
 from utils.DataBaseManager import DB
 from utils.console import consolePrint
@@ -58,11 +59,12 @@ class C_Room:
         self.room_stage = 0
         self.connected_players: List[List[C_Player]] = [[]]
         self.created_by = created_by
-        server_settings = requests.get(f'http://{env_settings.DB_HOST}:3111/api/')
-        if server_settings.status_code == 200:
-            self.SERVER_AVAILABLE_CARDS = server_settings.json()['active_cards']
-            consolePrint.info("Cartas recebidas do servidor...")
-            print(self.SERVER_AVAILABLE_CARDS)
+        # server_settings = requests.get(f'{env_settings.API_HOST}/api/')
+        # if server_settings.status_code == 200:
+            # self.SERVER_AVAILABLE_CARDS = server_settings.json()['active_cards']
+            # consolePrint.info("Cartas recebidas do servidor...")
+        self.SERVER_AVAILABLE_CARDS = STANDARD_CARDS
+        print(self.SERVER_AVAILABLE_CARDS)
 
         self.setConfig()
 
@@ -130,9 +132,9 @@ class C_Room:
                 return None
         else:
             player_id = self.created_by['id']
-        _player_data = await DB.getPlayerById(player_id=player_id)
-        selected_deck = _player_data['selected_deck']
-        decks = _player_data['decks']
+        # _player_data = await DB.getPlayerById(player_id=player_id)
+        # selected_deck = _player_data['selected_deck']
+        # decks = _player_data['decks']
         deck: list['C_Card_Room'] = []
         # for _deck in decks:
         #     if _deck["_id"] == selected_deck:
@@ -145,13 +147,13 @@ class C_Room:
 
         c_player = C_Player(
             id=player_id,
-            xp_points=_player_data['xp_points'],
+            xp_points=0, #_player_data['xp_points'],
             card_deck=deck
         )
         self.connected_players[0].append(c_player)
         # consolePrint.info(
         #     f'Player {player.id} has Connected in room {self.id}')
-        await DB.setPlayerRoomOrMatch(player_id=c_player.id, room_id=self.id)
+        await DB.setPlayerRoom(player_id=c_player.id, room_id=self.id)
         return self.getStats()
 
     async def disconnect(self, player_id: int):
@@ -162,7 +164,7 @@ class C_Room:
                 self.connected_players.remove(player[1])
             # consolePrint.info(
             #     f'Player {player.id} has disconnected from room {self.id}')
-        await DB.setPlayerRoomOrMatch(player_id=player_id)
+        await DB.setPlayerRoom(player_id=player_id)
         return self.getStats
 
     def setReady(self, player_id: int):

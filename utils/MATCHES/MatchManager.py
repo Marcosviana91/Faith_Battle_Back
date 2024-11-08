@@ -25,9 +25,6 @@ class MatchManager:
 
     async def createMatch(self, match: C_Match):
         self.MATCHES.append(match)
-        for _team in match.players_in_match:
-            for player in _team:
-                await DB.setPlayerRoomOrMatch(player_id=player.id, match_id=match.id)
         await match.newRoundHandle()
         await match.updatePlayers()
 
@@ -45,9 +42,6 @@ class MatchManager:
     async def endMatch(self, match: C_Match):
         await match.finishMatch()
         await match.updatePlayers()
-        for _team in match.players_in_match:
-            for player in _team:
-                await DB.setPlayerRoomOrMatch(player_id=player.id, clear=True)
         self.MATCHES.remove(match)
         Logger.info(msg=f'Partida encerrada: {match.id}', tag='MatchManager')
         Logger.status(msg=f'Partida encerrada: {match.getStats()}', tag='MatchManager')

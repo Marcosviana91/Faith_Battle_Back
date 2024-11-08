@@ -50,9 +50,9 @@ class RoomManager:
         self.ROOMS.remove(room)
         consolePrint.info(f'Room {room.id} finished')
         # Logger.info(f'Room {room.id} finished', 'ROOMS')
-        for _team in room.connected_players:
-            for player in _team:
-                await DB.setPlayerRoomOrMatch(player_id=player.id, clear=True)
+        # for _team in room.connected_players:
+        #     for player in _team:
+        #         await DB.setPlayerRoomOrMatch(player_id=player.id, clear=True)
         del room
 
     async def enterRoom(self, room_id: str, player: PlayersSchema, password: str):

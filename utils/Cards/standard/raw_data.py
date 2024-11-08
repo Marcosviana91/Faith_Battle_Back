@@ -71,14 +71,14 @@ STANDARD_CARDS_LEGENDARY_HEROS = [
 
 STANDARD_CARDS_MIRACLES = [
     # 'cordeiro-de-deus',
-    'diluvio',
+    # 'diluvio',
     'fogo-do-ceu',
-    'forca-de-sansao',
+    # 'forca-de-sansao',
     # 'liberacao-celestial',
     'no-ceu-tem-pao',
     # 'passagem-segura',
     # 'protecao-divina',
-    'ressurreicao',
+    # 'ressurreicao',
     'restauracao-de-fe',
     'sabedoria-de-salomao',
     'sarca-ardente',

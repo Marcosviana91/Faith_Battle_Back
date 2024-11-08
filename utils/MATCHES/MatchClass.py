@@ -731,15 +731,17 @@ class C_Match:
             card = getCardInListBySlugId(
                 card_id=move.card_id, card_list=player.card_prepare_camp)
             if card.card_type == 'miracle':
-                if self.card_stack == None:
-                    __players_alive = 0
-                    for _team in self.players_in_match:
-                        for _player in _team:
-                            if _player.faith_points > 0:
-                                __players_alive += 1
-                    self.card_stack = CardStack(
-                        players_alive=__players_alive, match=self)
-                await card.prepend(match=self)
+                # Lista de Milagres desativada
+                # if self.card_stack == None:
+                #     __players_alive = 0
+                #     for _team in self.players_in_match:
+                #         for _player in _team:
+                #             if _player.faith_points > 0:
+                #                 __players_alive += 1
+                #     self.card_stack = CardStack(
+                #         players_alive=__players_alive, match=self)
+                # await card.prepend(match=self)
+                await card.addSkill(match=self)
             if card.card_type == 'hero':
                 await card.addSkill(match=self)
 
