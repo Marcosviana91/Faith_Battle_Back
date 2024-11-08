@@ -28,9 +28,9 @@ app.add_middleware(
 )
 @app.get("/")
 def handleRoot():
-    server_settings = requests.get(f'http://{env_settings.DB_HOST}:3111/api/')
+    server_settings = requests.get(f'{env_settings.API_HOST}/api/')
     res = {
-        'version': 'alpha-1.0.1',
+        'version': 'alpha-1.2.1',
     }
     if server_settings.status_code == 200:
         res.update(server_settings.json())
